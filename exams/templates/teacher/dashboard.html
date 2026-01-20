@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Teacher Dashboard</h1>
+    <form method="post" action="{% url 'logout' %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit">Logout</button>
+    </form>
+  </div>
+
+  <p><a href="{% url 'teacher_exam_create' %}">+ Create new exam</a></p>
+
+  <hr>
+
+  {% for exam in exams %}
+    <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+      <h3>{{ exam.title }}</h3>
+      <p>
+        Duration: {{ exam.duration_minutes }} minutes |
+        Published: <strong>{{ exam.is_published }}</strong>
+      </p>
+      <a href="{% url 'teacher_exam_detail' exam.id %}">Manage</a> |
+      <a href="{% url 'teacher_exam_edit' exam.id %}">Edit</a> |
+      <a href="{% url 'teacher_exam_delete' exam.id %}">Delete</a>
+    </div>
+  {% empty %}
+    <p>No exams yet.</p>
+  {% endfor %}
+{% endblock %}

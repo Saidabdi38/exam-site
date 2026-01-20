@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<h1>Available Exams</h1>
+
+{% if exams %}
+    <ul>
+        {% for exam in exams %}
+            <li>{{ exam.title }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No published exams yet.</p>
+{% endif %}
+{% endblock %}

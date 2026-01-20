@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Manage: {{ exam.title }}</h2>
+
+  <p>
+    <a href="{% url 'teacher_dashboard' %}">Back</a> |
+    <a href="{% url 'teacher_exam_edit' exam.id %}">Edit Exam</a> |
+    <a href="{% url 'teacher_question_create' exam.id %}">+ Add Question</a>
+    | <a href="{% url 'teacher_exam_attempts' exam.id %}">View Attempts</a>
+  </p>
+
+  <hr>
+
+  {% for q in questions %}
+    <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+      <p>
+        <strong>Q{{ forloop.counter }}</strong>
+        ({{ q.points }} pts)
+        - {{ q.text }}
+      </p>
+      <a href="{% url 'teacher_question_edit' exam.id q.id %}">Edit Choices</a> |
+      <a href="{% url 'teacher_question_delete' exam.id q.id %}">Delete</a>
+    </div>
+  {% empty %}
+    <p>No questions yet.</p>
+  {% endfor %}
+{% endblock %}

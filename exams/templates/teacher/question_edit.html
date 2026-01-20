@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Edit Question + Choices</h2>
+  <p><a href="{% url 'teacher_exam_detail' exam.id %}">Back</a></p>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <fieldset style="border:1px solid #ddd; padding:10px;">
+      <legend>Question</legend>
+      {{ form.as_p }}
+    </fieldset>
+
+    <fieldset style="border:1px solid #ddd; padding:10px; margin-top:12px;">
+      <legend>Choices (tick ONE correct)</legend>
+      {{ formset.management_form }}
+      {% for f in formset %}
+        <div style="border:1px solid #eee; padding:8px; margin:8px 0;">
+          {{ f.as_p }}
+        </div>
+      {% endfor %}
+    </fieldset>
+
+    <button type="submit">Save</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="form-shell">
+  <h2 class="form-title">Login</h2>
+  <p class="form-subtitle">Enter your username and password</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+
+  <div class="form-links">
+    <a class="btn btn-secondary" href="{% url 'password_reset' %}">Forgot password?</a>
+  </div>
+</div>
+{% endblock %}

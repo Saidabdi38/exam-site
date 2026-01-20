@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <h1>Student Dashboard</h1>
+
+    <div>
+      <!-- Logged in as <strong>{{ request.user.username }}</strong> -->
+      <form method="post" action="{% url 'logout' %}" style="display:inline; margin-left:8px;">
+        {% csrf_token %}
+        <!-- <button type="submit" class="btn btn-secondary">Logout</button> -->
+      </form>
+    </div>
+  </div>
+
+  <p>
+    <a class="btn btn-link" href="{% url 'exam_list' %}">Exam List</a>
+  </p>
+
+  <h2>Available Exams</h2>
+
+  {% for row in rows %}
+    <div class="card">
+      <h3>{{ row.exam.title }}</h3>
+      <p>{{ row.exam.description }}</p>
+      <p>Duration: {{ row.exam.duration_minutes }} minutes</p>
+      <p>Status: <strong>{{ row.status }}</strong></p>
+      <a href="{% url row.action.url_name row.action.arg %}">{{ row.action.label }}</a>
+    </div>
+  {% empty %}
+    <p>No published exams yet.</p>
+  {% endfor %}
+
+  <hr>
+
+  <h2>Recent Results</h2>
+  {% for a in recent_results %}
+    <div class="card">
+      <strong>{{ a.exam.title }}</strong> — {{ a.score }}/{{ a.max_score }}
+      ({{ a.submitted_at }})
+      |
+      <a href="{% url 'exam_result' a.id %}">View</a>
+    </div>
+  {% empty %}
+    <p>No submitted attempts yet.</p>
+  {% endfor %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Result: {{ attempt.exam.title }}</h2>
+  <p>Score: <strong>{{ attempt.score }}</strong> / {{ attempt.max_score }}</p>
+  <p>Submitted: {{ attempt.submitted_at }}</p>
+
+  <hr>
+
+  {% for a in answers %}
+    <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+      <p><strong>{{ a.question.text }}</strong></p>
+      <p>Your answer: {{ a.selected_choice.text|default:"(no answer)" }}</p>
+    </div>
+  {% endfor %}
+
+  <a href="{% url 'exam_list' %}">Back to exams</a>
+{% endblock %}

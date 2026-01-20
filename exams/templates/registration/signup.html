@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+
+<div class="form-shell">
+  <h2 class="form-title">Create an account</h2>
+  <p class="form-subtitle">Fill the form to get started</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">
+      Sign up
+    </button>
+  </form>
+
+  <div class="form-links">
+    Already have an account?
+    <a class="btn btn-secondary" href="{% url 'login' %}">Login</a>
+  </div>
+</div>
+
+{% endblock %}

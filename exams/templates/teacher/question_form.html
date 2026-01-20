@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ mode }} Question for: {{ exam.title }}</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{{ mode }}</button>
+  </form>
+
+  <p><a href="{% url 'teacher_exam_detail' exam.id %}">Back</a></p>
+{% endblock %}

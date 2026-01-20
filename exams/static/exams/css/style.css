@@ -1,0 +1,359 @@
+/* =========================
+   Exam Site UI Theme (v3.2)  ✅ CLEAN + COMPACT
+   - one source of truth (no duplicates)
+   - Odoo-like centered auth card
+   ========================= */
+
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; }
+
+/* Theme tokens */
+:root{
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #f1f5ff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: rgba(15, 23, 42, 0.12);
+
+  --primary: #2563eb;
+  --primary-600: #1d4ed8;
+  --danger: #dc2626;
+
+  --ring: rgba(37, 99, 235, 0.35);
+
+  --radius: 14px;
+  --shadow: 0 12px 30px rgba(2, 6, 23, 0.08);
+  --shadow-sm: 0 6px 16px rgba(2, 6, 23, 0.08);
+
+  --max: 1080px;
+
+  /* ✅ AUTH sizing (change only these 2) */
+  --auth-card-width: 360px;   /* white box width */
+  --auth-field-width: 280px;  /* label + input width */
+}
+
+/* Base typography */
+body{
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  color: var(--text);
+  background: radial-gradient(1200px 500px at 10% 0%, #e7efff 0%, var(--bg) 55%, var(--bg) 100%);
+  line-height: 1.55;
+}
+
+a{ color: var(--primary); text-decoration: none; }
+a:hover{ text-decoration: underline; }
+p{ margin: 0 0 12px; color: var(--muted); }
+h1,h2,h3{ margin: 0 0 12px; line-height: 1.2; color: var(--text); }
+h1{ font-size: 30px; letter-spacing: -0.02em; }
+h2{ font-size: 20px; }
+h3{ font-size: 16px; }
+
+/* Layout */
+.container{
+  max-width: var(--max);
+  margin: 22px auto;
+  padding: 0 16px;
+}
+.panel{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+/* Navbar */
+nav{
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.75);
+  border-bottom: 1px solid var(--border);
+}
+.navbar{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.nav-left, .nav-right{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.brand{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+.brand-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), #60a5fa);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+}
+.navlink{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  color: var(--text);
+  border: 1px solid transparent;
+}
+.navlink:hover{
+  text-decoration: none;
+  background: rgba(37,99,235,0.08);
+  border-color: rgba(37,99,235,0.18);
+}
+.nav-user{
+  color: var(--muted);
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.04);
+  border: 1px solid var(--border);
+}
+
+/* Buttons */
+button, .btn{
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .05s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+button:active, .btn:active{ transform: translateY(1px); }
+
+.btn-primary{
+  background: linear-gradient(135deg, var(--primary), #3b82f6);
+  color: white;
+  box-shadow: 0 10px 18px rgba(37,99,235,0.22);
+}
+.btn-primary:hover{ background: linear-gradient(135deg, var(--primary-600), #2563eb); }
+
+.btn-secondary{
+  background: rgba(15,23,42,0.04);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-secondary:hover{ background: rgba(15,23,42,0.06); }
+
+.btn-danger{
+  background: linear-gradient(135deg, var(--danger), #ef4444);
+  color: white;
+  box-shadow: 0 10px 18px rgba(220,38,38,0.18);
+}
+
+.btn-link{
+  background: transparent;
+  border-color: transparent;
+  color: var(--primary);
+  padding: 8px 10px;
+}
+.btn-link:hover{
+  background: rgba(37,99,235,0.08);
+  border-color: rgba(37,99,235,0.18);
+  text-decoration: none;
+}
+
+.inline-form{ display: inline; margin: 0; }
+
+/* Forms (global, not auth sizing) */
+form{ margin: 0; }
+label{ display: block; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+input, select, textarea{
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+input:focus, select:focus, textarea:focus{
+  border-color: rgba(37,99,235,0.55);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.helptext, .form-text{ color: var(--muted); font-size: 13px; }
+.errorlist{ margin: 10px 0; padding: 0; list-style: none; }
+.errorlist li{
+  background: rgba(220,38,38,0.08);
+  border: 1px solid rgba(220,38,38,0.25);
+  color: #991b1b;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+/* Messages */
+.messages{ margin: 0 0 14px; padding: 0; list-style: none; }
+.messages li{
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(37,99,235,0.06);
+  color: var(--text);
+}
+
+/* Cards */
+.card{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  margin: 14px 0;
+}
+.card-header{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Tables */
+table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+th, td{ padding: 12px; border-bottom: 1px solid var(--border); text-align: left; }
+th{
+  font-size: 13px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(15,23,42,0.03);
+}
+tr:last-child td{ border-bottom: none; }
+
+/* Utilities */
+.divider{ height:1px; background: var(--border); margin: 18px 0; }
+.small{ font-size: 13px; color: var(--muted); }
+
+/* Responsive */
+@media (max-width: 640px){
+  .panel{ padding: 14px; }
+  h1{ font-size: 24px; }
+}
+
+/* =========================================================
+   AUTH PAGES (login/signup/password reset)  ✅ like your example
+   IMPORTANT: body must have class "auth-page"
+========================================================= */
+
+/* Remove big white panel behind the centered auth card */
+.auth-page .panel{
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Make container full width (so no huge white block) */
+.auth-page .container{
+  max-width: 100%;
+  margin: 36px auto;
+}
+
+/* The centered white auth card */
+.auth-page .form-card,
+.auth-page .form-shell,
+.auth-page .auth-wrap{
+  max-width: var(--auth-card-width);
+  margin: 0 auto;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* Field rows (Django form.as_p uses <p>) */
+.auth-page .form-card form p,
+.auth-page .form-shell form p,
+.auth-page .auth-wrap form p{
+  max-width: var(--auth-field-width);
+  margin: 0 auto 14px;
+}
+
+/* Labels and help text align within field width */
+.auth-page label,
+.auth-page .helptext,
+.auth-page .form-text,
+.auth-page .errorlist{
+  max-width: var(--auth-field-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Inputs match the narrow width */
+.auth-page input,
+.auth-page select,
+.auth-page textarea{
+  width: 100%;
+}
+
+/* Submit button same narrow width */
+.auth-page button[type="submit"]{
+  width: 100%;
+  max-width: var(--auth-field-width);
+  margin: 14px auto 0;
+  display: block;
+}
+
+/* Links under form */
+.form-links,
+.form-actions{
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* Optional: make forgot link look like a small pill button */
+.form-links a.btn,
+.form-actions a.btn{
+  width: 100%;
+  max-width: var(--auth-field-width);
+  display: inline-flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* Mobile */
+@media (max-width: 420px){
+  :root{
+    --auth-card-width: 100%;
+    --auth-field-width: 100%;
+  }
+  .auth-page .container{ margin: 18px auto; }
+  .auth-page .form-card,
+  .auth-page .form-shell,
+  .auth-page .auth-wrap{
+    margin: 0 10px;
+    padding: 18px;
+  }
+}

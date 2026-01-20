@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Create Exam</h1>
+
+<form method="post">
+  {% csrf_token %}
+  <p>
+    <label>Title</label><br>
+    <input type="text" name="title" required>
+  </p>
+
+  <p>
+    <label>Duration (minutes)</label><br>
+    <input type="number" name="duration_minutes" value="30" min="1">
+  </p>
+
+  <button type="submit">Save</button>
+</form>
+{% endblock %}
