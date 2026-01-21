@@ -1,13 +1,5 @@
-# Python
+venv/
 __pycache__/
 *.pyc
-
-# Virtual environment
-venv/
-
-# Database
 db.sqlite3
-
-# OS
-.DS_Store
-Thumbs.db
+.env
