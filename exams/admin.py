@@ -1,11 +1,10 @@
 from django.contrib import admin
-
 from .models import (
     Answer,
     Attempt,
     Choice,
     Exam,
-    ExamResitPermission,   # ✅ add
+    ExamResitPermission,
     Question,
     TeacherProfile,
 )
