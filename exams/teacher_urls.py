@@ -56,4 +56,6 @@ urlpatterns = [
         tv.question_delete,
         name="teacher_question_delete",
     ),
+    path("exam/<int:exam_id>/resits/", tv.manage_resits, name="teacher_manage_resits"),
+    path("exam/<int:exam_id>/resits/<int:user_id>/set/", tv.set_resit, name="teacher_set_resit"),
 ]

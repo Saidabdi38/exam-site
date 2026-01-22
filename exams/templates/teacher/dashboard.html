@@ -6,24 +6,49 @@
       {% csrf_token %}
       <button type="submit">Logout</button>
     </form>
-  </div>
+</div>
 
-  <p><a href="{% url 'teacher_exam_create' %}">+ Create new exam</a></p>
+<p>
+  <a class="btn btn-primary" href="{% url 'teacher_exam_create' %}">
+    + Create new exam
+  </a>
+</p>
 
-  <hr>
+<hr>
 
-  {% for exam in exams %}
-    <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
-      <h3>{{ exam.title }}</h3>
-      <p>
-        Duration: {{ exam.duration_minutes }} minutes |
-        Published: <strong>{{ exam.is_published }}</strong>
-      </p>
-      <a href="{% url 'teacher_exam_detail' exam.id %}">Manage</a> |
-      <a href="{% url 'teacher_exam_edit' exam.id %}">Edit</a> |
-      <a href="{% url 'teacher_exam_delete' exam.id %}">Delete</a>
+{% for exam in exams %}
+  <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+    <h3>{{ exam.title }}</h3>
+
+    <p>
+      Duration: {{ exam.duration_minutes }} minutes |
+      Published: <strong>{{ exam.is_published }}</strong>
+    </p>
+
+    <div style="margin-top:8px;">
+      <a class="btn btn-sm btn-info"
+         href="{% url 'teacher_exam_detail' exam.id %}">
+         Manage
+      </a>
+
+      <a class="btn btn-sm btn-warning"
+         href="{% url 'teacher_exam_edit' exam.id %}">
+         Edit
+      </a>
+
+      <a class="btn btn-sm btn-danger"
+         href="{% url 'teacher_exam_delete' exam.id %}">
+         Delete
+      </a>
+
+      <!-- ✅ NEW: Resits button -->
+      <a class="btn btn-sm btn-secondary"
+         href="{% url 'teacher_manage_resits' exam.id %}">
+         Resits
+      </a>
     </div>
-  {% empty %}
-    <p>No exams yet.</p>
-  {% endfor %}
+  </div>
+{% empty %}
+  <p>No exams yet.</p>
+{% endfor %}
 {% endblock %}

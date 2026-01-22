@@ -21,4 +21,5 @@ urlpatterns = [
 
     # Teacher
     path("teacher/dashboard/", views.teacher_dashboard, name="teacher_dashboard"),
+     path("teacher/", include("exams.teacher_urls")),
 ]
