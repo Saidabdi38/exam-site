@@ -4,13 +4,10 @@ from django.utils import timezone
 
 
 class TeacherProfile(models.Model):
-    """Optional profile model for teachers.
-
-    We still use the "Teachers" Group for permissions, but this model gives you
-    a real "Teacher" record visible in Admin and easy to extend later
-    (phone, department, etc.).
     """
-
+    Optional profile model for teachers.
+    Permissions still come from Groups, but this makes a real teacher record.
+    """
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -65,19 +62,52 @@ class Choice(models.Model):
         return self.text
 
 
+class ExamResitPermission(models.Model):
+    """
+    Teacher-controlled resit.
+    extra_attempts = 0  -> total allowed attempts = 1
+    extra_attempts = 1  -> total allowed attempts = 2
+    extra_attempts = 2  -> total allowed attempts = 3
+    """
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="resit_permissions")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="resit_permissions")
+
+    extra_attempts = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("exam", "user")
+        indexes = [models.Index(fields=["exam", "user"])]
+
+    @property
+    def allowed_attempts(self):
+        return 1 + self.extra_attempts
+
+    def __str__(self):
+        return f"{self.user} - {self.exam} (allowed={self.allowed_attempts})"
+
+
 class Attempt(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="attempts")
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="attempts")
+
+    attempt_no = models.PositiveIntegerField(default=1)
+
     started_at = models.DateTimeField(default=timezone.now)
     submitted_at = models.DateTimeField(null=True, blank=True)
 
     duration_seconds = models.PositiveIntegerField(default=0)
-
     score = models.IntegerField(default=0)
     max_score = models.IntegerField(default=0)
 
     class Meta:
-        unique_together = ("user", "exam")
+        ordering = ["-started_at"]
+        unique_together = ("user", "exam", "attempt_no")
+        indexes = [
+            models.Index(fields=["user", "exam"]),
+            models.Index(fields=["exam"]),
+            models.Index(fields=["submitted_at"]),
+        ]
 
     @property
     def is_submitted(self):
@@ -90,6 +120,9 @@ class Attempt(models.Model):
         left = self.duration_seconds - int(elapsed)
         return max(0, left)
 
+    def __str__(self):
+        return f"{self.user} - {self.exam} (Attempt {self.attempt_no})"
+
 
 class Answer(models.Model):
     attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name="answers")
@@ -98,3 +131,7 @@ class Answer(models.Model):
 
     class Meta:
         unique_together = ("attempt", "question")
+        indexes = [models.Index(fields=["attempt", "question"])]
+
+    def __str__(self):
+        return f"{self.attempt} - Q{self.question_id}"

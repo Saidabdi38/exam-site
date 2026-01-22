@@ -1,17 +1,40 @@
 {% extends "base.html" %}
 
-{% block title %}Student Dashboard{% endblock %}
+{% block title %}Exam List{% endblock %}
 
 {% block content %}
-<h1>Available Exams</h1>
 
-{% if exams %}
-    <ul>
-        {% for exam in exams %}
-            <li>{{ exam.title }}</li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No published exams yet.</p>
-{% endif %}
+<h1>Exam List</h1>
+<p class="small">All published exams</p>
+
+{% for row in rows %}
+  <div class="card">
+
+    <h3>{{ row.exam.title }}</h3>
+
+    {% if row.exam.description %}
+      <p>{{ row.exam.description }}</p>
+    {% endif %}
+
+    <div class="meta">
+      <span>Duration: {{ row.exam.duration_minutes }} minutes</span>
+      {% if row.attempt %}
+        <span>Attempt #: {{ row.attempt.attempt_no }}</span>
+      {% endif %}
+    </div>
+
+    <div class="divider"></div>
+
+    <p>Status: <strong>{{ row.status }}</strong></p>
+
+    <a class="btn btn-primary"
+       href="{% url row.action.url_name row.action.arg %}">
+      {{ row.action.label }}
+    </a>
+
+  </div>
+{% empty %}
+  <p>No published exams yet.</p>
+{% endfor %}
+
 {% endblock %}
