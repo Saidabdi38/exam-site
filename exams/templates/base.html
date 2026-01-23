@@ -22,7 +22,7 @@
       {% if user.is_staff %}
         <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
       {% endif %}
-      <a class="navlink" href="{% url 'exam_prices' %}">Prices</a>
+      <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
     {% else %}
       <a class="navlink" href="{% url 'home' %}">Home</a>
       <a class="navlink" href="{% url 'exam_prices' %}">Exams</a> 
