@@ -34,6 +34,9 @@
     <p>
       Status:
       <strong>{{ row.status }}</strong>
+      {% if row.remaining_attempts %}
+      ({{ row.remaining_attempts }} attempt{% if row.remaining_attempts > 1 %}s{% endif %} left)
+      {% endif %}
     </p>
 
     <div class="row">

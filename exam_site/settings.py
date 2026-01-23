@@ -17,7 +17,7 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["saidabdi38.pythonanywhere.com"]
 
-# ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [

@@ -61,18 +61,17 @@ class Choice(models.Model):
     def __str__(self):
         return self.text
 
-
 class ExamResitPermission(models.Model):
     """
-    Teacher-controlled resit.
+    Teacher-controlled resit and visibility.
     extra_attempts = 0  -> total allowed attempts = 1
-    extra_attempts = 1  -> total allowed attempts = 2
-    extra_attempts = 2  -> total allowed attempts = 3
+    can_view = True     -> student can see the exam
     """
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="resit_permissions")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="resit_permissions")
 
     extra_attempts = models.PositiveIntegerField(default=0)
+    can_view = models.BooleanField(default=True)  # ✅ new field
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -84,8 +83,7 @@ class ExamResitPermission(models.Model):
         return 1 + self.extra_attempts
 
     def __str__(self):
-        return f"{self.user} - {self.exam} (allowed={self.allowed_attempts})"
-
+        return f"{self.user} - {self.exam} (allowed={self.allowed_attempts}, visible={self.can_view})"
 
 class Attempt(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="attempts")

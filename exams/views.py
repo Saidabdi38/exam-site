@@ -78,20 +78,19 @@ def teacher_dashboard(request):
     return render(request, "teacher/dashboard.html", {"exams": exams})
 
 
-# -----------------------------
-# Student dashboard
-# -----------------------------
 @login_required
 def student_dashboard(request):
-    exams = Exam.objects.filter(is_published=True).order_by("-created_at")
+    user = request.user
 
-    # latest attempt per exam (by attempt_no)
-    attempts = (
-        Attempt.objects.filter(user=request.user)
-        .select_related("exam")
-        .order_by("-attempt_no", "-started_at")
-    )
+    # Only exams teacher allowed this student to see
+    exams = Exam.objects.filter(
+        is_published=True,
+        resit_permissions__user=user,
+        resit_permissions__can_view=True
+    ).distinct().order_by("-created_at")
 
+    # Latest attempt per exam
+    attempts = Attempt.objects.filter(user=user).select_related("exam").order_by("-attempt_no", "-started_at")
     latest_by_exam_id = {}
     for a in attempts:
         if a.exam_id not in latest_by_exam_id:
@@ -101,8 +100,10 @@ def student_dashboard(request):
     for exam in exams:
         latest = latest_by_exam_id.get(exam.id)
 
-        allowed = get_allowed_attempts(request.user, exam)
-        used = Attempt.objects.filter(user=request.user, exam=exam).count()
+        # Teacher allowed attempts
+        perm = ExamResitPermission.objects.filter(exam=exam, user=user).first()
+        allowed = perm.allowed_attempts if perm else 1
+        used = Attempt.objects.filter(user=user, exam=exam).count()
         remaining = max(0, allowed - used)
 
         if latest is None:
@@ -116,34 +117,27 @@ def student_dashboard(request):
         else:
             status = f"Submitted ({latest.score}/{latest.max_score})"
             if remaining > 0:
-                # student can start another attempt, but only if teacher allowed (or still within allowance)
                 action = {"label": f"Re-sit ({remaining} left)", "url_name": "start_exam", "arg": exam.id}
             else:
                 action = {"label": "View Result", "url_name": "exam_result", "arg": latest.id}
 
-        rows.append(
-            {
-                "exam": exam,
-                "attempt": latest,
-                "status": status,
-                "action": action,
-                "allowed_attempts": allowed,
-                "used_attempts": used,
-                "remaining_attempts": remaining,
-            }
-        )
+        rows.append({
+            "exam": exam,
+            "attempt": latest,
+            "status": status,
+            "action": action,
+            "allowed_attempts": allowed,
+            "used_attempts": used,
+            "remaining_attempts": remaining,
+        })
 
-    recent_results = (
-        attempts.filter(submitted_at__isnull=False)
-        .order_by("-submitted_at")[:10]
-    )
+    recent_results = attempts.filter(submitted_at__isnull=False).order_by("-submitted_at")[:10]
 
     return render(
         request,
         "students/dashboard.html",
         {"rows": rows, "recent_results": recent_results},
     )
-
 
 # -----------------------------
 # Exam flow (resit-aware)
@@ -252,3 +246,38 @@ def exam_result(request, attempt_id):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
     answers = attempt.answers.select_related("question", "selected_choice").all()
     return render(request, "exams/result.html", {"attempt": attempt, "answers": answers})
+
+@login_required
+def student_exams(request):
+    user = request.user
+
+    # Get exams the student is allowed to see
+    exams = Exam.objects.filter(
+        examresitpermission__user=user,
+        examresitpermission__can_view=True
+    ).distinct().order_by('-created_at')
+
+    rows = []
+    for exam in exams:
+        # Check if the student has already attempted this exam
+        attempt = Attempt.objects.filter(user=user, exam=exam).order_by('-attempt_no').first()
+
+        if attempt:
+            status = "Submitted" if attempt.is_submitted else "In Progress"
+            action = {"url_name": "take_exam", "label": "Continue Exam", "arg": exam.id} if not attempt.is_submitted else {"url_name": "view_exam_result", "label": "View Result", "arg": attempt.id}
+        else:
+            status = "Not Started"
+            action = {"url_name": "take_exam", "label": "Start Exam", "arg": exam.id}
+
+        rows.append({
+            "exam": exam,
+            "attempt": attempt,
+            "status": status,
+            "action": action,
+        })
+
+    # Optional: recent results
+    recent_results = Attempt.objects.filter(user=user, submitted_at__isnull=False).order_by('-submitted_at')[:5]
+
+    return render(request, "student/dashboard.html", {"rows": rows, "recent_results": recent_results})
+

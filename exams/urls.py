@@ -9,6 +9,8 @@ urlpatterns = [
 
     # Student
     path("dashboard/", views.student_dashboard, name="student_dashboard"),
+    path("student/exams/", views.student_exams, name="student_exams"),
+    path("my-exams/", views.student_exams, name="student_exams"),
 
     # Exams
     path("exams/", views.exam_list, name="exam_list"),

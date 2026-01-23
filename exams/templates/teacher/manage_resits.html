@@ -1,51 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Manage Resits{% endblock %}
+{% block title %}Manage Exam Resits{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Manage Exam Resits</h2>
-  <p class="small">
-    Exam: <strong>{{ exam.title }}</strong>
-  </p>
-
+  <h2>Manage Exam Resits & Visibility</h2>
+  <p class="small">Exam: <strong>{{ exam.title }}</strong></p>
   <div class="divider"></div>
 
   {% if rows %}
     {% for r in rows %}
       <div class="card" style="margin:12px 0;">
         <div class="row" style="justify-content: space-between; align-items: center;">
-          
+
           <div>
             <strong>{{ r.student.username }}</strong><br>
             <span class="small">
-              Current Allowed Attempts: <strong>{{ r.allowed }}</strong>
+              Allowed Attempts: <strong>{{ r.allowed }}</strong>
             </span>
           </div>
 
           <form method="post" action="{% url 'teacher_set_resit' exam.id r.student.id %}" class="row" style="gap:10px;">
             {% csrf_token %}
-            
+
             <label>
               Extra Attempts:
-              <input 
-                type="number" 
-                name="extra_attempts" 
-                value="{{ r.extra }}" 
-                min="0" 
-                style="max-width:100px;"
-              >
+              <input type="number" name="extra_attempts" value="{{ r.extra }}" min="0" style="max-width:100px;">
             </label>
 
-            <button class="btn btn-primary" type="submit">
-              Save
-            </button>
+            <label>
+              Can View:
+              <input type="checkbox" name="can_view" {% if r.can_view %}checked{% endif %}>
+            </label>
+
+            <button class="btn btn-primary" type="submit">Save</button>
           </form>
 
         </div>
       </div>
     {% endfor %}
   {% else %}
-    <p>No students have attempts yet.</p>
+    <p>No students found.</p>
   {% endif %}
 </div>
 {% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}My Exams{% endblock %}
+
+{% block content %}
+<h2>My Exams</h2>
+
+{% if exams %}
+  <ul>
+    {% for exam in exams %}
+      <li>
+        <strong>{{ exam.title }}</strong>
+        - Duration: {{ exam.duration_minutes }} min
+        {% if exam.is_published %}(Published){% else %}(Unpublished){% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No exams available.</p>
+{% endif %}
+{% endblock %}
