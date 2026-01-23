@@ -1,11 +1,16 @@
 # exams/teacher_views.py (FULL UPDATED: CRUD + attempts + resits)
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import ModelForm, inlineformset_factory
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Count
+
+
+def is_teacher(user):
+    return use
 
 from .models import Answer, Attempt, Choice, Exam, ExamResitPermission, Question
 
@@ -202,28 +207,35 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
 
 # ---------- RESITS (Teacher-controlled) ----------
 @teacher_required
-def manage_resits(request, exam_id: int):
-    """
-    Teacher sets extra_attempts per student for THIS exam.
-    Ownership enforced (teacher can only manage their exams).
-    """
+def manage_resits(request, exam_id):
     exam = _get_owned_exam_or_404(request, exam_id)
 
-    # Students = non-staff and not superuser (simple rule)
-    students = User.objects.filter(is_staff=False, is_superuser=False).order_by("username")
+    students = (
+        User.objects.filter(attempt__exam=exam)
+        .distinct()
+        .annotate(attempts=Count("attempt"))
+        .order_by("username")
+    )
 
-    perms = ExamResitPermission.objects.filter(exam=exam).select_related("user")
+    perms = ExamResitPermission.objects.filter(exam=exam)
     perm_by_user_id = {p.user_id: p for p in perms}
 
     rows = []
     for s in students:
         p = perm_by_user_id.get(s.id)
         extra = p.extra_attempts if p else 0
-        allowed = p.allowed_attempts if p else 1
-        rows.append({"student": s, "extra": extra, "allowed": allowed})
+        allowed = (p.allowed_attempts if p else 1)
+        rows.append({
+            "student": s,
+            "extra": extra,
+            "allowed": allowed,
+            "attempts": s.attempts,
+        })
 
-    return render(request, "teacher/manage_resits.html", {"exam": exam, "rows": rows})
-
+    return render(request, "teacher/manage_resits.html", {
+        "exam": exam,
+        "rows": rows
+    })
 
 @teacher_required
 @transaction.atomic
@@ -243,5 +255,17 @@ def set_resit(request, exam_id: int, user_id: int):
         perm, _ = ExamResitPermission.objects.get_or_create(exam=exam, user=student)
         perm.extra_attempts = extra_attempts
         perm.save()
+
+    return redirect("teacher_manage_resits", exam_id=exam.id)
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_add_attempt(request, exam_id, user_id):
+    exam = get_object_or_404(Exam, id=exam_id)
+    user = get_object_or_404(User, id=user_id)
+
+    perm, _ = ExamResitPermission.objects.get_or_create(exam=exam, user=user)
+    perm.extra_attempts += 1
+    perm.save()
 
     return redirect("teacher_manage_resits", exam_id=exam.id)

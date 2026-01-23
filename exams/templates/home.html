@@ -4,7 +4,7 @@
 
 {% block content %}
   <h1>Welcome to Exam Site</h1>
-  <p>This page is public (no login required).</p>
+  <p>This site is where students can perform exam attempts to boost their performance.</p>
 
   {% if user.is_authenticated %}
     <p><a href="{% url 'student_dashboard' %}">Go to Dashboard</a></p>
