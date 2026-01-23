@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Manage Exam Resits{% endblock %}
+{% block title %}Manage Exam Visibility{% endblock %}
 
 {% block content %}
 <div class="card">
-  <h2>Manage Exam Resits</h2>
+  <h2>Manage Exam Visibility</h2>
   <p class="small">Exam: <strong>{{ exam.title }}</strong></p>
   <div class="divider"></div>
 
@@ -12,17 +12,15 @@
       <div class="card" style="margin:12px 0;">
         <div class="row" style="justify-content: space-between; align-items: center; gap:10px;">
           <div>
-            <strong>{{ r.student.username }}</strong><br>
-            <span class="small">Allowed Attempts: <strong>{{ r.allowed }}</strong></span>
+            <strong>{{ r.student.username }}</strong>
           </div>
 
-          <form method="post" action="{% url 'teacher_set_resit' exam.id r.student.id %}">
+          <form method="post" action="{% url 'teacher_set_view_permission' exam.id r.student.id %}">
             {% csrf_token %}
             <label>
-              Extra Attempts:
-              <input type="number" name="extra_attempts" value="{{ r.extra }}" min="0" style="max-width:80px;">
+              Can View:
+              <input type="checkbox" name="can_view" {% if r.can_view %}checked{% endif %} onchange="this.form.submit()">
             </label>
-            <button class="btn btn-primary" type="submit">Save</button>
           </form>
         </div>
       </div>

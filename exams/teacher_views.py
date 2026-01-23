@@ -206,17 +206,14 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
     return render(request, "teacher/attempt_detail.html", {"exam": exam, "attempt": attempt, "rows": rows})
 
 @teacher_required
-def manage_resits(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-
-    # Get all students (or only students enrolled in your system)
+def manage_resits(request, exam_id: int):
+    """Page where teachers can give extra attempts (resits) to students."""
+    exam = _get_owned_exam_or_404(request, exam_id)
     students = User.objects.order_by("username")
 
-    # Current permissions
-    perms = ExamResitPermission.objects.filter(exam=exam).select_related("user")
+    perms = ExamResitPermission.objects.filter(exam=exam)
     perms_by_user_id = {p.user_id: p for p in perms}
 
-    # Prepare rows for template
     rows = []
     for student in students:
         perm = perms_by_user_id.get(student.id)
@@ -224,31 +221,14 @@ def manage_resits(request, exam_id):
             "student": student,
             "extra": perm.extra_attempts if perm else 0,
             "allowed": perm.allowed_attempts if perm else 1,
-            "can_view": perm.can_view if perm else False,
         })
 
     return render(request, "teacher/manage_resits.html", {"exam": exam, "rows": rows})
 
 @teacher_required
 @transaction.atomic
-def teacher_set_resit(request, exam_id, user_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    student = get_object_or_404(User, id=user_id)
-
-    if request.method == "POST":
-        extra_attempts = max(0, int(request.POST.get("extra_attempts", 0)))
-        can_view = request.POST.get("can_view") == "on"
-
-        perm, _ = ExamResitPermission.objects.get_or_create(exam=exam, user=student)
-        perm.extra_attempts = extra_attempts
-        perm.can_view = can_view
-        perm.save()
-
-    return redirect("teacher_manage_resits", exam_id=exam.id)
-
-@teacher_required
-@transaction.atomic
-def set_resit(request, exam_id: int, user_id: int):
+def teacher_set_resit(request, exam_id: int, user_id: int):
+    """Set extra attempts for a student (resits)"""
     exam = _get_owned_exam_or_404(request, exam_id)
     student = get_object_or_404(User, id=user_id)
 
@@ -257,9 +237,7 @@ def set_resit(request, exam_id: int, user_id: int):
             extra_attempts = int(request.POST.get("extra_attempts", "0"))
         except ValueError:
             extra_attempts = 0
-
-        if extra_attempts < 0:
-            extra_attempts = 0
+        extra_attempts = max(extra_attempts, 0)
 
         perm, _ = ExamResitPermission.objects.get_or_create(exam=exam, user=student)
         perm.extra_attempts = extra_attempts
@@ -278,3 +256,37 @@ def teacher_add_attempt(request, exam_id, user_id):
     perm.save()
 
     return redirect("teacher_manage_resits", exam_id=exam.id)
+
+@teacher_required
+def manage_view_permissions(request, exam_id: int):
+    """Page where teachers can allow students to view exam results."""
+    exam = _get_owned_exam_or_404(request, exam_id)
+    students = User.objects.order_by("username")
+
+    perms = ExamResitPermission.objects.filter(exam=exam)
+    perms_by_user_id = {p.user_id: p for p in perms}
+
+    rows = []
+    for student in students:
+        perm = perms_by_user_id.get(student.id)
+        rows.append({
+            "student": student,
+            "can_view": perm.can_view if perm else False,
+        })
+
+    return render(request, "teacher/manage_view_permissions.html", {"exam": exam, "rows": rows})
+
+@teacher_required
+@transaction.atomic
+def set_view_permission(request, exam_id: int, user_id: int):
+    """Set can_view permission for a student."""
+    exam = _get_owned_exam_or_404(request, exam_id)
+    student = get_object_or_404(User, id=user_id)
+
+    if request.method == "POST":
+        can_view = request.POST.get("can_view") == "on"
+        perm, _ = ExamResitPermission.objects.get_or_create(exam=exam, user=student)
+        perm.can_view = can_view
+        perm.save()
+
+    return redirect("teacher_manage_view_permissions", exam_id=exam.id)

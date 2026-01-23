@@ -357,3 +357,23 @@ tr:last-child td{ border-bottom: none; }
     padding: 18px;
   }
 }
+
+/* =========================
+   Buttons (additional updates)
+========================= */
+
+/* Small buttons (like btn-sm) */
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+/* Info button (like Bootstrap info) */
+.btn-info {
+  background: linear-gradient(135deg, #0ea5e9, #3b82f6); /* blue gradient */
+  color: white;
+  box-shadow: 0 8px 16px rgba(14,165,233,0.22);
+}
+.btn-info:hover {
+  background: linear-gradient(135deg, #0284c7, #2563eb); /* darker on hover */
+}

@@ -1,5 +1,5 @@
 from django.urls import path
-from . import teacher_views as tv
+from . import teacher_views as tv  # keep alias consistent
 
 urlpatterns = [
     # Dashboard
@@ -22,5 +22,9 @@ urlpatterns = [
 
     # RESITS
     path("teacher/exams/<int:exam_id>/resits/", tv.manage_resits, name="teacher_manage_resits"),
-    path("teacher/exams/<int:exam_id>/resits/<int:user_id>/set/", tv.set_resit, name="teacher_set_resit"),
+    path("teacher/exams/<int:exam_id>/resits/<int:user_id>/set/", tv.teacher_set_resit, name="teacher_set_resit"),
+    
+    # VIEW PERMISSIONS
+    path("teacher/exams/<int:exam_id>/view-permissions/", tv.manage_view_permissions, name="teacher_manage_view_permissions"),
+    path("teacher/exams/<int:exam_id>/view-permissions/<int:user_id>/set/", tv.set_view_permission, name="teacher_set_view_permission"),
 ]
