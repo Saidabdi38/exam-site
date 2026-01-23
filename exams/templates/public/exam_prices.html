@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Exam Prices{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>📚 Exam Pricing</h1>
+    <p>Choose an exam and start learning today.</p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:20px;">
+
+        {% for exam in exams %}
+        <div class="card">
+            <h3>{{ exam.title }}</h3>
+
+            <p>{{ exam.description|truncatewords:20 }}</p>
+
+            <h2 style="margin:10px 0; color:var(--primary);">
+                ${{ exam.price }}
+            </h2>
+
+            {% if user.is_authenticated %}
+                <!-- Logged in user -->
+                <a href="{% url 'start_exam' exam.id %}" class="btn btn-primary">
+                    Start Exam
+                </a>
+            {% else %}
+                <!-- New visitor -->
+                <a href="{% url 'login' %}?next={% url 'start_exam' exam.id %}" class="btn btn-primary">
+                    Login to Start
+                </a>
+
+                <a href="{% url 'signup' %}?next={% url 'start_exam' exam.id %}" class="btn btn-secondary" style="margin-left:6px;">
+                    Sign Up
+                </a>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p>No exams available.</p>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

@@ -74,21 +74,31 @@ nav{
   background: rgba(255,255,255,0.75);
   border-bottom: 1px solid var(--border);
 }
-.navbar{
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+
+.navbar {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;      /* Prevent wrapping */
+    gap: 12px;
 }
-.nav-left, .nav-right{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+
+.nav-left,
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;      /* Prevent wrapping of links */
 }
+
+.nav-right > * {
+    white-space: nowrap;  /* Prevent buttons from breaking */
+}
+
+
 .brand{
   display: inline-flex;
   align-items: center;

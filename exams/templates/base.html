@@ -11,22 +11,23 @@
 <body class="{% block body_class %}{% endblock %}">
 
 <nav>
-  <div class="navbar">
-    <div class="nav-left">
-      <a class="brand" href="{% url 'home' %}">
-        <span class="brand-dot"></span>
-        ExamSite
-      </a>
+  <div class="nav-left">
+    <a class="brand" href="{% url 'home' %}">
+      <span class="brand-dot"></span>
+      ExamSite
+    </a>
 
-      {% if user.is_authenticated %}
-        <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
-        {% if user.is_staff %}
-          <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
-        {% endif %}
-      {% else %}
-        <a class="navlink" href="{% url 'home' %}">Home</a>
+    {% if user.is_authenticated %}
+      <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
+      {% if user.is_staff %}
+        <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
       {% endif %}
-    </div>
+      <a class="navlink" href="{% url 'exam_prices' %}">Prices</a>
+    {% else %}
+      <a class="navlink" href="{% url 'home' %}">Home</a>
+      <a class="navlink" href="{% url 'exam_prices' %}">Exams</a> 
+    {% endif %}
+  </div>
 
     <div class="nav-right">
       {% if user.is_authenticated %}

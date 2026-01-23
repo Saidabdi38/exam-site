@@ -41,12 +41,21 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "title", "created_by", "duration_minutes",
-        "is_published", "created_at", "resits_link"
+        "id",
+        "title",
+        "price",  # ✅ SHOW PRICE
+        "created_by",
+        "duration_minutes",
+        "is_published",
+        "created_at",
+        "resits_link",
     )
     list_filter = ("is_published", "created_at")
     search_fields = ("title", "description", "created_by__username")
     inlines = [ExamResitPermissionInline]
+
+    # Show price editable in list view (optional)
+    list_editable = ("price", "is_published")
 
     def resits_link(self, obj):
         """Add a Manage Resits button for each exam"""

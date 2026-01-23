@@ -1,21 +1,30 @@
 {% extends "base.html" %}
-
-{% block title %}My Exams{% endblock %}
-
 {% block content %}
-<h2>My Exams</h2>
 
-{% if exams %}
-  <ul>
-    {% for exam in exams %}
-      <li>
-        <strong>{{ exam.title }}</strong>
-        - Duration: {{ exam.duration_minutes }} min
-        {% if exam.is_published %}(Published){% else %}(Unpublished){% endif %}
-      </li>
-    {% endfor %}
-  </ul>
-{% else %}
-  <p>No exams available.</p>
-{% endif %}
+<h1>Available Exams</h1>
+
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px;">
+
+{% for exam in exams %}
+<div class="card" style="text-align:center; padding:20px;">
+    
+    <h2>{{ exam.title }}</h2>
+    <p class="small">{{ exam.description }}</p>
+
+    <p>⏱ {{ exam.duration_minutes }} minutes</p>
+
+    <div style="font-size:28px; font-weight:bold; color:#2563eb;">
+        ${{ exam.price }}
+    </div>
+
+    <div style="margin-top:10px;">
+        <a class="btn btn-primary"
+           href="{% url 'login' %}?next={% url 'start_exam' exam.id %}">
+           Select Exam
+        </a>
+    </div>
+</div>
+{% endfor %}
+
+</div>
 {% endblock %}

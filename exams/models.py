@@ -31,6 +31,7 @@ class Exam(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     duration_minutes = models.PositiveIntegerField(default=30)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

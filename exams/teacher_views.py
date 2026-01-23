@@ -50,8 +50,7 @@ def _get_owned_exam_or_404(request, exam_id: int) -> Exam:
 class ExamForm(ModelForm):
     class Meta:
         model = Exam
-        fields = ["title", "description", "duration_minutes", "is_published"]
-
+        fields = ["title", "description", "duration_minutes", "is_published", "price"]
 
 class QuestionForm(ModelForm):
     class Meta:

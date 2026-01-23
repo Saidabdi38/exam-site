@@ -281,3 +281,6 @@ def student_exams(request):
 
     return render(request, "student/dashboard.html", {"rows": rows, "recent_results": recent_results})
 
+def exam_prices(request):
+    exams = Exam.objects.filter(is_published=True)
+    return render(request, "public/exam_prices.html", {"exams": exams})
