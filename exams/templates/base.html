@@ -58,5 +58,31 @@
   </div>
 </div>
 
+<footer class="site-footer">
+  <div class="footer-container">
+    
+    <div>
+      <h3>ExamSite</h3>
+      <p>Online exam platform for students and teachers.</p>
+    </div>
+
+    <div>
+      <h4>Quick Links</h4>
+      <a href="{% url 'home' %}">Home</a><br>
+      <a href="{% url 'exam_prices' %}">Prices</a><br>
+      <a href="{% url 'login' %}">Login</a><br>
+      <a href="{% url 'signup' %}">Sign Up</a>
+    </div>
+
+    <div>
+      <h4>Contact</h4>
+      <p>Mobile: +252906943838</p>
+      <p>Email: support@examsite.com</p>
+      <p>© {{ year|default:2026 }} ExamSite</p>
+    </div>
+
+  </div>
+</footer>
+
 </body>
 </html>

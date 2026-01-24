@@ -3,12 +3,28 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+
+<!-- HERO SECTION -->
+<section class="hero">
   <h1>Welcome to Exam Site</h1>
-  <p>This site is where students can perform exam attempts to boost their performance.</p>
+  <p>This site is where students can perform exams to boost their performance to a higher level.</p>
 
   {% if user.is_authenticated %}
-    <p><a href="{% url 'student_dashboard' %}">Go to Dashboard</a></p>
+    <a class="btn btn-primary" href="{% url 'student_dashboard' %}">Go to Dashboard</a>
   {% else %}
-    <p><a href="{% url 'login' %}">Login to start exams</a></p>
+    <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+    <a class="btn btn-secondary" href="{% url 'signup' %}">Create Account</a>
   {% endif %}
+</section>
+
+<div class="divider"></div>
+<div class="divider"></div>
+
+<!-- CALL TO ACTION -->
+<section class="cta">
+  <h2>Start Your Exam Journey Today</h2>
+  <p>Sign up and choose an exam that fits your goals.</p>
+  <a class="btn btn-primary" href="{% url 'exam_prices' %}">View Exams</a>
+</section>
+
 {% endblock %}

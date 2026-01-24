@@ -387,3 +387,74 @@ tr:last-child td{ border-bottom: none; }
 .btn-info:hover {
   background: linear-gradient(135deg, #0284c7, #2563eb); /* darker on hover */
 }
+
+/* ================= HOME PAGE SECTIONS ================= */
+
+.hero {
+  text-align: center;
+  padding: 40px 10px;
+}
+.hero h1 {
+  font-size: 36px;
+}
+.hero p {
+  max-width: 600px;
+  margin: 10px auto 20px;
+}
+
+/* Feature cards */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 18px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+/* Call to action */
+.cta {
+  text-align: center;
+  padding: 30px 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+}
+
+/* ================= FOOTER ================= */
+
+.site-footer {
+  margin-top: 40px;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 30px 0;
+}
+
+.footer-container {
+  max-width: var(--max);
+  margin: auto;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.site-footer h3, 
+.site-footer h4 {
+  color: white;
+}
+
+.site-footer a {
+  color: #93c5fd;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
