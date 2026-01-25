@@ -5,12 +5,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}Exam Site{% endblock %}</title>
+
+  <!-- Main CSS -->
   <link rel="stylesheet" href="{% static 'exams/css/style.css' %}">
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
 
+<!-- ================= NAVBAR ================= -->
 <nav>
+
+  <!-- LEFT NAV -->
   <div class="nav-left">
     <a class="brand" href="{% url 'home' %}">
       <span class="brand-dot"></span>
@@ -25,27 +30,56 @@
       <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
     {% else %}
       <a class="navlink" href="{% url 'home' %}">Home</a>
-      <a class="navlink" href="{% url 'exam_prices' %}">Exams</a> 
+      <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
     {% endif %}
   </div>
 
-    <div class="nav-right">
-      {% if user.is_authenticated %}
-        <span class="nav-user">Hi, {{ user.username }}</span>
-        <form method="post" action="{% url 'logout' %}" class="inline-form">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-secondary">Logout</button>
-        </form>
-      {% else %}
-        <a class="navlink" href="{% url 'login' %}">Login</a>
-        <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
-      {% endif %}
-    </div>
+  <!-- RIGHT NAV -->
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+      <span class="nav-user">Hi, {{ user.username }}</span>
+      <form method="post" action="{% url 'logout' %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Logout</button>
+      </form>
+    {% else %}
+      <a class="navlink" href="{% url 'login' %}">Login</a>
+      <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
+    {% endif %}
   </div>
+
+  <!-- MOBILE TOGGLE BUTTON -->
+  <button class="menu-toggle" id="menuToggle">☰</button>
+
 </nav>
 
+<!-- ================= MOBILE NAV LINKS ================= -->
+<div class="mobile-nav-links" id="mobileNav">
+
+  {% if user.is_authenticated %}
+    <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
+    {% if user.is_staff %}
+      <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
+    {% endif %}
+    <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
+    <span class="nav-user">Hi, {{ user.username }}</span>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary">Logout</button>
+    </form>
+  {% else %}
+    <a class="navlink" href="{% url 'home' %}">Home</a>
+    <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
+    <a class="navlink" href="{% url 'login' %}">Login</a>
+    <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
+  {% endif %}
+
+</div>
+
+<!-- ================= MAIN CONTENT ================= -->
 <div class="container">
   <div class="panel">
+
     {% if messages %}
       <ul class="messages">
         {% for message in messages %}
@@ -55,12 +89,14 @@
     {% endif %}
 
     {% block content %}{% endblock %}
+
   </div>
 </div>
 
+<!-- ================= FOOTER ================= -->
 <footer class="site-footer">
   <div class="footer-container">
-    
+
     <div>
       <h3>ExamSite</h3>
       <p>Online exam platform for students and teachers.</p>
@@ -68,9 +104,9 @@
 
     <div>
       <h4>Quick Links</h4>
-      <a href="{% url 'home' %}">Home</a><br>
-      <a href="{% url 'exam_prices' %}">Prices</a><br>
-      <a href="{% url 'login' %}">Login</a><br>
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'exam_prices' %}">Prices</a>
+      <a href="{% url 'login' %}">Login</a>
       <a href="{% url 'signup' %}">Sign Up</a>
     </div>
 
@@ -83,6 +119,33 @@
 
   </div>
 </footer>
+
+<!-- ================= MOBILE TOGGLE SCRIPT ================= -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const menuToggle = document.getElementById("menuToggle");
+  const mobileNav = document.getElementById("mobileNav");
+
+  // Toggle button click
+  menuToggle.addEventListener("click", () => {
+    mobileNav.classList.toggle("show");
+
+    if (mobileNav.classList.contains("show")) {
+      menuToggle.textContent = "✖";
+    } else {
+      menuToggle.textContent = "☰";
+    }
+  });
+
+  // ✅ Auto-close when switching to desktop view
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768) {
+      mobileNav.classList.remove("show");
+      menuToggle.textContent = "☰";
+    }
+  });
+});
+</script>
 
 </body>
 </html>

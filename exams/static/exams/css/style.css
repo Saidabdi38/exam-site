@@ -1,8 +1,8 @@
 /* =========================
    Exam Site UI Theme (v3.2)  ✅ CLEAN + COMPACT
-   - one source of truth (no duplicates)
+   - Single source of truth
    - Odoo-like centered auth card
-   ========================= */
+========================= */
 
 /* Reset */
 *, *::before, *::after { box-sizing: border-box; }
@@ -30,9 +30,9 @@ body { margin: 0; }
 
   --max: 1080px;
 
-  /* ✅ AUTH sizing (change only these 2) */
-  --auth-card-width: 360px;   /* white box width */
-  --auth-field-width: 280px;  /* label + input width */
+  /* Auth sizing */
+  --auth-card-width: 360px;
+  --auth-field-width: 280px;
 }
 
 /* Base typography */
@@ -65,62 +65,53 @@ h3{ font-size: 16px; }
   padding: 18px;
 }
 
-/* Navbar */
+/* =========================
+   NAVBAR
+========================= */
 nav{
   position: sticky;
   top: 0;
   z-index: 20;
   backdrop-filter: blur(10px);
-  background: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.95);
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
 }
 
-.navbar {
-    max-width: var(--max);
-    margin: 0 auto;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: nowrap;      /* Prevent wrapping */
-    gap: 12px;
-}
-
-.nav-left,
-.nav-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: nowrap;      /* Prevent wrapping of links */
-}
-
-.nav-right > * {
-    white-space: nowrap;  /* Prevent buttons from breaking */
-}
-
-
+/* Brand */
 .brand{
   display: inline-flex;
   align-items: center;
   gap: 10px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 20px;
   color: var(--text);
-  padding: 6px 10px;
-  border-radius: 999px;
+  text-decoration: none;
 }
 .brand-dot{
   width: 10px;
   height: 10px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--primary), #60a5fa);
-  box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
 }
+
+/* Navbar links */
+.nav-left,
+.nav-right{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
 .navlink{
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 6px 10px;
   border-radius: 999px;
   color: var(--text);
   border: 1px solid transparent;
@@ -130,13 +121,14 @@ nav{
   background: rgba(37,99,235,0.08);
   border-color: rgba(37,99,235,0.18);
 }
+
 .nav-user{
-  color: var(--muted);
   font-size: 14px;
   padding: 6px 10px;
   border-radius: 999px;
   background: rgba(15,23,42,0.04);
   border: 1px solid var(--border);
+  color: var(--muted);
 }
 
 /* Buttons */
@@ -154,10 +146,10 @@ button:active, .btn:active{ transform: translateY(1px); }
 .btn-primary{
   background: linear-gradient(135deg, var(--primary), #3b82f6);
   color: white;
-  box-shadow: 0 10px 18px rgba(37,99,235,0.22);
 }
-.btn-primary:hover{ background: linear-gradient(135deg, var(--primary-600), #2563eb); }
-
+.btn-primary:hover{
+  background: linear-gradient(135deg, var(--primary-600), #2563eb);
+}
 .btn-secondary{
   background: rgba(15,23,42,0.04);
   color: var(--text);
@@ -165,118 +157,48 @@ button:active, .btn:active{ transform: translateY(1px); }
 }
 .btn-secondary:hover{ background: rgba(15,23,42,0.06); }
 
-.btn-danger{
-  background: linear-gradient(135deg, var(--danger), #ef4444);
-  color: white;
-  box-shadow: 0 10px 18px rgba(220,38,38,0.18);
-}
-
-.btn-link{
-  background: transparent;
-  border-color: transparent;
-  color: var(--primary);
-  padding: 8px 10px;
-}
-.btn-link:hover{
-  background: rgba(37,99,235,0.08);
-  border-color: rgba(37,99,235,0.18);
-  text-decoration: none;
-}
-
-.inline-form{ display: inline; margin: 0; }
-
-/* Forms (global, not auth sizing) */
-form{ margin: 0; }
-label{ display: block; font-weight: 700; margin-bottom: 6px; color: var(--text); }
-input, select, textarea{
-  width: 100%;
-  padding: 11px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  outline: none;
-  transition: box-shadow .15s ease, border-color .15s ease;
-}
-input:focus, select:focus, textarea:focus{
-  border-color: rgba(37,99,235,0.55);
-  box-shadow: 0 0 0 4px var(--ring);
-}
-
-.helptext, .form-text{ color: var(--muted); font-size: 13px; }
-.errorlist{ margin: 10px 0; padding: 0; list-style: none; }
-.errorlist li{
-  background: rgba(220,38,38,0.08);
-  border: 1px solid rgba(220,38,38,0.25);
-  color: #991b1b;
-  padding: 10px 12px;
-  border-radius: 12px;
-  margin-bottom: 8px;
-}
-
-/* Messages */
-.messages{ margin: 0 0 14px; padding: 0; list-style: none; }
-.messages li{
-  padding: 12px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(37,99,235,0.06);
+/* =========================
+   MOBILE TOGGLE NAVBAR
+========================= */
+.menu-toggle{
+  display: none;
+  font-size: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
   color: var(--text);
 }
 
-/* Cards */
-.card{
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  padding: 16px;
-  margin: 14px 0;
-}
-.card-header{
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+/* Mobile nav container */
+.mobile-nav-links{
+  display: none;
+  flex-direction: column;
+  background: rgba(255,255,255,0.98);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
   gap: 12px;
-  margin-bottom: 10px;
 }
 
-/* Tables */
-table{
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-}
-th, td{ padding: 12px; border-bottom: 1px solid var(--border); text-align: left; }
-th{
-  font-size: 13px;
-  letter-spacing: .02em;
-  text-transform: uppercase;
-  color: var(--muted);
-  background: rgba(15,23,42,0.03);
-}
-tr:last-child td{ border-bottom: none; }
-
-/* Utilities */
-.divider{ height:1px; background: var(--border); margin: 18px 0; }
-.small{ font-size: 13px; color: var(--muted); }
-
-/* Responsive */
-@media (max-width: 640px){
-  .panel{ padding: 14px; }
-  h1{ font-size: 24px; }
+.mobile-nav-links a,
+.mobile-nav-links .nav-user,
+.mobile-nav-links form{
+  color: var(--text);
 }
 
-/* =========================================================
-   AUTH PAGES (login/signup/password reset)  ✅ like your example
-   IMPORTANT: body must have class "auth-page"
-========================================================= */
+/* Show mobile nav */
+.mobile-nav-links.show{
+  display: flex;
+}
 
-/* Remove big white panel behind the centered auth card */
+/* Responsive navbar */
+@media (max-width: 768px){
+  .nav-left, .nav-right{ display: none; }
+  .menu-toggle{ display: block; }
+}
+
+/* =========================
+   AUTH PAGES (login/signup)
+========================= */
 .auth-page .panel{
   background: transparent;
   border: none;
@@ -284,13 +206,11 @@ tr:last-child td{ border-bottom: none; }
   padding: 0;
 }
 
-/* Make container full width (so no huge white block) */
 .auth-page .container{
   max-width: 100%;
   margin: 36px auto;
 }
 
-/* The centered white auth card */
 .auth-page .form-card,
 .auth-page .form-shell,
 .auth-page .auth-wrap{
@@ -303,32 +223,22 @@ tr:last-child td{ border-bottom: none; }
   box-shadow: var(--shadow);
 }
 
-/* Field rows (Django form.as_p uses <p>) */
-.auth-page .form-card form p,
-.auth-page .form-shell form p,
-.auth-page .auth-wrap form p{
+/* Fields */
+.auth-page form p{
   max-width: var(--auth-field-width);
   margin: 0 auto 14px;
 }
-
-/* Labels and help text align within field width */
 .auth-page label,
 .auth-page .helptext,
-.auth-page .form-text,
 .auth-page .errorlist{
   max-width: var(--auth-field-width);
-  margin-left: auto;
-  margin-right: auto;
+  margin: auto;
 }
-
-/* Inputs match the narrow width */
 .auth-page input,
 .auth-page select,
 .auth-page textarea{
   width: 100%;
 }
-
-/* Submit button same narrow width */
 .auth-page button[type="submit"]{
   width: 100%;
   max-width: var(--auth-field-width);
@@ -336,30 +246,12 @@ tr:last-child td{ border-bottom: none; }
   display: block;
 }
 
-/* Links under form */
-.form-links,
-.form-actions{
-  text-align: center;
-  margin-top: 12px;
-}
-
-/* Optional: make forgot link look like a small pill button */
-.form-links a.btn,
-.form-actions a.btn{
-  width: 100%;
-  max-width: var(--auth-field-width);
-  display: inline-flex;
-  justify-content: center;
-  margin-top: 10px;
-}
-
-/* Mobile */
+/* Mobile auth */
 @media (max-width: 420px){
   :root{
     --auth-card-width: 100%;
     --auth-field-width: 100%;
   }
-  .auth-page .container{ margin: 18px auto; }
   .auth-page .form-card,
   .auth-page .form-shell,
   .auth-page .auth-wrap{
@@ -369,73 +261,75 @@ tr:last-child td{ border-bottom: none; }
 }
 
 /* =========================
-   Buttons (additional updates)
+   FORMS
 ========================= */
-
-/* Small buttons (like btn-sm) */
-.btn-sm {
-  padding: 6px 10px;
-  font-size: 13px;
+label{
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+input, select, textarea{
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+input:focus, select:focus, textarea:focus{
+  border-color: rgba(37,99,235,0.55);
+  box-shadow: 0 0 0 4px var(--ring);
 }
 
-/* Info button (like Bootstrap info) */
-.btn-info {
-  background: linear-gradient(135deg, #0ea5e9, #3b82f6); /* blue gradient */
-  color: white;
-  box-shadow: 0 8px 16px rgba(14,165,233,0.22);
-}
-.btn-info:hover {
-  background: linear-gradient(135deg, #0284c7, #2563eb); /* darker on hover */
+/* Messages */
+.messages li{
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(37,99,235,0.06);
 }
 
-/* ================= HOME PAGE SECTIONS ================= */
-
-.hero {
-  text-align: center;
-  padding: 40px 10px;
-}
-.hero h1 {
-  font-size: 36px;
-}
-.hero p {
-  max-width: 600px;
-  margin: 10px auto 20px;
-}
-
-/* Feature cards */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.feature-card {
+/* Cards */
+.card{
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 18px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  text-align: center;
+  padding: 16px;
 }
 
-/* Call to action */
-.cta {
-  text-align: center;
-  padding: 30px 10px;
-  background: var(--surface-2);
+/* Tables */
+table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: var(--surface);
 }
+th, td{
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+th{
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--muted);
+  background: rgba(15,23,42,0.03);
+}
+tr:last-child td{ border-bottom: none; }
 
-/* ================= FOOTER ================= */
-
-.site-footer {
+/* =========================
+   FOOTER
+========================= */
+.site-footer{
   margin-top: 40px;
   background: #0f172a;
   color: #e5e7eb;
   padding: 30px 0;
 }
-
-.footer-container {
+.footer-container{
   max-width: var(--max);
   margin: auto;
   padding: 0 16px;
@@ -443,18 +337,75 @@ tr:last-child td{ border-bottom: none; }
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 }
-
-.site-footer h3, 
-.site-footer h4 {
-  color: white;
-}
-
-.site-footer a {
+.site-footer h3, .site-footer h4{ color: white; }
+.site-footer a{
   color: #93c5fd;
   display: block;
   margin-bottom: 6px;
 }
+.site-footer a:hover{ text-decoration: underline; }
 
-.site-footer a:hover {
-  text-decoration: underline;
+/* MOBILE NAV LINKS STYLE (COMPACT) */
+.mobile-nav-links {
+  display: none;
+  flex-direction: column;
+  background: #111827;
+  padding: 12px 16px;   /* smaller padding */
+  gap: 6px;              /* reduce space between links */
+}
+
+/* Links inside mobile menu */
+.mobile-nav-links a,
+.mobile-nav-links .nav-user,
+.mobile-nav-links form {
+  color: white;
+  padding: 6px 8px;      /* smaller padding */
+  font-size: 15px;        /* reduce font size */
+  border-radius: 6px;
+}
+
+/* Hover effect */
+.mobile-nav-links a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* .mobile-nav-links .btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+} */
+
+.mobile-nav-links .btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav-links .navlink {
+    font-size: 15px;
+    padding: 6px 8px;
+  }
+}
+
+/* STOP MOBILE LINKS FROM FULL WIDTH */
+.mobile-nav-links {
+  align-items: flex-start; /* prevent stretch */
+}
+
+/* Make links fit content only */
+.mobile-nav-links a,
+.mobile-nav-links .nav-user,
+.mobile-nav-links form {
+  width: auto;
+  display: inline-flex;
+}
+
+.mobile-nav-links {
+  max-width: 420px;
+  margin: 0 auto;
+}
+.mobile-nav-links .btn {
+  padding: 4px 10px;
+  font-size: 13px;
 }
