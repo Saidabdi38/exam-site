@@ -13,9 +13,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+# DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["saidabdi38.pythonanywhere.com"]
+ALLOWED_HOSTS = [
+    "xirfadyaal.com",
+    "www.xirfadyaal.com",
+    "72.60.89.76",
+    "127.0.0.1",
+    "localhost",
+]
+
+DEBUG = False
 
 # ALLOWED_HOSTS = []
 
