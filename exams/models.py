@@ -86,12 +86,12 @@ class ExamResitPermission(models.Model):
     def __str__(self):
         return f"{self.user} - {self.exam} (allowed={self.allowed_attempts}, visible={self.can_view})"
 
+
 class Attempt(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="attempts")
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="attempts")
 
     attempt_no = models.PositiveIntegerField(default=1)
-
     started_at = models.DateTimeField(default=timezone.now)
     submitted_at = models.DateTimeField(null=True, blank=True)
 
@@ -99,29 +99,50 @@ class Attempt(models.Model):
     score = models.IntegerField(default=0)
     max_score = models.IntegerField(default=0)
 
+    PASS_PERCENTAGE = 50
+
     class Meta:
         ordering = ["-started_at"]
-        unique_together = ("user", "exam", "attempt_no")
-        indexes = [
-            models.Index(fields=["user", "exam"]),
-            models.Index(fields=["exam"]),
-            models.Index(fields=["submitted_at"]),
-        ]
+
+    # ✅ ADD THIS BACK
+    def time_left_seconds(self):
+        if self.submitted_at:
+            return 0
+
+        elapsed = (timezone.now() - self.started_at).total_seconds()
+        remaining = self.duration_seconds - int(elapsed)
+        return max(0, remaining)
+
+    def calculate_score(self):
+        total = 0
+        max_score = 0
+
+        for answer in self.answers.select_related("selected_choice"):
+            max_score += 2
+            if answer.selected_choice and answer.selected_choice.is_correct:
+                total += 2
+
+        self.score = total
+        self.max_score = max_score
+
+    @property
+    def percentage(self):
+        if self.max_score == 0:
+            return 0
+        return round((self.score / self.max_score) * 100, 2)
+
+    @property
+    def result(self):
+        return "PASS" if self.percentage >= self.PASS_PERCENTAGE else "FAIL"
 
     @property
     def is_submitted(self):
         return self.submitted_at is not None
 
-    def time_left_seconds(self):
-        if self.is_submitted:
-            return 0
-        elapsed = (timezone.now() - self.started_at).total_seconds()
-        left = self.duration_seconds - int(elapsed)
-        return max(0, left)
-
-    def __str__(self):
-        return f"{self.user} - {self.exam} (Attempt {self.attempt_no})"
-
+    def save(self, *args, **kwargs):
+        if self.submitted_at:
+            self.calculate_score()
+        super().save(*args, **kwargs)
 
 class Answer(models.Model):
     attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name="answers")

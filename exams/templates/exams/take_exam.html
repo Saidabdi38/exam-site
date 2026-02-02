@@ -2,59 +2,60 @@
 {% block content %}
 <h2>{{ exam.title }}</h2>
 
-  <p>
-    Time left: <strong id="timer">{{ time_left }}</strong> seconds
+<p>
+  Time left: <strong id="timer">{{ time_left }}</strong> seconds
+</p>
+
+{% if attempt.submitted_at %}
+  <p><strong>This attempt is already submitted.</strong>
+    <a href="{% url 'exam_result' attempt.id %}">View result</a>
   </p>
+{% endif %}
 
-  {% if attempt.is_submitted %}
-    <p><strong>This attempt is already submitted.</strong>
-      <a href="{% url 'exam_result' attempt.id %}">View result</a>
-    </p>
+<form method="post">
+  {% csrf_token %}
+
+  {% for q in questions %}
+    <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+      <p><strong>Q{{ forloop.counter }} (2 pts)</strong> {{ q.text }}</p>
+
+      {% for c in q.choices.all %}
+        <label style="display:block; margin:4px 0;">
+          <input
+            type="radio"
+            name="q_{{ q.id }}"
+            value="{{ c.id }}"
+            {% for a in attempt.answers.all %}
+              {% if a.question_id == q.id and a.selected_choice_id == c.id %}checked{% endif %}
+            {% endfor %}
+            {% if attempt.is_submitted %}disabled{% endif %}
+          >
+          {{ c.text }}
+        </label>
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+  {% if not attempt.submitted_at %}
+    <button type="submit" name="save">Save</button>
+    <button type="submit" name="submit" onclick="return confirm('Submit exam now?')">Submit</button>
   {% endif %}
+</form>
 
-  <form method="post">
-    {% csrf_token %}
+<script>
+let seconds = Number(document.getElementById("timer").textContent);
+const timerEl = document.getElementById("timer");
 
-    {% for q in questions %}
-      <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
-        <p><strong>Q{{ forloop.counter }} ({{ q.points }} pts)</strong> {{ q.text }}</p>
-
-        {% for c in q.choices.all %}
-          <label style="display:block; margin:4px 0;">
-            <input
-              type="radio"
-              name="q_{{ q.id }}"
-              value="{{ c.id }}"
-              {% for a in attempt.answers.all %}
-                {% if a.question_id == q.id and a.selected_choice_id == c.id %}checked{% endif %}
-              {% endfor %}
-              {% if attempt.is_submitted %}disabled{% endif %}
-            >
-            {{ c.text }}
-          </label>
-        {% endfor %}
-      </div>
-    {% endfor %}
-
-    {% if not attempt.is_submitted %}
-      <button type="submit" name="save">Save</button>
-      <button type="submit" name="submit" onclick="return confirm('Submit exam now?')">Submit</button>
-    {% endif %}
-  </form>
-
-  <script>
-    let seconds = Number(document.getElementById("timer").textContent);
-    const timerEl = document.getElementById("timer");
-
-    const interval = setInterval(() => {
-      seconds -= 1;
-      if (seconds <= 0) {
-        timerEl.textContent = "0";
-        clearInterval(interval);
-        window.location.href = "{% url 'submit_exam' attempt.id %}";
-        return;
-      }
-      timerEl.textContent = String(seconds);
-    }, 1000);
-  </script>
+const interval = setInterval(() => {
+  seconds -= 1;
+  if (seconds <= 0) {
+    timerEl.textContent = "0";
+    clearInterval(interval);
+    // ✅ Auto-submit redirect
+    window.location.href = "{% url 'submit_exam' attempt.id %}";
+    return;
+  }
+  timerEl.textContent = String(seconds);
+}, 1000);
+</script>
 {% endblock %}

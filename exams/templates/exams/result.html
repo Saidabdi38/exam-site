@@ -1,17 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Result: {{ attempt.exam.title }}</h2>
-  <p>Score: <strong>{{ attempt.score }}</strong> / {{ attempt.max_score }}</p>
-  <p>Submitted: {{ attempt.submitted_at }}</p>
+<p>Score: <strong>{{ attempt.score }}</strong> / {{ attempt.max_score }}</p>
+<p>Percentage: <strong>{{ percentage }}%</strong></p>
+<p>Result: <strong>{{ result }}</strong></p>
+<p>Submitted: {{ attempt.submitted_at }}</p>
 
-  <hr>
+<hr>
 
-  {% for a in answers %}
-    <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
-      <p><strong>{{ a.question.text }}</strong></p>
-      <p>Your answer: {{ a.selected_choice.text|default:"(no answer)" }}</p>
-    </div>
-  {% endfor %}
+{% for a in answers %}
+  <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+    <p><strong>{{ a.question.text }}</strong></p>
+    <p>Your answer: {{ a.selected_choice.text|default:"(no answer)" }}</p>
+    {% if a.selected_choice %}
+      {% if a.selected_choice.is_correct %}
+        <p style="color:green;">Correct</p>
+      {% else %}
+        <p style="color:red;">Incorrect</p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endfor %}
 
-  <a href="{% url 'exam_list' %}">Back to exams</a>
+<a href="{% url 'exam_list' %}">Back to exams</a>
 {% endblock %}

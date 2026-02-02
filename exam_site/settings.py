@@ -7,7 +7,7 @@ This starter is meant for local development.
 
 from pathlib import Path
 import os
-import dj_database_url
+# import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -15,17 +15,19 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
 
 # DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = [
-    "xirfadyaal.com",
-    "www.xirfadyaal.com",
-    "72.60.89.76",
-    "127.0.0.1",
-    "localhost",
-]
+# ALLOWED_HOSTS = [
+#     "xirfadyaal.com",
+#     "www.xirfadyaal.com",
+#     "72.60.89.76",
+#     "127.0.0.1",
+#     "localhost",
+# ]
 
-DEBUG = False
+# DEBUG = False
 
-# ALLOWED_HOSTS = []
+DEBUG = True
+
+ALLOWED_HOSTS = ["*"]
 
 
 INSTALLED_APPS = [
@@ -70,15 +72,40 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "exam_site.wsgi.application"
 
-import dj_database_url
+# import dj_database_url
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-        ssl_require=False,
-    )
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "exam_db",
+#         "USER": "exam_user",
+#         "PASSWORD": "xirfadyaal@123",
+#         "HOST": "127.0.0.1",
+#         "PORT": "5432",
+#     }
+# }
+
+if DEBUG:
+    # 🧪 LOCAL TESTING → SQLite
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    # 🚀 PRODUCTION → PostgreSQL
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME"),
+            "USER": os.environ.get("DB_USER"),
+            "PASSWORD": os.environ.get("DB_PASSWORD"),
+            "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+        }
+    }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

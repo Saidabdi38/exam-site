@@ -175,27 +175,34 @@ def start_exam(request, exam_id):
 
     return redirect("take_exam", attempt_id=attempt.id)
 
-
 @login_required
 @transaction.atomic
 def take_exam(request, attempt_id):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
     exam = attempt.exam
 
-    # Auto-submit when time ends
-    if not attempt.is_submitted and attempt.time_left_seconds() == 0:
-        return redirect("submit_exam", attempt_id=attempt.id)
+    # ✅ Backend auto-submit (NO is_submitted dependency)
+    if attempt.submitted_at is None:
+        elapsed = (timezone.now() - attempt.started_at).total_seconds()
+        if elapsed >= attempt.duration_seconds:
+            return redirect("submit_exam", attempt_id=attempt.id)
 
     questions = exam.questions.prefetch_related("choices").all()
 
-    if request.method == "POST" and not attempt.is_submitted:
+    if request.method == "POST" and attempt.submitted_at is None:
         for q in questions:
             key = f"q_{q.id}"
             choice_id = request.POST.get(key)
-            ans = Answer.objects.get(attempt=attempt, question=q)
+
+            ans, _ = Answer.objects.get_or_create(
+                attempt=attempt,
+                question=q
+            )
 
             if choice_id:
-                ans.selected_choice = Choice.objects.filter(id=choice_id, question=q).first()
+                ans.selected_choice = Choice.objects.filter(
+                    id=choice_id, question=q
+                ).first()
             else:
                 ans.selected_choice = None
             ans.save()
@@ -216,11 +223,11 @@ def take_exam(request, attempt_id):
         },
     )
 
-
 @login_required
 @transaction.atomic
 def submit_exam(request, attempt_id):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
+
     if attempt.is_submitted:
         return redirect("exam_result", attempt_id=attempt.id)
 
@@ -228,10 +235,15 @@ def submit_exam(request, attempt_id):
     max_score = 0
 
     for q in attempt.exam.questions.all():
-        max_score += q.points
-        ans = Answer.objects.filter(attempt=attempt, question=q).select_related("selected_choice").first()
+        max_score += 2  # ✅ 2 marks per question
+
+        ans = Answer.objects.filter(
+            attempt=attempt,
+            question=q
+        ).select_related("selected_choice").first()
+
         if ans and ans.selected_choice and ans.selected_choice.is_correct:
-            score += q.points
+            score += 2
 
     attempt.score = score
     attempt.max_score = max_score
@@ -240,12 +252,31 @@ def submit_exam(request, attempt_id):
 
     return redirect("exam_result", attempt_id=attempt.id)
 
-
 @login_required
 def exam_result(request, attempt_id):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
-    answers = attempt.answers.select_related("question", "selected_choice").all()
-    return render(request, "exams/result.html", {"attempt": attempt, "answers": answers})
+
+    percentage = (
+        (attempt.score / attempt.max_score) * 100
+        if attempt.max_score > 0 else 0
+    )
+
+    result = "PASS" if percentage >= 50 else "FAIL"
+
+    answers = attempt.answers.select_related(
+        "question", "selected_choice"
+    ).all()
+
+    return render(
+        request,
+        "exams/result.html",
+        {
+            "attempt": attempt,
+            "answers": answers,
+            "percentage": round(percentage, 2),
+            "result": result,
+        },
+    )
 
 @login_required
 def student_exams(request):
