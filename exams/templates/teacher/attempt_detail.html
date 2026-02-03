@@ -2,44 +2,51 @@
 {% block content %}
 <h2>Attempt Detail: {{ exam.title }}</h2>
 
-  <p>
-    <a href="{% url 'teacher_exam_attempts' exam.id %}">Back to attempts</a> |
-    <a href="{% url 'teacher_exam_detail' exam.id %}">Back to exam</a>
-  </p>
+<p>
+  <a href="{% url 'teacher_exam_attempts' exam.id %}">Back to attempts</a> |
+  <a href="{% url 'teacher_exam_detail' exam.id %}">Back to exam</a>
+</p>
 
-  <hr>
+<hr>
 
-  <p>
-    <strong>Student:</strong> {{ attempt.user.username }}<br>
-    <strong>Started:</strong> {{ attempt.started_at }}<br>
-    <strong>Submitted:</strong> {{ attempt.submitted_at|default:"-" }}<br>
-    <strong>Score:</strong> {{ attempt.score }} / {{ attempt.max_score }}
-  </p>
+<p>
+  <strong>Student:</strong> {{ attempt.user.username }}<br>
+  <strong>Started:</strong> {{ attempt.started_at }}<br>
+  <strong>Submitted:</strong> {{ attempt.submitted_at|default:"-" }}<br>
+  <strong>Score:</strong> {{ attempt.score }} / {{ attempt.max_score }}<br>
+  <strong>Percentage:</strong> {{ attempt.percentage }}%<br>
+  <strong>Result:</strong>
+  {% if attempt.result == "PASS" %}
+    <span style="color:green; font-weight:bold;">PASS</span>
+  {% else %}
+    <span style="color:red; font-weight:bold;">FAIL</span>
+  {% endif %}
+</p>
 
-  <hr>
+<hr>
 
-  {% for r in rows %}
-    <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
-      <p><strong>Q{{ forloop.counter }} ({{ r.question.points }} pts)</strong> {{ r.question.text }}</p>
+{% for r in rows %}
+  <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+    <p><strong>Q{{ forloop.counter }} ({{ r.question.points }} pts)</strong> {{ r.question.text }}</p>
 
-      <p>
-        <strong>Student answer:</strong>
-        {{ r.selected.text|default:"(no answer)" }}
-      </p>
+    <p>
+      <strong>Student answer:</strong>
+      {{ r.selected.text|default:"(no answer)" }}
+    </p>
 
-      <p>
-        <strong>Correct answer:</strong>
-        {{ r.correct.text|default:"(not set)" }}
-      </p>
+    <p>
+      <strong>Correct answer:</strong>
+      {{ r.correct.text|default:"(not set)" }}
+    </p>
 
-      <p>
-        <strong>Result:</strong>
-        {% if r.is_correct %}
-          ✅ Correct
-        {% else %}
-          ❌ Wrong
-        {% endif %}
-      </p>
-    </div>
-  {% endfor %}
+    <p>
+      <strong>Result:</strong>
+      {% if r.is_correct %}
+        <span style="color:green;">✅ Correct</span>
+      {% else %}
+        <span style="color:red;">❌ Wrong</span>
+      {% endif %}
+    </p>
+  </div>
+{% endfor %}
 {% endblock %}
