@@ -411,179 +411,50 @@ tr:last-child td{ border-bottom: none; }
 }
 
 /* =========================
-   ATTEMPTS LIST – COMPACT LAYOUT ONLY
+   ATTEMPTS LIST – FINAL CLEAN MOBILE FIX
+   Keeps desktop exactly the same
 ========================= */
 
-.attempts-table {
-  table-layout: fixed;       /* prevent table from growing */
-  width: 100%;
-}
-
-.attempts-table th,
-.attempts-table td {
-  text-align: center;
-  vertical-align: middle;
-  padding: 8px 6px;          /* tighter spacing */
-  font-size: 14px;
-}
-
-/* Student column slightly wider */
-.attempts-table th:nth-child(2),
-.attempts-table td:nth-child(2) {
-  text-align: left;
-  width: 18%;
-}
-
-/* Started / Submitted dates */
-.attempts-table th:nth-child(3),
-.attempts-table td:nth-child(3),
-.attempts-table th:nth-child(4),
-.attempts-table td:nth-child(4) {
-  width: 14%;
-  font-size: 13px;
-}
-
-/* Score */
-.attempts-table th:nth-child(5),
-.attempts-table td:nth-child(5) {
-  width: 12%;
-}
-
-/* Percentage */
-.attempts-table th:nth-child(6),
-.attempts-table td:nth-child(6) {
-  width: 10%;
-  font-weight: 700;
-}
-
-/* Result */
-.attempts-table th:nth-child(7),
-.attempts-table td:nth-child(7) {
-  width: 9%;
-}
-
-/* Status */
-.attempts-table th:nth-child(8),
-.attempts-table td:nth-child(8) {
-  width: 10%;
-  font-size: 13px;
-}
-
-/* View link */
-.attempts-table th:nth-child(9),
-.attempts-table td:nth-child(9) {
-  width: 8%;
-}
-
-/* =========================
-   ATTEMPTS LIST – MOBILE FIX
-========================= */
-
-/* Wrapper allows horizontal scroll on mobile */
-.attempts-table-wrapper {
+.attempts-table-wrapper{
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Keep table readable */
-.attempts-table {
-  min-width: 820px; /* desktop width preserved */
+.attempts-table{
+  width: 100%;
+  border-collapse: separate;
 }
 
-/* Mobile-specific tuning */
-@media (max-width: 768px) {
+/* Desktop: normal layout (no forced min-width) */
+@media (min-width: 769px){
+  .attempts-table{
+    table-layout: fixed;
+  }
+}
 
-  .attempts-table th,
-  .attempts-table td {
-    padding: 8px 6px;
-    font-size: 13px;
+/* Mobile: make table scrollable and stop panel clipping */
+@media (max-width: 768px){
+
+  body.attempts-page .panel{
+    overflow-x: visible;         /* IMPORTANT */
+  }
+
+  /* wrapper becomes full width inside the panel */
+  body.attempts-page .attempts-table-wrapper{
+    margin-left: -18px;          /* matches .panel padding */
+    margin-right: -18px;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  /* force scroll width */
+  body.attempts-page .attempts-table{
+    min-width: 900px;
+  }
+
+  body.attempts-page .attempts-table th,
+  body.attempts-page .attempts-table td{
     white-space: nowrap;
-  }
-
-  .attempts-table th {
-    font-size: 12px;
-  }
-
-}
-
-/* ===== ATTEMPTS LIST – MOBILE FIX ===== */
-/* @media (max-width: 768px) {
-  .attempts-table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling:
-
-    }
-
-} */
-
-/* ===== Attempts page layout fix ===== */
-.attempts-page {
-  width: 100%;
-}
-
-/* Allow full-width scrolling area on mobile */
-@media (max-width: 768px) {
-  .attempts-page {
-    margin-left: -16px;
-    margin-right: -16px;
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-}
-
-.attempts-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.attempts-table {
-  min-width: 900px;
-}
-
-/* =========================
-   Attempts List – Mobile Layout Fix
-========================= */
-
-@media (max-width: 768px) {
-
-  /* Let attempts page escape container width */
-  body.attempts-page .container {
-    max-width: 100%;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  body.attempts-page .panel {
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-  }
-
-  /* Keep some breathing room inside */
-  body.attempts-page .panel > * {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-}
-/* =========================
-   FINAL MOBILE TABLE FIX
-========================= */
-
-@media (max-width: 768px) {
-
-  /* Allow horizontal overflow globally */
-  body {
-    overflow-x: auto;
-  }
-
-  /* Let table wrappers escape container */
-  .attempts-table-wrapper {
-    position: relative;
-    left: -16px;
-    width: calc(100% + 32px);
-    padding-left: 16px;
-    padding-right: 16px;
   }
 }
