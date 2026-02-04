@@ -541,3 +541,29 @@ tr:last-child td{ border-bottom: none; }
 .attempts-table {
   min-width: 900px;
 }
+
+/* =========================
+   Attempts List – Mobile Layout Fix
+========================= */
+
+@media (max-width: 768px) {
+
+  /* Let attempts page escape container width */
+  body.attempts-page .container {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  body.attempts-page .panel {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  /* Keep some breathing room inside */
+  body.attempts-page .panel > * {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
