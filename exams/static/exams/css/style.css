@@ -508,14 +508,14 @@ tr:last-child td{ border-bottom: none; }
 }
 
 /* ===== ATTEMPTS LIST – MOBILE FIX ===== */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .attempts-table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling:
 
     }
 
-}
+} */
 
 /* ===== Attempts page layout fix ===== */
 .attempts-page {
