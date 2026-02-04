@@ -513,3 +513,31 @@ tr:last-child td{ border-bottom: none; }
     overflow-x: auto;
     -webkit-overflow-scrolling:
 
+    }
+
+}
+
+/* ===== Attempts page layout fix ===== */
+.attempts-page {
+  width: 100%;
+}
+
+/* Allow full-width scrolling area on mobile */
+@media (max-width: 768px) {
+  .attempts-page {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.attempts-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.attempts-table {
+  min-width: 900px;
+}
