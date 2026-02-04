@@ -409,3 +409,68 @@ tr:last-child td{ border-bottom: none; }
   padding: 4px 10px;
   font-size: 13px;
 }
+
+/* =========================
+   ATTEMPTS LIST – COMPACT LAYOUT ONLY
+========================= */
+
+.attempts-table {
+  table-layout: fixed;       /* prevent table from growing */
+  width: 100%;
+}
+
+.attempts-table th,
+.attempts-table td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px 6px;          /* tighter spacing */
+  font-size: 14px;
+}
+
+/* Student column slightly wider */
+.attempts-table th:nth-child(2),
+.attempts-table td:nth-child(2) {
+  text-align: left;
+  width: 18%;
+}
+
+/* Started / Submitted dates */
+.attempts-table th:nth-child(3),
+.attempts-table td:nth-child(3),
+.attempts-table th:nth-child(4),
+.attempts-table td:nth-child(4) {
+  width: 14%;
+  font-size: 13px;
+}
+
+/* Score */
+.attempts-table th:nth-child(5),
+.attempts-table td:nth-child(5) {
+  width: 12%;
+}
+
+/* Percentage */
+.attempts-table th:nth-child(6),
+.attempts-table td:nth-child(6) {
+  width: 10%;
+  font-weight: 700;
+}
+
+/* Result */
+.attempts-table th:nth-child(7),
+.attempts-table td:nth-child(7) {
+  width: 9%;
+}
+
+/* Status */
+.attempts-table th:nth-child(8),
+.attempts-table td:nth-child(8) {
+  width: 10%;
+  font-size: 13px;
+}
+
+/* View link */
+.attempts-table th:nth-child(9),
+.attempts-table td:nth-child(9) {
+  width: 8%;
+}
