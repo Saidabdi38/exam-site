@@ -474,3 +474,36 @@ tr:last-child td{ border-bottom: none; }
 .attempts-table td:nth-child(9) {
   width: 8%;
 }
+
+/* =========================
+   ATTEMPTS LIST – MOBILE FIX
+========================= */
+
+/* Wrapper allows horizontal scroll on mobile */
+.attempts-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Keep table readable */
+.attempts-table {
+  min-width: 820px; /* desktop width preserved */
+}
+
+/* Mobile-specific tuning */
+@media (max-width: 768px) {
+
+  .attempts-table th,
+  .attempts-table td {
+    padding: 8px 6px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .attempts-table th {
+    font-size: 12px;
+  }
+
+}
+

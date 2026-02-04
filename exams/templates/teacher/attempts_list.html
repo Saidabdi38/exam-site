@@ -8,47 +8,48 @@
 </p>
 
 <hr>
-
-<table class="attempts-table" cellpadding="8" cellspacing="0">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Student</th>
-      <th>Started</th>
-      <th>Submitted</th>
-      <th>Score</th>
-      <th>Percentage</th>
-      <th>Result</th>
-      <th>Status</th>
-      <th>View</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for a in attempts %}
+<div class="attempts-table-wrapper"></div>
+  <table class="attempts-table" cellpadding="8" cellspacing="0">
+    <thead>
       <tr>
-        <td>{{ forloop.counter }}</td>
-        <td>{{ a.user.username }}</td>
-        <td>{{ a.started_at }}</td>
-        <td>{{ a.submitted_at|default:"-" }}</td>
-        <td>{{ a.score }} / {{ a.max_score }}</td>
-        <td>{{ a.percentage }}%</td>
-        <td>
-          {% if a.result == "PASS" %}
-            <span style="color:green; font-weight:bold;">PASS</span>
-          {% else %}
-            <span style="color:red; font-weight:bold;">FAIL</span>
-          {% endif %}
-        </td>
-        <td>{% if a.is_submitted %}Submitted{% else %}In progress{% endif %}</td>
-        <td>
-          <a href="{% url 'teacher_attempt_detail' exam.id a.id %}">Details</a>
-        </td>
+        <th>#</th>
+        <th>Student</th>
+        <th>Started</th>
+        <th>Submitted</th>
+        <th>Score</th>
+        <th>Percentage</th>
+        <th>Result</th>
+        <th>Status</th>
+        <th>View</th>
       </tr>
-    {% empty %}
-      <tr>
-        <td colspan="9">No attempts yet.</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {% for a in attempts %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ a.user.username }}</td>
+          <td>{{ a.started_at }}</td>
+          <td>{{ a.submitted_at|default:"-" }}</td>
+          <td>{{ a.score }} / {{ a.max_score }}</td>
+          <td>{{ a.percentage }}%</td>
+          <td>
+            {% if a.result == "PASS" %}
+              <span style="color:green; font-weight:bold;">PASS</span>
+            {% else %}
+              <span style="color:red; font-weight:bold;">FAIL</span>
+            {% endif %}
+          </td>
+          <td>{% if a.is_submitted %}Submitted{% else %}In progress{% endif %}</td>
+          <td>
+            <a href="{% url 'teacher_attempt_detail' exam.id a.id %}">Details</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="9">No attempts yet.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
