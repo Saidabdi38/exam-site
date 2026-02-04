@@ -8,7 +8,8 @@
 </p>
 
 <hr>
-<div class="attempts-table-wrapper"></div>
+
+<div class="attempts-table-wrapper">
   <table class="attempts-table" cellpadding="8" cellspacing="0">
     <thead>
       <tr>
@@ -39,7 +40,9 @@
               <span style="color:red; font-weight:bold;">FAIL</span>
             {% endif %}
           </td>
-          <td>{% if a.is_submitted %}Submitted{% else %}In progress{% endif %}</td>
+          <td>
+            {% if a.is_submitted %}Submitted{% else %}In progress{% endif %}
+          </td>
           <td>
             <a href="{% url 'teacher_attempt_detail' exam.id a.id %}">Details</a>
           </td>
