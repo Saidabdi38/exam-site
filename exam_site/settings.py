@@ -8,11 +8,20 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
 # -------------------------
 # ENV SWITCH
 # -------------------------
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+# Set DEBUG=True only in local/dev environment variables
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 # Hosts (comma-separated in env)
-# Example server env: ALLOWED_HOSTS=xirfadyaal.com,www.xirfadyaal.com
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()]
+# Default is your domain(s) so production works even if env is missing
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS",
+    "xirfadyaal.com,www.xirfadyaal.com"
+).split(",")
+
+# Clean spaces
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
+
+# Local fallback (only if DEBUG True)
 if DEBUG and not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
@@ -78,9 +87,13 @@ DATABASES = {
 # -------------------------
 # CSRF / SECURITY (FIX)
 # -------------------------
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
-# Example server env:
-# CSRF_TRUSTED_ORIGINS=https://xirfadyaal.com,https://www.xirfadyaal.com
+# Default trusted origins so HTTPS works even if env is missing
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS",
+    "https://xirfadyaal.com,https://www.xirfadyaal.com"
+).split(",")
+
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS if o.strip()]
 
 if not DEBUG:
     CSRF_COOKIE_SECURE = True
