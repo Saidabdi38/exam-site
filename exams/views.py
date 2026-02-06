@@ -17,14 +17,21 @@ from .models import Answer, Attempt, Choice, Exam, ExamResitPermission
 def is_teacher(user):
     return user.is_authenticated and (user.is_staff or user.groups.filter(name__in=["Teacher", "Teachers"]).exists())
 
+def get_permission(user, exam):
+    return ExamResitPermission.objects.filter(user=user, exam=exam).first()
+
+def can_view_exam(user, exam):
+    perm = get_permission(user, exam)
+    return bool(perm and perm.can_view)
 
 def get_allowed_attempts(user, exam):
     """
-    Total allowed attempts = 1 + extra_attempts (if teacher granted)
+    Total allowed attempts ONLY if teacher allowed view
     """
-    perm = ExamResitPermission.objects.filter(user=user, exam=exam).first()
-    return perm.allowed_attempts if perm else 1
-
+    perm = get_permission(user, exam)
+    if not perm or not perm.can_view:
+        return 0
+    return perm.allowed_attempts
 
 def get_next_attempt_no(user, exam):
     """
@@ -172,10 +179,10 @@ def student_dashboard(request):
 def start_exam(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id, is_published=True)
 
-    # If student has an unfinished attempt, resume it
-    # unfinished = Attempt.objects.filter(user=request.user, exam=exam, submitted_at__isnull=True).first()
-    # if unfinished:
-    #     return redirect("take_exam", attempt_id=unfinished.id)
+    # ✅ HARD BLOCK: no teacher permission, no exam access
+    if not can_view_exam(request.user, exam):
+        return redirect("student_dashboard")  # or raise Http404 / return HttpResponseForbidden()
+
     unfinished = Attempt.objects.filter(user=request.user, exam=exam, submitted_at__isnull=True).first()
     if unfinished:
         qno = get_resume_qno(unfinished)
@@ -220,6 +227,10 @@ def take_exam(request, attempt_id):
 def take_exam_q(request, attempt_id, qno):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
     exam = attempt.exam
+
+    # ✅ protect ongoing exam pages too
+    if not can_view_exam(request.user, exam):
+        return redirect("student_dashboard")
 
     # ✅ Auto-submit if time finished
     if attempt.submitted_at is None:
@@ -318,6 +329,10 @@ def autosave_answer(request, attempt_id, qno):
 @transaction.atomic
 def submit_exam(request, attempt_id):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
+
+    # ✅ protect submission too
+    if not can_view_exam(request.user, attempt.exam):
+        return redirect("student_dashboard")
 
     if attempt.is_submitted:
         return redirect("exam_result", attempt_id=attempt.id)
