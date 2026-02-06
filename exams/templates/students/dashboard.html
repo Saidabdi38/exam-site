@@ -40,10 +40,16 @@
     </p>
 
     <div class="row">
-      <a class="btn btn-primary"
+      <!-- <a class="btn btn-primary"
          href="{% url row.action.url_name row.action.arg %}">
         {{ row.action.label }}
-      </a>
+      </a> -->
+
+      {% if row.action.args %}
+        <a href="{% url row.action.url_name row.action.args.0 row.action.args.1 %}">{{ row.action.label }}</a>
+      {% else %}
+        <a href="{% url row.action.url_name row.action.arg %}">{{ row.action.label }}</a>
+      {% endif %}
 
       {% if row.attempt and row.attempt.is_submitted %}
         <a class="btn btn-secondary"
