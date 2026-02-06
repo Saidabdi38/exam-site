@@ -63,10 +63,11 @@
     {% endif %}
     <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
     <span class="nav-user">Hi, {{ user.username }}</span>
-    <form method="post" action="{% url 'logout' %}">
+    <form method="post" action="{% url 'logout' %}" style="margin-top:8px;">
       {% csrf_token %}
-      <button type="submit" class="btn btn-secondary">Logout</button>
+      <button type="submit" class="btn btn-secondary mobile-logout">Logout</button>
     </form>
+
   {% else %}
     <a class="navlink" href="{% url 'home' %}">Home</a>
     <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
