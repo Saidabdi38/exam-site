@@ -592,3 +592,16 @@ tr:last-child td{ border-bottom: none; }
   color: #0f172a;
 }
 
+/* Mobile logout button */
+.mobile-nav-links .mobile-logout {
+  color: #fff !important;
+  background: rgba(220,38,38,0.15);   /* soft red */
+  border: 1px solid rgba(220,38,38,0.4);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.mobile-nav-links .mobile-logout:hover {
+  background: rgba(220,38,38,0.25);
+}
