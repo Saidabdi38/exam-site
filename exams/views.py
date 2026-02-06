@@ -106,14 +106,12 @@ def teacher_dashboard(request):
 def student_dashboard(request):
     user = request.user
 
-    # Only exams teacher allowed this student to see
     exams = Exam.objects.filter(
         is_published=True,
         resit_permissions__user=user,
         resit_permissions__can_view=True
     ).distinct().order_by("-created_at")
 
-    # Latest attempt per exam
     attempts = Attempt.objects.filter(user=user).select_related("exam").order_by("-attempt_no", "-started_at")
     latest_by_exam_id = {}
     for a in attempts:
@@ -124,31 +122,29 @@ def student_dashboard(request):
     for exam in exams:
         latest = latest_by_exam_id.get(exam.id)
 
-        # Teacher allowed attempts
         perm = ExamResitPermission.objects.filter(exam=exam, user=user).first()
         allowed = perm.allowed_attempts if perm else 1
         used = Attempt.objects.filter(user=user, exam=exam).count()
         remaining = max(0, allowed - used)
 
+        # ✅ default action structure
+        action = {"label": "", "url_name": "", "arg": None, "args": None}
+
         if latest is None:
             status = "Not started"
-            action = {"label": "Start", "url_name": "start_exam", "arg": exam.id}
-
-        # elif not latest.is_submitted:
-        #     status = f"In progress (time left: {latest.time_left_seconds()}s)"
-        #     action = {"label": "Resume", "url_name": "take_exam", "arg": latest.id}
+            action.update({"label": "Start", "url_name": "start_exam", "arg": exam.id})
 
         elif not latest.is_submitted:
             status = f"In progress (time left: {latest.time_left_seconds()}s)"
             qno = get_resume_qno(latest)
-            action = {"label": "Resume", "url_name": "take_exam_q", "args": [latest.id, qno]}
+            action.update({"label": "Resume", "url_name": "take_exam_q", "args": [latest.id, qno]})
 
         else:
             status = f"Submitted ({latest.score}/{latest.max_score})"
             if remaining > 0:
-                action = {"label": f"Re-sit ({remaining} left)", "url_name": "start_exam", "arg": exam.id}
+                action.update({"label": f"Re-sit ({remaining} left)", "url_name": "start_exam", "arg": exam.id})
             else:
-                action = {"label": "View Result", "url_name": "exam_result", "arg": latest.id}
+                action.update({"label": "View Result", "url_name": "exam_result", "arg": latest.id})
 
         rows.append({
             "exam": exam,

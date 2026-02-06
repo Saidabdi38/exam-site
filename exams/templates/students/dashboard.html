@@ -40,29 +40,24 @@
     </p>
 
     <div class="row">
-      <!-- <a class="btn btn-primary"
-         href="{% url row.action.url_name row.action.arg %}">
-        {{ row.action.label }}
-      </a> -->
-
-      {% if row.action.args %}
-        <a class="btn btn-primary"
-          href="{% url row.action.url_name row.action.args.0 row.action.args.1 %}">
+        {% if row.action.args %}
+          <a class="btn btn-primary"
+            href="{% url row.action.url_name row.action.args.0 row.action.args.1 %}">
             {{ row.action.label }}
           </a>
-      {% else %}
-        <a class="btn btn-primary"
-          href="{% url row.action.url_name row.action.arg %}">
+        {% else %}
+          <a class="btn btn-primary"
+            href="{% url row.action.url_name row.action.arg %}">
             {{ row.action.label }}
-        </a>
-      {% endif %}
+          </a>
+        {% endif %}
 
-      {% if row.attempt and row.attempt.is_submitted %}
-        <a class="btn btn-secondary"
-           href="{% url 'exam_result' row.attempt.id %}">
-          View Result
-        </a>
-      {% endif %}
+        {% if row.attempt and row.attempt.is_submitted %}
+          <a class="btn btn-secondary"
+            href="{% url 'exam_result' row.attempt.id %}">
+            View Result
+          </a>
+        {% endif %}
     </div>
 
   </div>
