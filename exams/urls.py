@@ -19,6 +19,7 @@ urlpatterns = [
     # Attempts
     path("attempt/<int:attempt_id>/take/", views.take_exam, name="take_exam"),  # keep
     path("attempt/<int:attempt_id>/q/<int:qno>/", views.take_exam_q, name="take_exam_q"),  # ✅ new
+    path("attempt/<int:attempt_id>/q/<int:qno>/autosave/", views.autosave_answer, name="autosave_answer"),
     path("attempt/<int:attempt_id>/submit/", views.submit_exam, name="submit_exam"),
     path("attempt/<int:attempt_id>/result/", views.exam_result, name="exam_result"),
 

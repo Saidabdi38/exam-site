@@ -5,6 +5,8 @@ from django.db.models import Max
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.http import Http404
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 from .models import Answer, Attempt, Choice, Exam, ExamResitPermission
 
@@ -206,54 +208,6 @@ def start_exam(request, exam_id):
 
     return redirect("take_exam", attempt_id=attempt.id)
 
-# @login_required
-# @transaction.atomic
-# def take_exam(request, attempt_id):
-#     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
-#     exam = attempt.exam
-
-#     # ✅ Backend auto-submit (NO is_submitted dependency)
-#     if attempt.submitted_at is None:
-#         elapsed = (timezone.now() - attempt.started_at).total_seconds()
-#         if elapsed >= attempt.duration_seconds:
-#             return redirect("submit_exam", attempt_id=attempt.id)
-
-#     questions = exam.questions.prefetch_related("choices").all()
-
-#     if request.method == "POST" and attempt.submitted_at is None:
-#         for q in questions:
-#             key = f"q_{q.id}"
-#             choice_id = request.POST.get(key)
-
-#             ans, _ = Answer.objects.get_or_create(
-#                 attempt=attempt,
-#                 question=q
-#             )
-
-#             if choice_id:
-#                 ans.selected_choice = Choice.objects.filter(
-#                     id=choice_id, question=q
-#                 ).first()
-#             else:
-#                 ans.selected_choice = None
-#             ans.save()
-
-#         if "submit" in request.POST:
-#             return redirect("submit_exam", attempt_id=attempt.id)
-
-#         return redirect("take_exam", attempt_id=attempt.id)
-
-#     return render(
-#         request,
-#         "exams/take_exam.html",
-#         {
-#             "attempt": attempt,
-#             "exam": exam,
-#             "questions": questions,
-#             "time_left": attempt.time_left_seconds(),
-#         },
-#     )
-
 
 @login_required
 @transaction.atomic
@@ -287,43 +241,39 @@ def take_exam_q(request, attempt_id, qno):
 
     question = questions[qno - 1]
 
-    # get existing answer for this question
     ans, _ = Answer.objects.get_or_create(attempt=attempt, question=question)
 
     if request.method == "POST" and attempt.submitted_at is None:
-        choice_id = request.POST.get("answer")
-
-        if choice_id:
-            ans.selected_choice = Choice.objects.filter(id=choice_id, question=question).first()
-        else:
-            ans.selected_choice = None
-        ans.save()
+        # ✅ Only update if the field exists in POST (prevents accidental wipe)
+        if "answer" in request.POST:
+            choice_id = request.POST.get("answer")
+            if choice_id:
+                ans.selected_choice = Choice.objects.filter(id=choice_id, question=question).first()
+            else:
+                ans.selected_choice = None
+            ans.save()
 
         nav = request.POST.get("nav")  # prev / next / submit
 
         if nav == "prev" and qno > 1:
             return redirect("take_exam_q", attempt_id=attempt.id, qno=qno - 1)
-
         if nav == "next" and qno < total:
             return redirect("take_exam_q", attempt_id=attempt.id, qno=qno + 1)
-
         if nav == "submit":
             return redirect("submit_exam", attempt_id=attempt.id)
 
-        # default fallback
         return redirect("take_exam_q", attempt_id=attempt.id, qno=qno)
 
     time_left = attempt.time_left_seconds()
-        # ✅ Answered / Unanswered tracker + jump list
-    answers = attempt.answers.all()
-    answered_qids = set(a.question_id for a in answers if a.selected_choice_id)
+
+    # ✅ Answered / Unanswered tracker + jump list
+    answered_qids = set(
+        attempt.answers.filter(selected_choice__isnull=False).values_list("question_id", flat=True)
+    )
 
     progress = []
     for i, q in enumerate(questions, start=1):
-        progress.append({
-            "no": i,
-            "answered": (q.id in answered_qids),
-        })
+        progress.append({"no": i, "answered": (q.id in answered_qids)})
 
     return render(
         request,
@@ -340,9 +290,33 @@ def take_exam_q(request, attempt_id, qno):
             "has_next": qno < total,
             "time_left": time_left,
             "progress": progress,
-
         },
     )
+
+@login_required
+@require_POST
+@transaction.atomic
+def autosave_answer(request, attempt_id, qno):
+    attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
+    if attempt.submitted_at is not None:
+        return JsonResponse({"ok": False, "error": "submitted"}, status=400)
+
+    questions = list(attempt.exam.questions.all())
+    total = len(questions)
+    if qno < 1 or qno > total:
+        return JsonResponse({"ok": False, "error": "bad_qno"}, status=404)
+
+    question = questions[qno - 1]
+    ans, _ = Answer.objects.get_or_create(attempt=attempt, question=question)
+
+    choice_id = request.POST.get("answer", "").strip()
+    if choice_id:
+        ans.selected_choice = Choice.objects.filter(id=choice_id, question=question).first()
+    else:
+        ans.selected_choice = None
+    ans.save()
+
+    return JsonResponse({"ok": True})
 
 @login_required
 @transaction.atomic

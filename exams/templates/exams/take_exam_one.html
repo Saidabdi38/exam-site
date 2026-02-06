@@ -1,30 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+  .progress-wrap { margin: 12px 0 10px; }
+  .progress-top { display:flex; justify-content:space-between; font-size:14px; color:#475569; }
+  .progress-track { width:100%; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden; margin-top:8px; }
+  .progress-fill { height:100%; background:#2563eb; }
+
+  .qgrid {
+    display:grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap:6px;
+    margin: 10px 0 14px;
+  }
+  @media (max-width: 480px){
+    .qgrid { grid-template-columns: repeat(6, 1fr); }
+  }
+  .qdot{
+    display:flex; align-items:center; justify-content:center;
+    padding:8px 0;
+    border-radius:10px;
+    text-decoration:none;
+    font-size:14px;
+    border:1px solid #cbd5e1;
+    color:#0f172a;
+    background:#fff;
+    user-select:none;
+  }
+  .qdot.answered { background:#dcfce7; border-color:#22c55e; }
+  .qdot.unanswered { background:#fee2e2; border-color:#ef4444; }
+  .qdot.current { outline:2px solid #2563eb; }
+
+  .save-status{ font-size:13px; color:#475569; margin:6px 0 0; }
+</style>
+
 <h2>{{ exam.title }}</h2>
 
 <p>
   Time left: <strong id="timer">{{ time_left }}</strong> seconds
 </p>
 
-<!-- ===== Question progress ===== -->
-<p>Question <strong>{{ qno }}</strong> of <strong>{{ total }}</strong></p>
-<!-- ✅ Progress bar -->
-<div class="qbar">
-  <div class="qbar-fill" style="width: {% widthratio qno total 100 %}%"></div>
-</div>
+<p class="save-status" id="saveStatus">Not saved yet</p>
 
-<!-- ✅ Jump to question list + answered/unanswered -->
-<div class="qgrid">
-  {% for item in progress %}
-    <a
-      href="{% url 'take_exam_q' attempt.id item.no %}"
-      class="qdot {% if item.answered %}answered{% else %}unanswered{% endif %} {% if item.no == qno %}current{% endif %}">
-      {{ item.no }}
-    </a>
-  {% endfor %}
-</div>
-
+<!-- ===== Progress ===== -->
 <div class="progress-wrap">
   <div class="progress-top">
     <span>Progress</span>
@@ -32,13 +50,21 @@
   </div>
 
   <div class="progress-track">
-    <div
-      class="progress-fill"
-      style="width: {% widthratio qno total 100 %}%;">
-    </div>
+    <div class="progress-fill" style="width: {% widthratio qno total 100 %}%;"></div>
   </div>
 </div>
-<!-- ============================= -->
+
+<!-- ✅ Jump grid -->
+<div class="qgrid">
+  {% for item in progress %}
+    <a
+      href="{% url 'take_exam_q' attempt.id item.no %}"
+      class="qdot {% if item.answered %}answered{% else %}unanswered{% endif %} {% if item.no == qno %}current{% endif %}"
+      onclick="event.preventDefault(); saveThenGo(this.href);">
+      {{ item.no }}
+    </a>
+  {% endfor %}
+</div>
 
 {% if attempt.submitted_at %}
   <p>
@@ -48,21 +74,22 @@
 
 {% else %}
 
-<form method="post">
+<form method="post" id="examForm">
   {% csrf_token %}
 
-  <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+  <div style="border:1px solid #ddd; padding:12px; margin:10px 0; border-radius:12px;">
     <p>
       <strong>Q{{ qno }} (2 pts)</strong>
       {{ question.text }}
     </p>
 
     {% for c in choices %}
-      <label style="display:block; margin:6px 0;">
+      <label style="display:block; margin:8px 0;">
         <input
           type="radio"
           name="answer"
           value="{{ c.id }}"
+          class="answer-radio"
           {% if selected_choice_id == c.id %}checked{% endif %}
         >
         {{ c.text }}
@@ -72,28 +99,19 @@
 
   <div style="display:flex; gap:10px; flex-wrap:wrap;">
     {% if has_prev %}
-      <button type="submit" name="nav" value="prev">
-        Previous
-      </button>
+      <button type="submit" name="nav" value="prev">Previous</button>
     {% endif %}
 
     {% if has_next %}
-      <button type="submit" name="nav" value="next">
-        Next
-      </button>
+      <button type="submit" name="nav" value="next">Next</button>
     {% else %}
-      <button
-        type="submit"
-        name="nav"
-        value="submit"
-        onclick="return confirm('Submit exam now?')">
-        Submit
-      </button>
+      <button type="submit" name="nav" value="submit">Submit</button>
     {% endif %}
   </div>
 </form>
 
 <script>
+/* ---------------- Timer ---------------- */
 let seconds = Number(document.getElementById("timer").textContent);
 const timerEl = document.getElementById("timer");
 
@@ -107,6 +125,89 @@ const interval = setInterval(() => {
   }
   timerEl.textContent = String(seconds);
 }, 1000);
+
+/* ---------------- CSRF helper ---------------- */
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+/* ---------------- Autosave (JSON endpoint) ---------------- */
+const form = document.getElementById("examForm");
+const saveStatus = document.getElementById("saveStatus");
+let saving = false;
+
+const autosaveUrl = "{% url 'autosave_answer' attempt.id qno %}";
+
+async function autosave() {
+  if (!form || saving) return true;
+  saving = true;
+  saveStatus.textContent = "Saving...";
+
+  const formData = new FormData();
+  // only send the answer value (clean + safe)
+  const selected = document.querySelector("input[name='answer']:checked");
+  formData.append("answer", selected ? selected.value : "");
+
+  try {
+    const res = await fetch(autosaveUrl, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: formData
+    });
+
+    if (res.ok) {
+      saveStatus.textContent = "Saved ✅";
+      return true;
+    } else {
+      saveStatus.textContent = "Not saved (error)";
+      return false;
+    }
+  } catch (e) {
+    saveStatus.textContent = "Not saved (network)";
+    return false;
+  } finally {
+    saving = false;
+  }
+}
+
+async function saveThenGo(url) {
+  await autosave();
+  window.location.href = url;
+}
+
+/* ✅ Save immediately when selecting option */
+document.querySelectorAll(".answer-radio").forEach(radio => {
+  radio.addEventListener("change", () => autosave());
+});
+
+/* ✅ Confirm only on Submit */
+document.querySelectorAll("#examForm button[type='submit']").forEach(btn => {
+  btn.addEventListener("click", async (e) => {
+    if (btn.value === "submit") {
+      const ok = confirm("Submit exam now?");
+      if (!ok) {
+        e.preventDefault();
+        return;
+      }
+    }
+    // let normal form submit happen for prev/next/submit
+    // (the server will save the answer again safely if "answer" exists)
+  });
+});
 </script>
 
 {% endif %}
