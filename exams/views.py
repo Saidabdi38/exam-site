@@ -314,6 +314,16 @@ def take_exam_q(request, attempt_id, qno):
         return redirect("take_exam_q", attempt_id=attempt.id, qno=qno)
 
     time_left = attempt.time_left_seconds()
+        # ✅ Answered / Unanswered tracker + jump list
+    answers = attempt.answers.all()
+    answered_qids = set(a.question_id for a in answers if a.selected_choice_id)
+
+    progress = []
+    for i, q in enumerate(questions, start=1):
+        progress.append({
+            "no": i,
+            "answered": (q.id in answered_qids),
+        })
 
     return render(
         request,
@@ -329,6 +339,8 @@ def take_exam_q(request, attempt_id, qno):
             "has_prev": qno > 1,
             "has_next": qno < total,
             "time_left": time_left,
+            "progress": progress,
+
         },
     )
 

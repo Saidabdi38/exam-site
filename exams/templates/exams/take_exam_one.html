@@ -9,6 +9,21 @@
 
 <!-- ===== Question progress ===== -->
 <p>Question <strong>{{ qno }}</strong> of <strong>{{ total }}</strong></p>
+<!-- ✅ Progress bar -->
+<div class="qbar">
+  <div class="qbar-fill" style="width: {% widthratio qno total 100 %}%"></div>
+</div>
+
+<!-- ✅ Jump to question list + answered/unanswered -->
+<div class="qgrid">
+  {% for item in progress %}
+    <a
+      href="{% url 'take_exam_q' attempt.id item.no %}"
+      class="qdot {% if item.answered %}answered{% else %}unanswered{% endif %} {% if item.no == qno %}current{% endif %}">
+      {{ item.no }}
+    </a>
+  {% endfor %}
+</div>
 
 <div class="progress-wrap">
   <div class="progress-top">
