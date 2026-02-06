@@ -536,3 +536,59 @@ tr:last-child td{ border-bottom: none; }
   .qgrid{ gap: 6px; }
 }
 
+/* ===== MCQ option styling ===== */
+.mcq-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin: 10px 0;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hide default radio */
+.mcq-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #9ca3af;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Inner dot */
+.mcq-radio:checked::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  background: #2563eb;
+  border-radius: 50%;
+}
+
+/* Selected option style */
+.mcq-option:has(.mcq-radio:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+/* Hover effect */
+.mcq-option:hover {
+  border-color: #93c5fd;
+}
+
+/* Option text */
+.mcq-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
