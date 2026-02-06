@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.http import Http404
 
 from .models import Answer, Attempt, Choice, Exam, ExamResitPermission
 
@@ -30,6 +31,27 @@ def get_next_attempt_no(user, exam):
     max_no = Attempt.objects.filter(user=user, exam=exam).aggregate(m=Max("attempt_no"))["m"] or 0
     return max_no + 1
 
+def get_resume_qno(attempt):
+    """
+    Returns question number (1-based) to resume at:
+    - first unanswered question
+    - else last question
+    """
+    exam = attempt.exam
+    questions = list(exam.questions.order_by("id").all())
+    total = len(questions)
+    if total == 0:
+        return 1
+
+    answers = attempt.answers.select_related("question", "selected_choice").all()
+    answer_by_qid = {a.question_id: a for a in answers}
+
+    for i, q in enumerate(questions, start=1):
+        ans = answer_by_qid.get(q.id)
+        if not ans or ans.selected_choice_id is None:
+            return i  # ✅ first unanswered
+
+    return total  # ✅ all answered -> go to last question
 
 # -----------------------------
 # Public pages
@@ -110,9 +132,14 @@ def student_dashboard(request):
             status = "Not started"
             action = {"label": "Start", "url_name": "start_exam", "arg": exam.id}
 
+        # elif not latest.is_submitted:
+        #     status = f"In progress (time left: {latest.time_left_seconds()}s)"
+        #     action = {"label": "Resume", "url_name": "take_exam", "arg": latest.id}
+
         elif not latest.is_submitted:
             status = f"In progress (time left: {latest.time_left_seconds()}s)"
-            action = {"label": "Resume", "url_name": "take_exam", "arg": latest.id}
+            qno = get_resume_qno(latest)
+            action = {"label": "Resume", "url_name": "take_exam_q", "args": [latest.id, qno]}
 
         else:
             status = f"Submitted ({latest.score}/{latest.max_score})"
@@ -148,9 +175,13 @@ def start_exam(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id, is_published=True)
 
     # If student has an unfinished attempt, resume it
+    # unfinished = Attempt.objects.filter(user=request.user, exam=exam, submitted_at__isnull=True).first()
+    # if unfinished:
+    #     return redirect("take_exam", attempt_id=unfinished.id)
     unfinished = Attempt.objects.filter(user=request.user, exam=exam, submitted_at__isnull=True).first()
     if unfinished:
-        return redirect("take_exam", attempt_id=unfinished.id)
+        qno = get_resume_qno(unfinished)
+        return redirect("take_exam_q", attempt_id=unfinished.id, qno=qno)
 
     # Check teacher-controlled resit limit
     allowed = get_allowed_attempts(request.user, exam)
@@ -175,51 +206,129 @@ def start_exam(request, exam_id):
 
     return redirect("take_exam", attempt_id=attempt.id)
 
+# @login_required
+# @transaction.atomic
+# def take_exam(request, attempt_id):
+#     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
+#     exam = attempt.exam
+
+#     # ✅ Backend auto-submit (NO is_submitted dependency)
+#     if attempt.submitted_at is None:
+#         elapsed = (timezone.now() - attempt.started_at).total_seconds()
+#         if elapsed >= attempt.duration_seconds:
+#             return redirect("submit_exam", attempt_id=attempt.id)
+
+#     questions = exam.questions.prefetch_related("choices").all()
+
+#     if request.method == "POST" and attempt.submitted_at is None:
+#         for q in questions:
+#             key = f"q_{q.id}"
+#             choice_id = request.POST.get(key)
+
+#             ans, _ = Answer.objects.get_or_create(
+#                 attempt=attempt,
+#                 question=q
+#             )
+
+#             if choice_id:
+#                 ans.selected_choice = Choice.objects.filter(
+#                     id=choice_id, question=q
+#                 ).first()
+#             else:
+#                 ans.selected_choice = None
+#             ans.save()
+
+#         if "submit" in request.POST:
+#             return redirect("submit_exam", attempt_id=attempt.id)
+
+#         return redirect("take_exam", attempt_id=attempt.id)
+
+#     return render(
+#         request,
+#         "exams/take_exam.html",
+#         {
+#             "attempt": attempt,
+#             "exam": exam,
+#             "questions": questions,
+#             "time_left": attempt.time_left_seconds(),
+#         },
+#     )
+
+
 @login_required
 @transaction.atomic
 def take_exam(request, attempt_id):
+    """
+    Keep this URL, but redirect student to the first question page.
+    """
+    attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
+    return redirect("take_exam_q", attempt_id=attempt.id, qno=1)
+
+
+@login_required
+@transaction.atomic
+def take_exam_q(request, attempt_id, qno):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
     exam = attempt.exam
 
-    # ✅ Backend auto-submit (NO is_submitted dependency)
+    # ✅ Auto-submit if time finished
     if attempt.submitted_at is None:
         elapsed = (timezone.now() - attempt.started_at).total_seconds()
         if elapsed >= attempt.duration_seconds:
             return redirect("submit_exam", attempt_id=attempt.id)
 
-    questions = exam.questions.prefetch_related("choices").all()
+    questions = list(exam.questions.prefetch_related("choices").all())
+    total = len(questions)
+    if total == 0:
+        raise Http404("No questions in this exam.")
+
+    if qno < 1 or qno > total:
+        raise Http404("Question number out of range.")
+
+    question = questions[qno - 1]
+
+    # get existing answer for this question
+    ans, _ = Answer.objects.get_or_create(attempt=attempt, question=question)
 
     if request.method == "POST" and attempt.submitted_at is None:
-        for q in questions:
-            key = f"q_{q.id}"
-            choice_id = request.POST.get(key)
+        choice_id = request.POST.get("answer")
 
-            ans, _ = Answer.objects.get_or_create(
-                attempt=attempt,
-                question=q
-            )
+        if choice_id:
+            ans.selected_choice = Choice.objects.filter(id=choice_id, question=question).first()
+        else:
+            ans.selected_choice = None
+        ans.save()
 
-            if choice_id:
-                ans.selected_choice = Choice.objects.filter(
-                    id=choice_id, question=q
-                ).first()
-            else:
-                ans.selected_choice = None
-            ans.save()
+        nav = request.POST.get("nav")  # prev / next / submit
 
-        if "submit" in request.POST:
+        if nav == "prev" and qno > 1:
+            return redirect("take_exam_q", attempt_id=attempt.id, qno=qno - 1)
+
+        if nav == "next" and qno < total:
+            return redirect("take_exam_q", attempt_id=attempt.id, qno=qno + 1)
+
+        if nav == "submit":
             return redirect("submit_exam", attempt_id=attempt.id)
 
-        return redirect("take_exam", attempt_id=attempt.id)
+        # default fallback
+        return redirect("take_exam_q", attempt_id=attempt.id, qno=qno)
+
+    time_left = attempt.time_left_seconds()
 
     return render(
         request,
-        "exams/take_exam.html",
+        "exams/take_exam_one.html",
         {
             "attempt": attempt,
             "exam": exam,
-            "questions": questions,
-            "time_left": attempt.time_left_seconds(),
+            "question": question,
+            "choices": question.choices.all(),
+            "qno": qno,
+            "total": total,
+            "selected_choice_id": ans.selected_choice_id,
+            "has_prev": qno > 1,
+            "has_next": qno < total,
+            "time_left": time_left,
         },
     )
 

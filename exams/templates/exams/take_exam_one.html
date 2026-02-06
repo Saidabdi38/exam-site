@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>{{ exam.title }}</h2>
+
+<p>
+  Time left: <strong id="timer">{{ time_left }}</strong> seconds
+</p>
+
+<!-- ===== Question progress ===== -->
+<p>Question <strong>{{ qno }}</strong> of <strong>{{ total }}</strong></p>
+
+<div class="progress-wrap">
+  <div class="progress-top">
+    <span>Progress</span>
+    <span><strong>{{ qno }}</strong> / <strong>{{ total }}</strong></span>
+  </div>
+
+  <div class="progress-track">
+    <div
+      class="progress-fill"
+      style="width: {% widthratio qno total 100 %}%;">
+    </div>
+  </div>
+</div>
+<!-- ============================= -->
+
+{% if attempt.submitted_at %}
+  <p>
+    <strong>This attempt is already submitted.</strong>
+    <a href="{% url 'exam_result' attempt.id %}">View result</a>
+  </p>
+
+{% else %}
+
+<form method="post">
+  {% csrf_token %}
+
+  <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+    <p>
+      <strong>Q{{ qno }} (2 pts)</strong>
+      {{ question.text }}
+    </p>
+
+    {% for c in choices %}
+      <label style="display:block; margin:6px 0;">
+        <input
+          type="radio"
+          name="answer"
+          value="{{ c.id }}"
+          {% if selected_choice_id == c.id %}checked{% endif %}
+        >
+        {{ c.text }}
+      </label>
+    {% endfor %}
+  </div>
+
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    {% if has_prev %}
+      <button type="submit" name="nav" value="prev">
+        Previous
+      </button>
+    {% endif %}
+
+    {% if has_next %}
+      <button type="submit" name="nav" value="next">
+        Next
+      </button>
+    {% else %}
+      <button
+        type="submit"
+        name="nav"
+        value="submit"
+        onclick="return confirm('Submit exam now?')">
+        Submit
+      </button>
+    {% endif %}
+  </div>
+</form>
+
+<script>
+let seconds = Number(document.getElementById("timer").textContent);
+const timerEl = document.getElementById("timer");
+
+const interval = setInterval(() => {
+  seconds -= 1;
+  if (seconds <= 0) {
+    timerEl.textContent = "0";
+    clearInterval(interval);
+    window.location.href = "{% url 'submit_exam' attempt.id %}";
+    return;
+  }
+  timerEl.textContent = String(seconds);
+}, 1000);
+</script>
+
+{% endif %}
+{% endblock %}
