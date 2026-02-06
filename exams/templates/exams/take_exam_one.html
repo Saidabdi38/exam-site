@@ -82,19 +82,19 @@
       <strong>Q{{ qno }} (2 pts)</strong>
       {{ question.text }}
     </p>
-
     {% for c in choices %}
-      <label style="display:block; margin:8px 0;">
+      <label class="mcq-option">
         <input
           type="radio"
           name="answer"
           value="{{ c.id }}"
-          class="answer-radio"
+          class="mcq-radio"
           {% if selected_choice_id == c.id %}checked{% endif %}
         >
-        {{ c.text }}
+        <span class="mcq-text">{{ c.text }}</span>
       </label>
     {% endfor %}
+
   </div>
 
   <div style="display:flex; gap:10px; flex-wrap:wrap;">
