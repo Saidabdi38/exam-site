@@ -123,36 +123,22 @@
 
 <!-- ================= MOBILE TOGGLE SCRIPT ================= -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const menuToggle = document.getElementById("menuToggle");
   const mobileNav  = document.getElementById("mobileNav");
-  const nav        = document.getElementById("siteNav");
-
-  function setNavHeightVar(){
-    if (!nav) return;
-    document.documentElement.style.setProperty("--nav-h", nav.offsetHeight + "px");
-  }
-
-  function openMenu(){
-    mobileNav.classList.add("show");
-    menuToggle.textContent = "✖";
-  }
-
-  function closeMenu(){
-    mobileNav.classList.remove("show");
-    menuToggle.textContent = "☰";
-  }
 
   menuToggle.addEventListener("click", () => {
-    mobileNav.classList.contains("show") ? closeMenu() : openMenu();
+    const isOpen = mobileNav.classList.toggle("show");
+    menuToggle.textContent = isOpen ? "✖" : "☰";
   });
 
+  // close when resizing to desktop
   window.addEventListener("resize", () => {
-    setNavHeightVar();
-    if (window.innerWidth > 768) closeMenu();
+    if (window.innerWidth > 768) {
+      mobileNav.classList.remove("show");
+      menuToggle.textContent = "☰";
+    }
   });
-
-  setNavHeightVar();
 });
 </script>
 

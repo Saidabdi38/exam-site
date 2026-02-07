@@ -516,108 +516,100 @@ tr:last-child td{ border-bottom: none; }
   touch-action: manipulation;  /* faster taps */
 }
 
+/* =========================================================
+   MOBILE MENU (PROFESSIONAL) — SINGLE SOURCE OF TRUTH
+   Put this at the END of style.css
+========================================================= */
 
-/* ===== FINAL FIX: Fixed navbar + clean mobile menu ===== */
-:root { --nav-h: 64px; } /* fallback */
+:root{ --nav-h: 56px; }
 
-/* ===== NAVBAR: correct height ===== */
+/* Fixed navbar height (mobile + desktop) */
 nav#siteNav{
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-
-  height: 56px;                 /* ✅ CONTROL HEIGHT HERE */
-  padding: 0 16px;              /* ✅ no vertical padding */
+  height: var(--nav-h);
+  padding: 0 16px;              /* no vertical padding */
   display: flex;
   align-items: center;
-
-  background: rgba(255,255,255,0.95);
-  border-bottom: 1px solid var(--border);
-  z-index: 9999;
 }
 
-/* Space under fixed navbar */
+/* Push page under fixed navbar */
 body{
   padding-top: var(--nav-h);
 }
 
-/* Mobile menu overlay (scroll INSIDE) */
+/* Mobile dropdown under navbar (not full screen) */
 #mobileNav{
   position: fixed;
-  top: var(--nav-h);            /* ✅ exact alignment */
+  top: var(--nav-h);
   left: 0;
   right: 0;
-
-  height: calc(100vh - var(--nav-h));
-  background: #111827;
+  z-index: 9998;
 
   display: none;
   flex-direction: column;
-  gap: 18px;
 
-  padding: 18px;
+  background: #111827;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+
+  padding: 10px 12px;
+  gap: 6px;
+
+  max-height: calc(100vh - var(--nav-h));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-
-  z-index: 9998;
 }
 
 #mobileNav.show{
   display: flex;
 }
 
-/* Make menu text visible */
+/* Make links look like real menu items */
 #mobileNav .navlink,
 #mobileNav .nav-user{
-  color: #fff !important;
-}
-
-#mobileNav .navlink{
+  display: block;
   width: 100%;
-  padding: 12px 10px;
+  color: #fff !important;
+
+  padding: 10px 12px;
   border-radius: 10px;
 }
 
 #mobileNav .navlink:hover{
-  background: rgba(255,255,255,0.08);
   text-decoration: none;
+  background: rgba(255,255,255,0.08);
 }
 
-#mobileNav form{ width: 100%; }
+/* Username line (subtle) */
+#mobileNav .nav-user{
+  color: rgba(255,255,255,0.75) !important;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Logout looks like a normal item (same size as links) */
+#mobileNav form{
+  margin: 0;
+}
 
 #mobileNav .mobile-logout{
   width: 100%;
-  color: #fff !important;
-  background: rgba(220,38,38,0.18);
-  border: 1px solid rgba(220,38,38,0.45);
-  padding: 10px 14px;
+  display: block;
+
+  padding: 10px 12px;
   border-radius: 10px;
+
+  background: rgba(220,38,38,0.12);
+  border: 1px solid rgba(220,38,38,0.35);
+  color: #fff !important;
+
   font-weight: 700;
 }
 
-/* Desktop: never show mobile overlay */
+#mobileNav .mobile-logout:hover{
+  background: rgba(220,38,38,0.18);
+}
+
+/* Desktop: never show mobile menu */
 @media (min-width: 769px){
   #mobileNav{ display: none !important; }
 }
 
-/* Make each menu item same width */
-#mobileNav .navlink,
-#mobileNav .nav-user{
-  width: auto;
-  display: inline-flex;
-}
-
-/* Logout button same width as links */
-#mobileNav form{ width: auto; }
-
-#mobileNav .mobile-logout{
-  width: auto;              /* ✅ NOT full width */
-  display: inline-flex;     /* ✅ like links */
-  padding: 12px 10px;       /* ✅ same feel as navlink */
-  border-radius: 10px;
-}
-
-:root{
-  --nav-h: 56px;
-}
