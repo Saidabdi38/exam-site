@@ -13,7 +13,7 @@
 <body class="{% block body_class %}{% endblock %}">
 
 <!-- ================= NAVBAR ================= -->
-<nav>
+<nav id="siteNav">
 
   <!-- LEFT NAV -->
   <div class="nav-left">
@@ -114,8 +114,8 @@
     <div>
       <h4>Contact</h4>
       <p>Mobile: +252906943838</p>
-      <p>Email: support@examsite.com</p>
-      <p>© {{ year|default:2026 }} ExamSite</p>
+      <p>Email: support@xirfadyaal.com</p>
+      <p>© {{ year|default:2026 }} </p>
     </div>
 
   </div>
@@ -128,24 +128,37 @@ document.addEventListener("DOMContentLoaded", function () {
   const mobileNav = document.getElementById("mobileNav");
 
   // Toggle button click
-  menuToggle.addEventListener("click", () => {
-    mobileNav.classList.toggle("show");
+ menuToggle.addEventListener("click", () => {
+  mobileNav.classList.toggle("show");
 
-    if (mobileNav.classList.contains("show")) {
-      menuToggle.textContent = "✖";
-    } else {
-      menuToggle.textContent = "☰";
-    }
-  });
+  if (mobileNav.classList.contains("show")) {
+    menuToggle.textContent = "✖";
+    document.body.style.overflow = "hidden";   // ✅ stop background scroll
+  } else {
+    menuToggle.textContent = "☰";
+    document.body.style.overflow = "";         // ✅ restore scrolling
+  }
+});
 
   // ✅ Auto-close when switching to desktop view
   window.addEventListener("resize", () => {
-    if (window.innerWidth > 768) {
-      mobileNav.classList.remove("show");
-      menuToggle.textContent = "☰";
-    }
-  });
+  if (window.innerWidth > 768) {
+    mobileNav.classList.remove("show");
+    menuToggle.textContent = "☰";
+    document.body.style.overflow = ""; // ✅ restore scroll
+  }
 });
+
+</script>
+<script>
+function adjustBodyPadding(){
+  const nav = document.getElementById("siteNav");
+  if (!nav) return;
+  document.body.style.paddingTop = nav.offsetHeight + "px";
+}
+
+document.addEventListener("DOMContentLoaded", adjustBodyPadding);
+window.addEventListener("resize", adjustBodyPadding);
 </script>
 
 </body>

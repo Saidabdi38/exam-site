@@ -628,11 +628,6 @@ nav{
   z-index: 9999;
 }
 
-/* Push page content below navbar */
-body{
-  padding-top: 64px; /* navbar height */
-}
-
 /* Mobile + desktop menu overlay */
 .mobile-nav-links{
   position: fixed;
