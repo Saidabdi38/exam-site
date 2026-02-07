@@ -517,72 +517,77 @@ tr:last-child td{ border-bottom: none; }
 }
 
 
-/* ==========================================
-   FINAL: Fixed navbar + fullscreen mobile menu
-========================================== */
+/* ===== FINAL FIX: Fixed navbar + clean mobile menu ===== */
+:root { --nav-h: 64px; } /* fallback */
 
-:root{ --nav-h: 64px; } /* fallback */
-
-/* Navbar fixed */
 nav#siteNav{
   position: fixed;
   top: 0; left: 0; right: 0;
   width: 100%;
   z-index: 9999;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
 }
 
-/* Give page space under navbar */
+/* Space under fixed navbar */
 body{
   padding-top: var(--nav-h);
 }
 
-/* Mobile menu = full screen overlay, scroll INSIDE */
+/* Mobile menu overlay (scroll INSIDE) */
 #mobileNav{
   position: fixed;
-  top: 0;
-  left: 0; right: 0;
-  height: 100vh;
+  inset: 0;               /* top:0 right:0 bottom:0 left:0 */
   z-index: 9998;
-
-  background: #111827;
   display: none;
   flex-direction: column;
-  gap: 10px;
+  background: #111827;
 
-  /* push menu content below navbar */
+  /* push content below navbar height */
   padding: calc(var(--nav-h) + 12px) 16px 18px;
+  gap: 10px;
 
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
-  /* remove previous centering limits */
   max-width: none;
   margin: 0;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 #mobileNav.show{ display: flex; }
 
-/* When menu open, lock the background */
-body.menu-open{
-  overflow: hidden;
-  height: 100%;
+/* Make menu text visible */
+#mobileNav .navlink,
+#mobileNav .nav-user{
+  color: #fff !important;
 }
 
-/* Desktop: hide mobile menu always */
+#mobileNav .navlink{
+  width: 100%;
+  padding: 12px 10px;
+  border-radius: 10px;
+}
+
+#mobileNav .navlink:hover{
+  background: rgba(255,255,255,0.08);
+  text-decoration: none;
+}
+
+#mobileNav form{ width: 100%; }
+
+#mobileNav .mobile-logout{
+  width: 100%;
+  color: #fff !important;
+  background: rgba(220,38,38,0.18);
+  border: 1px solid rgba(220,38,38,0.45);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+/* Desktop: never show mobile overlay */
 @media (min-width: 769px){
   #mobileNav{ display: none !important; }
 }
-
-#mobileNav .mobile-logout{
-  color:#fff !important;
-  background: rgba(220,38,38,0.15);
-  border: 1px solid rgba(220,38,38,0.4);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-}
-#mobileNav .mobile-logout:hover{
-  background: rgba(220,38,38,0.25);
-}
-
