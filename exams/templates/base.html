@@ -136,30 +136,32 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function openMenu() {
-    mobileNav.classList.add("show");
-    menuToggle.textContent = "✖";
+  mobileNav.classList.add("show");
+  menuToggle.textContent = "✖";
 
-    // lock background scroll (reliable on Android)
-    scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
-  }
+  document.body.classList.add("menu-open"); // ✅ add this
 
-  function closeMenu() {
-    mobileNav.classList.remove("show");
-    menuToggle.textContent = "☰";
+  scrollY = window.scrollY;
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+}
 
-    // restore scroll
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.left = "";
-    document.body.style.right = "";
-    document.body.style.width = "";
-    window.scrollTo(0, scrollY);
-  }
+function closeMenu() {
+  mobileNav.classList.remove("show");
+  menuToggle.textContent = "☰";
+
+  document.body.classList.remove("menu-open"); // ✅ add this
+
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  window.scrollTo(0, scrollY);
+}
 
   menuToggle.addEventListener("click", () => {
     if (mobileNav.classList.contains("show")) closeMenu();

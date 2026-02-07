@@ -172,15 +172,6 @@ button:active, .btn:active{ transform: translateY(1px); }
 }
 
 /* Mobile nav container */
-.mobile-nav-links{
-  display: none;
-  flex-direction: column;
-  background: rgba(255,255,255,0.98);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 20px;
-  gap: 12px;
-}
-
 .mobile-nav-links a,
 .mobile-nav-links .nav-user,
 .mobile-nav-links form{
@@ -691,3 +682,59 @@ nav#siteNav{
   #mobileNav{ display: none !important; }
 }
 
+/* ==========================================
+   FINAL: Fixed navbar + fullscreen mobile menu
+========================================== */
+
+:root{ --nav-h: 64px; } /* fallback */
+
+/* Navbar fixed */
+nav#siteNav{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  width: 100%;
+  z-index: 9999;
+}
+
+/* Give page space under navbar */
+body{
+  padding-top: var(--nav-h);
+}
+
+/* Mobile menu = full screen overlay, scroll INSIDE */
+#mobileNav{
+  position: fixed;
+  top: 0;
+  left: 0; right: 0;
+  height: 100vh;
+  z-index: 9998;
+
+  background: #111827;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+
+  /* push menu content below navbar */
+  padding: calc(var(--nav-h) + 12px) 16px 18px;
+
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  /* remove previous centering limits */
+  max-width: none;
+  margin: 0;
+  align-items: flex-start;
+}
+
+#mobileNav.show{ display: flex; }
+
+/* When menu open, lock the background */
+body.menu-open{
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Desktop: hide mobile menu always */
+@media (min-width: 769px){
+  #mobileNav{ display: none !important; }
+}
