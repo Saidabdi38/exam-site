@@ -69,9 +69,11 @@ h3{ font-size: 16px; }
    NAVBAR
 ========================= */
 nav{
-  /* position: sticky; */
+  position: fixed;
   top: 0;
-  z-index: 20;
+  left: 0;
+  right: 0;
+  z-index: 9999;
   backdrop-filter: blur(10px);
   background: rgba(255,255,255,0.95);
   border-bottom: 1px solid var(--border);

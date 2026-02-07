@@ -126,39 +126,40 @@
 document.addEventListener("DOMContentLoaded", function () {
   const menuToggle = document.getElementById("menuToggle");
   const mobileNav = document.getElementById("mobileNav");
+  const nav = document.getElementById("siteNav");
 
-  // Toggle button click
- menuToggle.addEventListener("click", () => {
-  mobileNav.classList.toggle("show");
-
-  if (mobileNav.classList.contains("show")) {
-    menuToggle.textContent = "✖";
-    document.body.style.overflow = "hidden";   // ✅ stop background scroll
-  } else {
-    menuToggle.textContent = "☰";
-    document.body.style.overflow = "";         // ✅ restore scrolling
+  function adjustBodyPadding() {
+    if (!nav) return;
+    document.body.style.paddingTop = nav.offsetHeight + "px";
   }
-});
 
-  // ✅ Auto-close when switching to desktop view
-  window.addEventListener("resize", () => {
-  if (window.innerWidth > 768) {
+  function closeMenu() {
     mobileNav.classList.remove("show");
     menuToggle.textContent = "☰";
-    document.body.style.overflow = ""; // ✅ restore scroll
+    document.body.style.overflow = "";
   }
+
+  function toggleMenu() {
+    mobileNav.classList.toggle("show");
+
+    if (mobileNav.classList.contains("show")) {
+      menuToggle.textContent = "✖";
+      document.body.style.overflow = "hidden";
+    } else {
+      menuToggle.textContent = "☰";
+      document.body.style.overflow = "";
+    }
+  }
+
+  menuToggle.addEventListener("click", toggleMenu);
+
+  window.addEventListener("resize", () => {
+    adjustBodyPadding();
+    if (window.innerWidth > 768) closeMenu();
+  });
+
+  adjustBodyPadding();
 });
-
-</script>
-<script>
-function adjustBodyPadding(){
-  const nav = document.getElementById("siteNav");
-  if (!nav) return;
-  document.body.style.paddingTop = nav.offsetHeight + "px";
-}
-
-document.addEventListener("DOMContentLoaded", adjustBodyPadding);
-window.addEventListener("resize", adjustBodyPadding);
 </script>
 
 </body>
