@@ -595,8 +595,8 @@ tr:last-child td{ border-bottom: none; }
 /* Mobile logout button */
 .mobile-nav-links .mobile-logout {
   color: #fff !important;
-  background: rgba(220,38,38,0.15);   /* soft red */
-  border: 1px solid rgba(220,38,38,0.4);
+  background: rgba(7, 1, 1, 0.158);   /* soft red */
+  border: 1px solid rgba(12, 2, 2, 0.4);
   padding: 8px 14px;
   border-radius: 8px;
   font-weight: 600;
@@ -604,4 +604,12 @@ tr:last-child td{ border-bottom: none; }
 
 .mobile-nav-links .mobile-logout:hover {
   background: rgba(220,38,38,0.25);
+}
+
+/* Prevent Android long-press link menu on buttons */
+.btn, .btn-primary, .btn-secondary, .navlink, .qdot {
+  -webkit-touch-callout: none;  /* iOS */
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;  /* faster taps */
 }
