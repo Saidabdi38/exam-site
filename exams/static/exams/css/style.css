@@ -545,7 +545,7 @@ body{
   background: #111827;
 
   /* push content below navbar height */
-  padding: calc(var(--nav-h) + 12px) 16px 18px;
+  padding: calc(var(--nav-h) + 48px) 16px 18px; 
   gap: 10px;
 
   overflow-y: auto;
@@ -590,4 +590,21 @@ body{
 /* Desktop: never show mobile overlay */
 @media (min-width: 769px){
   #mobileNav{ display: none !important; }
+}
+
+/* Make each menu item same width */
+#mobileNav .navlink,
+#mobileNav .nav-user{
+  width: auto;
+  display: inline-flex;
+}
+
+/* Logout button same width as links */
+#mobileNav form{ width: auto; }
+
+#mobileNav .mobile-logout{
+  width: auto;              /* ✅ NOT full width */
+  display: inline-flex;     /* ✅ like links */
+  padding: 12px 10px;       /* ✅ same feel as navlink */
+  border-radius: 10px;
 }
