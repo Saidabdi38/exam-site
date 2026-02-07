@@ -654,3 +654,40 @@ nav{
 .mobile-nav-links.show{
   display: flex;
 }
+
+/* ===== Fixed navbar spacing (use CSS variable set by JS) ===== */
+:root { --nav-h: 64px; } /* fallback */
+
+body{
+  padding-top: var(--nav-h);
+}
+
+/* Keep navbar fixed */
+nav#siteNav{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+}
+
+/* Mobile menu should start BELOW navbar height */
+#mobileNav{
+  position: fixed;
+  top: var(--nav-h);
+  left: 0;
+  right: 0;
+  z-index: 9998;
+
+  background: #111827;
+  max-height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* When open, show it */
+#mobileNav.show{ display: flex; }
+
+/* Desktop: never show mobile menu */
+@media (min-width: 769px){
+  #mobileNav{ display: none !important; }
+}
+
