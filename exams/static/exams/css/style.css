@@ -520,14 +520,21 @@ tr:last-child td{ border-bottom: none; }
 /* ===== FINAL FIX: Fixed navbar + clean mobile menu ===== */
 :root { --nav-h: 64px; } /* fallback */
 
+/* ===== NAVBAR: correct height ===== */
 nav#siteNav{
   position: fixed;
-  top: 0; left: 0; right: 0;
-  width: 100%;
-  z-index: 9999;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 56px;                 /* ✅ CONTROL HEIGHT HERE */
+  padding: 0 16px;              /* ✅ no vertical padding */
+  display: flex;
+  align-items: center;
+
   background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+  border-bottom: 1px solid var(--border);
+  z-index: 9999;
 }
 
 /* Space under fixed navbar */
@@ -538,25 +545,27 @@ body{
 /* Mobile menu overlay (scroll INSIDE) */
 #mobileNav{
   position: fixed;
-  inset: 0;               /* top:0 right:0 bottom:0 left:0 */
-  z-index: 9998;
-  display: none;
-  flex-direction: column;
+  top: var(--nav-h);            /* ✅ exact alignment */
+  left: 0;
+  right: 0;
+
+  height: calc(100vh - var(--nav-h));
   background: #111827;
 
-  /* push content below navbar height */
-  padding: calc(var(--nav-h) + 48px) 16px 18px; 
-  gap: 10px;
+  display: none;
+  flex-direction: column;
+  gap: 18px;
 
+  padding: 18px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
-  max-width: none;
-  margin: 0;
-  align-items: stretch;
+  z-index: 9998;
 }
 
-#mobileNav.show{ display: flex; }
+#mobileNav.show{
+  display: flex;
+}
 
 /* Make menu text visible */
 #mobileNav .navlink,
@@ -607,4 +616,8 @@ body{
   display: inline-flex;     /* ✅ like links */
   padding: 12px 10px;       /* ✅ same feel as navlink */
   border-radius: 10px;
+}
+
+:root{
+  --nav-h: 56px;
 }
