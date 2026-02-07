@@ -171,18 +171,6 @@ button:active, .btn:active{ transform: translateY(1px); }
   color: var(--text);
 }
 
-/* Mobile nav container */
-.mobile-nav-links a,
-.mobile-nav-links .nav-user,
-.mobile-nav-links form{
-  color: var(--text);
-}
-
-/* Show mobile nav */
-.mobile-nav-links.show{
-  display: flex;
-}
-
 /* Responsive navbar */
 @media (max-width: 768px){
   .nav-left, .nav-right{ display: none; }
@@ -337,71 +325,6 @@ tr:last-child td{ border-bottom: none; }
   margin-bottom: 6px;
 }
 .site-footer a:hover{ text-decoration: underline; }
-
-/* MOBILE NAV LINKS STYLE (COMPACT) */
-.mobile-nav-links {
-  display: none;
-  flex-direction: column;
-  background: #111827;
-  padding: 12px 16px;   /* smaller padding */
-  gap: 6px;              /* reduce space between links */
-}
-
-/* Links inside mobile menu */
-.mobile-nav-links a,
-.mobile-nav-links .nav-user,
-.mobile-nav-links form {
-  color: white;
-  padding: 6px 8px;      /* smaller padding */
-  font-size: 15px;        /* reduce font size */
-  border-radius: 6px;
-}
-
-/* Hover effect */
-.mobile-nav-links a:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-/* .mobile-nav-links .btn {
-  padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-} */
-
-.mobile-nav-links .btn {
-  padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-}
-
-@media (max-width: 768px) {
-  .mobile-nav-links .navlink {
-    font-size: 15px;
-    padding: 6px 8px;
-  }
-}
-
-/* STOP MOBILE LINKS FROM FULL WIDTH */
-.mobile-nav-links {
-  align-items: flex-start; /* prevent stretch */
-}
-
-/* Make links fit content only */
-.mobile-nav-links a,
-.mobile-nav-links .nav-user,
-.mobile-nav-links form {
-  width: auto;
-  display: inline-flex;
-}
-
-.mobile-nav-links {
-  max-width: 420px;
-  margin: 0 auto;
-}
-.mobile-nav-links .btn {
-  padding: 4px 10px;
-  font-size: 13px;
-}
 
 /* =========================
    ATTEMPTS LIST – FINAL CLEAN MOBILE FIX
@@ -585,20 +508,6 @@ tr:last-child td{ border-bottom: none; }
   color: #0f172a;
 }
 
-/* Mobile logout button */
-.mobile-nav-links .mobile-logout {
-  color: #fff !important;
-  background: rgba(7, 1, 1, 0.158);   /* soft red */
-  border: 1px solid rgba(12, 2, 2, 0.4);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-}
-
-.mobile-nav-links .mobile-logout:hover {
-  background: rgba(220,38,38,0.25);
-}
-
 /* Prevent Android long-press link menu on buttons */
 .btn, .btn-primary, .btn-secondary, .navlink, .qdot {
   -webkit-touch-callout: none;  /* iOS */
@@ -607,80 +516,6 @@ tr:last-child td{ border-bottom: none; }
   touch-action: manipulation;  /* faster taps */
 }
 
-/* =========================
-   GLOBAL FIXED NAVBAR (ALL DEVICES)
-========================= */
-
-/* Navbar always fixed */
-nav{
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 9999;
-}
-
-/* Mobile + desktop menu overlay */
-.mobile-nav-links{
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  z-index: 9998;
-
-  background: #111827;
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
-}
-
-/* Desktop: hide mobile menu completely */
-@media (min-width: 769px){
-  .mobile-nav-links{
-    display: none !important;
-  }
-}
-
-/* Mobile menu visible when toggled */
-.mobile-nav-links.show{
-  display: flex;
-}
-
-/* ===== Fixed navbar spacing (use CSS variable set by JS) ===== */
-:root { --nav-h: 64px; } /* fallback */
-
-body{
-  padding-top: var(--nav-h);
-}
-
-/* Keep navbar fixed */
-nav#siteNav{
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 9999;
-}
-
-/* Mobile menu should start BELOW navbar height */
-#mobileNav{
-  position: fixed;
-  top: var(--nav-h);
-  left: 0;
-  right: 0;
-  z-index: 9998;
-
-  background: #111827;
-  max-height: calc(100vh - var(--nav-h));
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* When open, show it */
-#mobileNav.show{ display: flex; }
-
-/* Desktop: never show mobile menu */
-@media (min-width: 769px){
-  #mobileNav{ display: none !important; }
-}
 
 /* ==========================================
    FINAL: Fixed navbar + fullscreen mobile menu
@@ -738,3 +573,16 @@ body.menu-open{
 @media (min-width: 769px){
   #mobileNav{ display: none !important; }
 }
+
+#mobileNav .mobile-logout{
+  color:#fff !important;
+  background: rgba(220,38,38,0.15);
+  border: 1px solid rgba(220,38,38,0.4);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+#mobileNav .mobile-logout:hover{
+  background: rgba(220,38,38,0.25);
+}
+
