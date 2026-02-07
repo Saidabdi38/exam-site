@@ -69,7 +69,7 @@ h3{ font-size: 16px; }
    NAVBAR
 ========================= */
 nav{
-  position: sticky;
+  /* position: sticky; */
   top: 0;
   z-index: 20;
   backdrop-filter: blur(10px);
@@ -612,4 +612,48 @@ tr:last-child td{ border-bottom: none; }
   -webkit-user-select: none;
   user-select: none;
   touch-action: manipulation;  /* faster taps */
+}
+
+/* =========================
+   GLOBAL FIXED NAVBAR (ALL DEVICES)
+========================= */
+
+/* Navbar always fixed */
+nav{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 9999;
+}
+
+/* Push page content below navbar */
+body{
+  padding-top: 64px; /* navbar height */
+}
+
+/* Mobile + desktop menu overlay */
+.mobile-nav-links{
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 9998;
+
+  background: #111827;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+
+/* Desktop: hide mobile menu completely */
+@media (min-width: 769px){
+  .mobile-nav-links{
+    display: none !important;
+  }
+}
+
+/* Mobile menu visible when toggled */
+.mobile-nav-links.show{
+  display: flex;
 }
