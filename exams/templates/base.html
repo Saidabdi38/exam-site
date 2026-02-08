@@ -123,22 +123,42 @@
 
 <!-- ================= MOBILE TOGGLE SCRIPT ================= -->
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
+
   const menuToggle = document.getElementById("menuToggle");
   const mobileNav  = document.getElementById("mobileNav");
 
-  menuToggle.addEventListener("click", () => {
-    const isOpen = mobileNav.classList.toggle("show");
-    menuToggle.textContent = isOpen ? "✖" : "☰";
-  });
+  /* ===== Toggle mobile menu ===== */
+  if (menuToggle && mobileNav) {
+    menuToggle.addEventListener("click", () => {
+      const isOpen = mobileNav.classList.toggle("show");
+      menuToggle.textContent = isOpen ? "✖" : "☰";
+    });
 
-  // close when resizing to desktop
-  window.addEventListener("resize", () => {
-    if (window.innerWidth > 768) {
-      mobileNav.classList.remove("show");
-      menuToggle.textContent = "☰";
-    }
-  });
+    // Close menu when resizing to desktop
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 768) {
+        mobileNav.classList.remove("show");
+        menuToggle.textContent = "☰";
+      }
+    });
+  }
+
+  /* ===== Prevent Android long-press menus ===== */
+  document.addEventListener(
+    "contextmenu",
+    function (e) {
+      if (
+        e.target.closest(
+          "a, button, .btn, .navlink, .menu-toggle, img"
+        )
+      ) {
+        e.preventDefault();
+      }
+    },
+    { passive: false }
+  );
+
 });
 </script>
 

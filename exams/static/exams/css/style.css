@@ -613,3 +613,24 @@ body{
   #mobileNav{ display: none !important; }
 }
 
+/* ===== Stop Android long-press selection + link callouts ===== */
+body{
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* allow selection where it must work */
+input, textarea, select, [contenteditable="true"]{
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* stop link/image long-press callout as much as possible */
+a, button, .btn, .navlink, .menu-toggle, img{
+  -webkit-touch-callout: none;   /* iOS/Android */
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
