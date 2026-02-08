@@ -588,14 +588,20 @@ body{
 /* Logout looks like a normal item (same size as links) */
 #mobileNav form{
   margin: 0;
+  width: 100%;
 }
 
 #mobileNav .mobile-logout{
   width: 100%;
   display: block;
 
+  /* ✅ EXACT SAME sizing as .navlink */
   padding: 10px 12px;
   border-radius: 10px;
+  line-height: 1.2;
+  font-size: 16px;
+  text-align: left;          /* ✅ aligns like other items */
+  box-sizing: border-box;
 
   background: rgba(220,38,38,0.12);
   border: 1px solid rgba(220,38,38,0.35);
