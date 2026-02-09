@@ -640,3 +640,61 @@ a, button, .btn, .navlink, .menu-toggle, img{
   touch-action: manipulation;
 }
 
+/* =========================
+   BUTTON SYSTEM (Teacher Dashboard)
+   Put at END of style.css
+========================= */
+
+/* sizes */
+.btn-sm{
+  padding: 8px 12px;
+  min-height: 38px;
+  font-size: 14px;
+}
+
+/* variants */
+.btn-info{
+  background: rgba(37,99,235,0.08);
+  border: 1px solid rgba(37,99,235,0.22);
+  color: var(--primary);
+}
+.btn-info:hover{
+  background: rgba(37,99,235,0.12);
+  border-color: rgba(37,99,235,0.30);
+  text-decoration: none;
+}
+
+.btn-warning{
+  background: rgba(245,158,11,0.10);
+  border: 1px solid rgba(245,158,11,0.30);
+  color: #92400e;
+}
+.btn-warning:hover{
+  background: rgba(245,158,11,0.16);
+  border-color: rgba(245,158,11,0.40);
+  text-decoration: none;
+}
+
+.btn-danger{
+  background: rgba(220,38,38,0.10);
+  border: 1px solid rgba(220,38,38,0.30);
+  color: #991b1b;
+}
+.btn-danger:hover{
+  background: rgba(220,38,38,0.16);
+  border-color: rgba(220,38,38,0.40);
+  text-decoration: none;
+}
+
+/* keep buttons aligned & nice on mobile */
+.card .btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
