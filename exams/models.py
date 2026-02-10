@@ -21,8 +21,6 @@ class TeacherProfile(models.Model):
 
 
 class Exam(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.PROTECT)
-    question_count = models.PositiveIntegerField(default=50)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -37,6 +35,9 @@ class Exam(models.Model):
     duration_minutes = models.PositiveIntegerField(default=30)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    subject = models.ForeignKey(Subject, null=True, blank=True, on_delete=models.SET_NULL)
+    use_question_bank = models.BooleanField(default=False)
+    question_count = models.PositiveIntegerField(default=50)
 
     def __str__(self):
         return self.title
@@ -148,8 +149,11 @@ class Attempt(models.Model):
 
 class Answer(models.Model):
     attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name="answers")
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_choice = models.ForeignKey(Choice, on_delete=models.SET_NULL, null=True, blank=True)
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
+    bank_question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE, null=True, blank=True)
+
+    selected_choice = models.ForeignKey(Choice, on_delete=models.SET_NULL, null=True, blank
 
     class Meta:
         unique_together = ("attempt", "question")
@@ -158,7 +162,6 @@ class Answer(models.Model):
     def __str__(self):
         return f"{self.attempt} - Q{self.question_id}"
 
-# NEW — Subject (NO PAGE REQUIRED)
 class Subject(models.Model):
     name = models.CharField(max_length=120, unique=True)
 
@@ -166,7 +169,6 @@ class Subject(models.Model):
         return self.name
 
 
-# NEW — Question Bank (independent of Exam)
 class BankQuestion(models.Model):
     MCQ = "MCQ"
     TF = "TF"
@@ -175,8 +177,28 @@ class BankQuestion(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="bank_questions")
     text = models.TextField()
     qtype = models.CharField(max_length=10, choices=TYPES, default=MCQ)
-    points = models.PositiveIntegerField(default=2)
 
     def __str__(self):
         return f"{self.subject.name} - Q{self.id}"
+
+
+class BankChoice(models.Model):
+    question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE, related_name="choices")
+    text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.text
+
+
+class AttemptQuestion(models.Model):
+    attempt = models.ForeignKey("Attempt", on_delete=models.CASCADE, related_name="attempt_questions")
+    bank_question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE)
+
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ("attempt", "bank_question")
+        ordering = ["order"]
+
 
