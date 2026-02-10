@@ -1,15 +1,13 @@
 {% extends "base.html" %}
-
 {% block title %}Home{% endblock %}
-
 {% block content %}
 
-<!-- HERO SECTION -->
+<!-- HERO -->
 <section class="hero">
-  <h1>Welcome to Xirfadyaal</h1>
-  <!-- <p>This site is where students can perform exams to boost their performance to a higher level.</p> -->
+  <h1>Skills Assessments for Real-World Competency</h1>
   <p>
-    Xirfadyaal helps students practice exams, track results, and improve performance, while giving teachers a simple way to manage and review assessments online.
+    Xirfadyaal helps learners and organizations assess skills in Accounting, QuickBooks,
+    Basic Computer, and Microsoft Excel — with clear scoring, controlled attempts, and progress tracking.
   </p>
 
   {% if user.is_authenticated %}
@@ -18,13 +16,81 @@
 </section>
 
 <div class="divider"></div>
+
+<!-- SKILL CATEGORIES -->
+<section class="skills">
+  <h2>Assessment Areas</h2>
+
+  <div class="skill-grid">
+    <div class="skill-card">
+      <h3>Accounting</h3>
+      <p>Journalizing, ledgers, adjustments, and financial statements.</p>
+    </div>
+
+    <div class="skill-card">
+      <h3>QuickBooks</h3>
+      <p>Transactions, reports, customers/vendors, and workflows.</p>
+    </div>
+
+    <div class="skill-card">
+      <h3>Basic Computer</h3>
+      <p>Files & folders, internet, typing, and daily digital tasks.</p>
+    </div>
+
+    <div class="skill-card">
+      <h3>Microsoft Excel</h3>
+      <p>Formulas, formatting, tables, charts, and productivity skills.</p>
+    </div>
+  </div>
+</section>
+
 <div class="divider"></div>
 
-<!-- CALL TO ACTION -->
+<!-- HOW IT WORKS -->
+<section class="how">
+  <h2>How It Works</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Choose a Skill</h3>
+      <p>Select Accounting, QuickBooks, Computer, or Excel.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Take an Assessment</h3>
+      <p>Complete timed tests with attempt limits set by teachers.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>View Results</h3>
+      <p>See scores, track progress, and improve weak areas.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRUST / VALUE -->
+<section class="value">
+  <h2>Built for Training Centers & Schools</h2>
+  <ul class="feature-list">
+    <li>✔ Teacher controls: attempts, resits, publishing</li>
+    <li>✔ Student tracking: performance and history</li>
+    <li>✔ Mobile-friendly experience</li>
+    <li>✔ Clear skill focus (competency-based)</li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
 <section class="cta">
-  <h2>Start Your Exam Journey Today</h2>
-  <p>Sign up and choose an exam that fits your goals.</p>
-  <a class="btn btn-primary" href="{% url 'exam_prices' %}">View Exams</a>
+  <h2>Start Your Skills Assessment</h2>
+  <p>Browse available assessments and choose the best level for you.</p>
+  <a class="btn btn-primary" href="{% url 'exam_prices' %}">View Assessments</a>
 </section>
 
 {% endblock %}
