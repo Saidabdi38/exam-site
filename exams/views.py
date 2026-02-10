@@ -8,7 +8,7 @@ from django.http import Http404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
  from random import sample
-from .models import Answer, Attempt, Choice, Exam, ExamResitPermission
+from .models import Subject, Answer, Attempt, Choice, Exam, ExamResitPermission
 
 
 # -----------------------------
