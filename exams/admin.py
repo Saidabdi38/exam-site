@@ -10,6 +10,17 @@ from .models import (
     Question,
     TeacherProfile,
 )
+from .models import Subject, BankQuestion
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+
+@admin.register(BankQuestion)
+class BankQuestionAdmin(admin.ModelAdmin):
+    list_display = ("id", "subject", "qtype")
+    list_filter = ("subject", "qtype")
+    search_fields = ("text",)
 
 # -------------------- Inlines --------------------
 class ChoiceInline(admin.TabularInline):

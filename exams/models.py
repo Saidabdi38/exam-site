@@ -21,6 +21,8 @@ class TeacherProfile(models.Model):
 
 
 class Exam(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.PROTECT)
+    question_count = models.PositiveIntegerField(default=50)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -155,3 +157,26 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"{self.attempt} - Q{self.question_id}"
+
+# NEW — Subject (NO PAGE REQUIRED)
+class Subject(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+# NEW — Question Bank (independent of Exam)
+class BankQuestion(models.Model):
+    MCQ = "MCQ"
+    TF = "TF"
+    TYPES = [(MCQ, "Multiple Choice"), (TF, "True/False")]
+
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="bank_questions")
+    text = models.TextField()
+    qtype = models.CharField(max_length=10, choices=TYPES, default=MCQ)
+    points = models.PositiveIntegerField(default=2)
+
+    def __str__(self):
+        return f"{self.subject.name} - Q{self.id}"
+

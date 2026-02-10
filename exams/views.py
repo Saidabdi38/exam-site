@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.http import Http404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-
+ from random import sample
 from .models import Answer, Attempt, Choice, Exam, ExamResitPermission
 
 
@@ -205,9 +205,33 @@ def start_exam(request, exam_id):
         duration_seconds=exam.duration_minutes * 60,
     )
 
-    # Pre-create answers
-    for q in exam.questions.all():
-        Answer.objects.get_or_create(attempt=attempt, question=q)
+
+    # ✅ Randomly pick questions from SUBJECT BANK
+    bank_questions = list(
+        BankQuestion.objects.filter(subject=exam.subject)
+    )
+
+    if len(bank_questions) < exam.question_count:
+        raise Http404("Not enough questions in bank")
+
+    selected_questions = sample(bank_questions, exam.question_count)
+
+    # Create Question + Choices snapshot for THIS attempt
+    for bq in selected_questions:
+        q = Question.objects.create(
+            exam=exam,
+            text=bq.text,
+            qtype=bq.qtype,
+            points=bq.points,
+        )
+        for choice in bq.choices.all():
+            Choice.objects.create(
+                question=q,
+                text=choice.text,
+                is_correct=choice.is_correct,
+            )
+
+        Answer.objects.create(attempt=attempt, question=q)
 
     return redirect("take_exam", attempt_id=attempt.id)
 
