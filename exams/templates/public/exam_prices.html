@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Exam Prices{% endblock %}
+{% block title %}Assessment Details{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>📚 Exam Pricing</h1>
-    <p>Choose an exam and start learning today.</p>
+    <h1>📚 Assessment Details</h1>
+    <p>Choose an assessment and start evaluating your skills.</p>
 
     <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:20px;">
 
@@ -15,7 +15,7 @@
             <p>{{ exam.description|truncatewords:20 }}</p>
 
             <h2 style="margin:10px 0; color:var(--primary);">
-                ${{ exam.price }}
+                Price: ${{ exam.price }}
             </h2>
 
             {% if user.is_authenticated %}
