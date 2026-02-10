@@ -19,7 +19,7 @@
   <div class="nav-left">
     <a class="brand" href="{% url 'home' %}">
       <span class="brand-dot"></span>
-      ExamSite
+      AssessmentSite
     </a>
 
     {% if user.is_authenticated %}
@@ -27,10 +27,10 @@
       {% if user.is_staff %}
         <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
       {% endif %}
-      <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
+      <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
     {% else %}
       <a class="navlink" href="{% url 'home' %}">Home</a>
-      <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
+      <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
     {% endif %}
   </div>
 
@@ -61,7 +61,7 @@
     {% if user.is_staff %}
       <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
     {% endif %}
-    <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
+    <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
     <span class="nav-user">Hi, {{ user.username }}</span>
     <form method="post" action="{% url 'logout' %}" style="margin-top:8px;">
       {% csrf_token %}
@@ -70,7 +70,7 @@
 
   {% else %}
     <a class="navlink" href="{% url 'home' %}">Home</a>
-    <a class="navlink" href="{% url 'exam_prices' %}">Exams</a>
+    <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
     <a class="navlink" href="{% url 'login' %}">Login</a>
     <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
   {% endif %}
@@ -99,8 +99,8 @@
   <div class="footer-container">
 
     <div>
-      <h3>ExamSite</h3>
-      <p>Online exam platform for students and teachers.</p>
+      <h3>Assessment Site</h3>
+      <p>Online assessment platform for students and teachers.</p>
     </div>
 
     <div>
