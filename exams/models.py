@@ -19,6 +19,43 @@ class TeacherProfile(models.Model):
     def __str__(self):
         return self.display_name or getattr(self.user, "username", str(self.user))
 
+class Subject(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class BankQuestion(models.Model):
+    MCQ = "MCQ"
+    TF = "TF"
+    TYPES = [(MCQ, "Multiple Choice"), (TF, "True/False")]
+
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="bank_questions")
+    text = models.TextField()
+    qtype = models.CharField(max_length=10, choices=TYPES, default=MCQ)
+
+    def __str__(self):
+        return f"{self.subject.name} - Q{self.id}"
+
+
+class BankChoice(models.Model):
+    question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE, related_name="choices")
+    text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.text
+
+class AttemptQuestion(models.Model):
+    attempt = models.ForeignKey("Attempt", on_delete=models.CASCADE, related_name="attempt_questions")
+    bank_question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE)
+
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ("attempt", "bank_question")
+        ordering = ["order"]
 
 class Exam(models.Model):
     created_by = models.ForeignKey(
@@ -200,43 +237,5 @@ class Answer(models.Model):
             return f"{self.attempt} - Bank Q{self.bank_question.id}"
         return f"{self.attempt} - Answer"
 
-class Subject(models.Model):
-    name = models.CharField(max_length=120, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
-class BankQuestion(models.Model):
-    MCQ = "MCQ"
-    TF = "TF"
-    TYPES = [(MCQ, "Multiple Choice"), (TF, "True/False")]
-
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="bank_questions")
-    text = models.TextField()
-    qtype = models.CharField(max_length=10, choices=TYPES, default=MCQ)
-
-    def __str__(self):
-        return f"{self.subject.name} - Q{self.id}"
-
-
-class BankChoice(models.Model):
-    question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE, related_name="choices")
-    text = models.CharField(max_length=255)
-    is_correct = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.text
-
-
-class AttemptQuestion(models.Model):
-    attempt = models.ForeignKey("Attempt", on_delete=models.CASCADE, related_name="attempt_questions")
-    bank_question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE)
-
-    order = models.PositiveIntegerField(default=1)
-
-    class Meta:
-        unique_together = ("attempt", "bank_question")
-        ordering = ["order"]
 
 
