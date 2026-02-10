@@ -148,19 +148,57 @@ class Attempt(models.Model):
         super().save(*args, **kwargs)
 
 class Answer(models.Model):
-    attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name="answers")
+    attempt = models.ForeignKey(
+        Attempt,
+        on_delete=models.CASCADE,
+        related_name="answers"
+    )
 
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
-    bank_question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE, null=True, blank=True)
+    # One of these will be used (NOT both)
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
 
-    selected_choice = models.ForeignKey(Choice, on_delete=models.SET_NULL, null=True, blank
+    bank_question = models.ForeignKey(
+        BankQuestion,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    selected_choice = models.ForeignKey(
+        Choice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("attempt", "question")
-        indexes = [models.Index(fields=["attempt", "question"])]
+        # Prevent duplicate answers for same question in same attempt
+        constraints = [
+            models.UniqueConstraint(
+                fields=["attempt", "question"],
+                condition=models.Q(question__isnull=False),
+                name="unique_attempt_exam_question"
+            ),
+            models.UniqueConstraint(
+                fields=["attempt", "bank_question"],
+                condition=models.Q(bank_question__isnull=False),
+                name="unique_attempt_bank_question"
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.attempt} - Q{self.question_id}"
+        if self.question:
+            return f"{self.attempt} - Exam Q{self.question.id}"
+        if self.bank_question:
+            return f"{self.attempt} - Bank Q{self.bank_question.id}"
+        return f"{self.attempt} - Answer"
 
 class Subject(models.Model):
     name = models.CharField(max_length=120, unique=True)
