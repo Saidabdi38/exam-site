@@ -24,7 +24,6 @@ urlpatterns = [
     path("attempt/<int:attempt_id>/result/", views.exam_result, name="exam_result"),
 
     # Teacher
-    # path("teacher/dashboard/", views.teacher_dashboard, name="teacher_dashboard"),
     path("teacher/", include("exams.teacher_urls")),
 
      #Price
