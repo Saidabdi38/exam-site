@@ -5,6 +5,7 @@ from . import teacher_views as tv
 urlpatterns = [
     # Dashboard
     path("", tv.teacher_dashboard, name="teacher_dashboard"),
+    path("teacher/dashboard/", tv.teacher_dashboard, name="teacher_dashboard"),
 
     # Exams
     path("exams/<int:exam_id>/", tv.exam_detail, name="teacher_exam_detail"),
