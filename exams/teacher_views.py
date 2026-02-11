@@ -32,6 +32,11 @@ def teacher_required(view_func):
     return _wrapped
 
 @teacher_required
+def subject_list(request):
+    subjects = Subject.objects.order_by("name")
+    return render(request, "teacher/subject_list.html", {"subjects": subjects})
+
+@teacher_required
 def bank_question_list(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
     questions = BankQuestion.objects.filter(subject=subject).order_by("-id")
