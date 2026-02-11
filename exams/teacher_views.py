@@ -129,6 +129,19 @@ class QuestionForm(ModelForm):
         model = Question
         fields = ["text", "qtype", "points"]
 
+# ---------- Bank Forms ----------
+class BankQuestionForm(ModelForm):
+    class Meta:
+        model = BankQuestion
+        fields = ["text", "qtype"]
+
+BankChoiceFormSet = inlineformset_factory(
+    BankQuestion,
+    BankChoice,
+    fields=("text", "is_correct"),
+    extra=4,
+    can_delete=True,
+)
 
 ChoiceFormSet = inlineformset_factory(
     Question,
