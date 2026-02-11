@@ -10,10 +10,83 @@ from django.db.models import Count, Q
 from django.db import models
 
 
-def is_teacher(user):
-    return use
+from .models import Subject, BankQuestion, BankChoice, Answer, Attempt, Choice, Exam, ExamResitPermission, Question
 
-from .models import Answer, Attempt, Choice, Exam, ExamResitPermission, Question
+@teacher_required
+def bank_question_list(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    questions = BankQuestion.objects.filter(subject=subject).order_by("-id")
+    return render(request, "teacher/bank_question_list.html", {
+        "subject": subject,
+        "questions": questions,
+    })
+
+@teacher_required
+def bank_question_create(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    q = BankQuestion(subject=subject)
+    form = BankQuestionForm(request.POST or None, instance=q)
+    formset = BankChoiceFormSet(request.POST or None, instance=q)
+
+    if request.method == "POST" and form.is_valid() and formset.is_valid():
+        q = form.save(commit=False)
+        q.subject = subject
+        q.save()
+        formset.instance = q
+        formset.save()
+
+        # keep only 1 correct
+        correct = q.choices.filter(is_correct=True).order_by("-id")
+        if correct.count() > 1:
+            keep_id = correct.first().id
+            q.choices.exclude(id=keep_id).update(is_correct=False)
+
+        return redirect("teacher_bank_question_list", subject_id=subject.id)
+
+    return render(request, "teacher/bank_question_form.html", {
+        "form": form,
+        "formset": formset,
+        "subject": subject,
+        "mode": "Create",
+    })
+
+@teacher_required
+def bank_question_edit(request, subject_id, pk):
+    subject = get_object_or_404(Subject, id=subject_id)
+    q = get_object_or_404(BankQuestion, id=pk, subject=subject)
+
+    form = BankQuestionForm(request.POST or None, instance=q)
+    formset = BankChoiceFormSet(request.POST or None, instance=q)
+
+    if request.method == "POST" and form.is_valid() and formset.is_valid():
+        form.save()
+        formset.save()
+
+        correct = q.choices.filter(is_correct=True).order_by("-id")
+        if correct.count() > 1:
+            keep_id = correct.first().id
+            q.choices.exclude(id=keep_id).update(is_correct=False)
+
+        return redirect("teacher_bank_question_list", subject_id=subject.id)
+
+    return render(request, "teacher/bank_question_form.html", {
+        "form": form,
+        "formset": formset,
+        "subject": subject,
+        "mode": "Edit",
+    })
+
+@teacher_required
+def bank_question_delete(request, subject_id, pk):
+    subject = get_object_or_404(Subject, id=subject_id)
+    q = get_object_or_404(BankQuestion, id=pk, subject=subject)
+
+    if request.method == "POST":
+        q.delete()
+        return redirect("teacher_bank_question_list", subject_id=subject.id)
+
+    return render(request, "teacher/confirm_delete.html", {"object": q})
 
 User = get_user_model()
 
@@ -44,7 +117,6 @@ def _get_owned_exam_or_404(request, exam_id: int) -> Exam:
     if request.user.is_superuser:
         return get_object_or_404(Exam, id=exam_id)
     return get_object_or_404(Exam, id=exam_id, created_by=request.user)
-
 
 # ---------- Forms ----------
 class ExamForm(ModelForm):
@@ -174,35 +246,39 @@ def exam_attempts(request, exam_id: int):
     )
     return render(request, "teacher/attempts_list.html", {"exam": exam, "attempts": attempts})
 
-
 @teacher_required
 def attempt_detail(request, exam_id: int, attempt_id: int):
-    """View a specific student's attempt + per-question correctness."""
     exam = _get_owned_exam_or_404(request, exam_id)
     attempt = get_object_or_404(Attempt, id=attempt_id, exam=exam)
 
-    answers = (
-        Answer.objects.filter(attempt=attempt)
-        .select_related("question", "selected_choice")
-        .order_by("question_id")
-    )
+    answers = Answer.objects.filter(attempt=attempt).select_related(
+        "question", "bank_question", "selected_choice"
+    ).order_by("id")
 
     rows = []
     for a in answers:
-        correct_choice = a.question.choices.filter(is_correct=True).first()
-        is_correct = bool(
-            a.selected_choice_id and correct_choice and a.selected_choice_id == correct_choice.id
-        )
-        rows.append(
-            {
-                "question": a.question,
-                "selected": a.selected_choice,
-                "correct": correct_choice,
-                "is_correct": is_correct,
-            }
-        )
+        # Decide where question came from
+        if a.bank_question:
+            qtext = a.bank_question.text
+            correct = a.bank_question.choices.filter(is_correct=True).first()
+        else:
+            qtext = a.question.text if a.question else ""
+            correct = a.question.choices.filter(is_correct=True).first() if a.question else None
 
-    return render(request, "teacher/attempt_detail.html", {"exam": exam, "attempt": attempt, "rows": rows})
+        is_correct = bool(a.selected_choice_id and correct and a.selected_choice_id == correct.id)
+
+        rows.append({
+            "question_text": qtext,
+            "selected": a.selected_choice,
+            "correct": correct,
+            "is_correct": is_correct,
+        })
+
+    return render(request, "teacher/attempt_detail.html", {
+        "exam": exam,
+        "attempt": attempt,
+        "rows": rows,
+    })
 
 @teacher_required
 def manage_resits(request, exam_id: int):

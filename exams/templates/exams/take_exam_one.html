@@ -190,7 +190,7 @@ async function saveThenGo(url) {
 }
 
 /* ✅ Save immediately when selecting option */
-document.querySelectorAll(".answer-radio").forEach(radio => {
+document.querySelectorAll(".mcq-radio").forEach(radio => {
   radio.addEventListener("change", () => autosave());
 });
 

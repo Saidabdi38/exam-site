@@ -4,8 +4,9 @@
 
   <p>
     <a href="{% url 'teacher_dashboard' %}">Back</a> |
-    <a href="{% url 'teacher_exam_edit' exam.id %}">Edit Exam</a> |
-    <a href="{% url 'teacher_question_create' exam.id %}">+ Add Question</a>
+    <a href="{% url 'teacher_bank_question_list' exam.subject.id %}">
+        Manage Question Bank
+    </a>
     | <a href="{% url 'teacher_exam_attempts' exam.id %}">View Attempts</a>
   </p>
 
@@ -19,7 +20,6 @@
         - {{ q.text }}
       </p>
       <a href="{% url 'teacher_question_edit' exam.id q.id %}">Edit Choices</a> |
-      <a href="{% url 'teacher_question_delete' exam.id q.id %}">Delete</a>
     </div>
   {% empty %}
     <p>No questions yet.</p>

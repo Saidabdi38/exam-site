@@ -6,10 +6,36 @@ urlpatterns = [
     path("teacher/", tv.teacher_dashboard, name="teacher_dashboard"),
 
     # Exams
-    path("teacher/exams/new/", tv.exam_create, name="teacher_exam_create"),
     path("teacher/exams/<int:exam_id>/", tv.exam_detail, name="teacher_exam_detail"),
-    path("teacher/exams/<int:exam_id>/edit/", tv.exam_edit, name="teacher_exam_edit"),
-    path("teacher/exams/<int:exam_id>/delete/", tv.exam_delete, name="teacher_exam_delete"),
+    
+    # Question Bank (per subject)
+
+    path("teacher/bank/", tv.subject_list, name="teacher_subject_list"),
+
+    path(
+        "teacher/bank/<int:subject_id>/",
+        tv.bank_question_list,
+        name="teacher_bank_question_list",
+    ),
+
+    path(
+        "teacher/bank/<int:subject_id>/new/",
+        tv.bank_question_create,
+        name="teacher_bank_question_create",
+    ),
+
+    path(
+        "teacher/bank/<int:subject_id>/<int:pk>/edit/",
+        tv.bank_question_edit,
+        name="teacher_bank_question_edit",
+    ),
+
+    path(
+        "teacher/bank/<int:subject_id>/<int:pk>/delete/",
+        tv.bank_question_delete,
+        name="teacher_bank_question_delete",
+    ),
+
 
     # Attempts
     path("teacher/exams/<int:exam_id>/attempts/", tv.exam_attempts, name="teacher_exam_attempts"),

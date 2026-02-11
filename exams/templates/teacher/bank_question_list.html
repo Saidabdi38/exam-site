@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Question Bank: {{ subject.name }}</h2>
+
+<a href="{% url 'teacher_bank_question_create' subject.id %}">
+    + Add Question
+</a>
+
+<hr>
+
+{% for q in questions %}
+<div style="border:1px solid #ddd; padding:10px; margin:10px 0;">
+    <strong>{{ forloop.counter }}</strong>
+    ({{ q.points }} pts)
+    - {{ q.text }}
+
+    <br>
+    <a href="{% url 'teacher_bank_question_edit' subject.id q.id %}">Edit</a>
+    |
+    <a href="{% url 'teacher_bank_question_delete' subject.id q.id %}">Delete</a>
+</div>
+{% empty %}
+<p>No questions yet.</p>
+{% endfor %}
+
+{% endblock %}
