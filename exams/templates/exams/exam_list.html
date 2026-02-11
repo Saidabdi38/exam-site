@@ -3,7 +3,13 @@
 {% block title %}Exam List{% endblock %}
 
 {% block content %}
+{% if user.is_authenticated and user.is_staff %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'exam_create' %}" class="btn btn-primary">+ Create New Assessment</a>
+</div>
+{% endif %}
 
+</div>
 <h1>Exam List</h1>
 <p class="small">All published exams</p>
 

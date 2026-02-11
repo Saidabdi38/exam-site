@@ -166,7 +166,7 @@ def teacher_dashboard(request):
 
 
 @teacher_required
-def exam_create(request):
+def f(request):
     form = ExamForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         exam = form.save(commit=False)
