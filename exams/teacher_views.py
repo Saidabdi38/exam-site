@@ -12,6 +12,25 @@ from django.db import models
 
 from .models import Subject, BankQuestion, BankChoice, Answer, Attempt, Choice, Exam, ExamResitPermission, Question
 
+# ---------- Permission ----------
+def is_teacher(user):
+    # simplest teacher rule: staff OR superuser
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+def teacher_required(view_func):
+    """
+    Wrapper that:
+    - requires login
+    - requires teacher test
+    - returns 403 if not allowed
+    """
+    @login_required
+    def _wrapped(request, *args, **kwargs):
+        if not is_teacher(request.user):
+            return HttpResponseForbidden("Not allowed")
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
 @teacher_required
 def bank_question_list(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
@@ -89,27 +108,6 @@ def bank_question_delete(request, subject_id, pk):
     return render(request, "teacher/confirm_delete.html", {"object": q})
 
 User = get_user_model()
-
-
-# ---------- Permission ----------
-def is_teacher(user):
-    # simplest teacher rule: staff OR superuser
-    return user.is_authenticated and (user.is_staff or user.is_superuser)
-
-
-def teacher_required(view_func):
-    """
-    Wrapper that:
-    - requires login
-    - requires teacher test
-    - returns 403 if not allowed
-    """
-    @login_required
-    def _wrapped(request, *args, **kwargs):
-        if not is_teacher(request.user):
-            return HttpResponseForbidden("Not allowed")
-        return view_func(request, *args, **kwargs)
-    return _wrapped
 
 
 def _get_owned_exam_or_404(request, exam_id: int) -> Exam:
