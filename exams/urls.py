@@ -23,9 +23,6 @@ urlpatterns = [
     path("attempt/<int:attempt_id>/submit/", views.submit_exam, name="submit_exam"),
     path("attempt/<int:attempt_id>/result/", views.exam_result, name="exam_result"),
 
-    # Teacher
-    path("teacher/", include("exams.teacher_urls")),
-
      #Price
     path("prices/", views.exam_prices, name="exam_prices"),
 ]
