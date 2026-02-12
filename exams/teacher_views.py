@@ -9,7 +9,6 @@ from django.db import transaction
 from django.db.models import Count, Q
 from django.db import models
 
-
 from .models import Subject, BankQuestion, BankChoice, Answer, Attempt, Choice, Exam, ExamResitPermission, Question
 
 # ---------- Permission ----------
@@ -125,7 +124,16 @@ def _get_owned_exam_or_404(request, exam_id: int) -> Exam:
 class ExamForm(ModelForm):
     class Meta:
         model = Exam
-        fields = ["title", "description", "duration_minutes", "is_published", "price"]
+        fields = [
+            "title","description","subject","use_question_bank","question_count",
+            "duration_minutes","is_published","price",
+        ]
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("use_question_bank") and not cleaned.get("subject"):
+            raise forms.ValidationError("Please select a subject when using Question Bank.")
+        return cleaned
 
 class QuestionForm(ModelForm):
     class Meta:

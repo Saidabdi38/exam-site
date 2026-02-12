@@ -73,7 +73,7 @@ class Exam(models.Model):
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     subject = models.ForeignKey(Subject, null=True, blank=True, on_delete=models.SET_NULL)
-    use_question_bank = models.BooleanField(default=False)
+    use_question_bank = models.BooleanField(default=True)
     question_count = models.PositiveIntegerField(default=50)
 
     def __str__(self):
