@@ -166,23 +166,31 @@ ChoiceFormSet = inlineformset_factory(
 # ---------- Teacher views ----------
 @teacher_required
 def teacher_dashboard(request):
+
+    # ✅ Admin sees ALL exams
     if request.user.is_superuser:
         exams = Exam.objects.order_by("-created_at")
+
+    # ✅ Teacher sees ONLY their exams
     else:
         exams = Exam.objects.filter(created_by=request.user).order_by("-created_at")
-    return render(request, "teacher/dashboard.html", {"exams": exams})
 
+    return render(request, "teacher/dashboard.html", {"exams": exams})
 
 @teacher_required
 def exam_create(request):
     form = ExamForm(request.POST or None)
+
     if request.method == "POST" and form.is_valid():
         exam = form.save(commit=False)
-        exam.created_by = request.user
-        exam.save()
-        return redirect("teacher_exam_detail", exam_id=exam.id)
-    return render(request, "teacher/exam_form.html", {"form": form, "mode": "Create"})
 
+        # 🔴 THIS LINE IS REQUIRED
+        exam.created_by = request.user
+
+        exam.save()
+        return redirect("teacher_dashboard")
+
+    return render(request, "teacher/exam_form.html", {"form": form, "mode": "Create"})
 
 @teacher_required
 def exam_edit(request, exam_id: int):
