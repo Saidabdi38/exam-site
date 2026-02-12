@@ -9,6 +9,11 @@ urlpatterns = [
     # Exams
     path("exams/<int:exam_id>/", tv.exam_detail, name="teacher_exam_detail"),
     path("exam/create/", tv.exam_create, name="exam_create"),
+    path("exams/<int:exam_id>/attempts/", tv.teacher_exam_attempts, name="teacher_exam_attempts"),
+    path("exams/<int:exam_id>/view-permissions/", tv.teacher_manage_view_permissions, name="teacher_manage_view_permissions"),
+    path("exams/<int:exam_id>/resits/", tv.teacher_manage_resits, name="teacher_manage_resits"),
+    path("exams/<int:exam_id>/edit/", tv.exam_edit, name="teacher_exam_edit"),
+    path("exams/<int:exam_id>/delete/", tv.exam_delete, name="teacher_exam_delete"),
 
     # Subjects list (Question Bank home)
     path("bank/", tv.subject_list, name="teacher_subject_list"),
