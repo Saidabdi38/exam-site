@@ -8,6 +8,7 @@ urlpatterns = [
 
     # Exams
     path("exams/<int:exam_id>/", tv.exam_detail, name="teacher_exam_detail"),
+    path("exam/create/", tv.exam_create, name="exam_create"),
 
     # Subjects list (Question Bank home)
     path("bank/", tv.subject_list, name="teacher_subject_list"),
