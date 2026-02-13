@@ -8,7 +8,7 @@ from django.http import Http404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from random import sample
-from .models import Subject, BankQuestion, AttemptQuestion, Question, Answer, Attempt, Exam, ExamResitPermission
+from .models import Subject, BankQuestion, AttemptQuestion, Question, Answer, BankChoice, Attempt, Exam, ExamResitPermission
 
 
 # -----------------------------
@@ -198,7 +198,6 @@ def start_exam(request, exam_id):
         duration_seconds=exam.duration_minutes * 60,
     )
 
-    # ✅ Use question bank ONLY
     if not exam.use_question_bank or not exam.subject_id:
         raise Http404("Exam is not configured to use question bank / subject missing.")
 
@@ -211,14 +210,16 @@ def start_exam(request, exam_id):
 
     selected = sample(bank_qs, exam.question_count)
 
-    # ✅ Freeze selection for THIS attempt (different per attempt/student)
     for idx, bq in enumerate(selected, start=1):
-        aq = AttemptQuestion.objects.create(
+        AttemptQuestion.objects.create(
             attempt=attempt,
             bank_question=bq,
             order=idx,
         )
-        Answer.objects.create(attempt=attempt, attempt_question=aq)
+        Answer.objects.create(
+            attempt=attempt,
+            bank_question=bq,
+        )
 
     return redirect("take_exam_q", attempt_id=attempt.id, qno=1)
 
@@ -230,6 +231,7 @@ def take_exam(request, attempt_id):
     """
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
     return redirect("take_exam_q", attempt_id=attempt.id, qno=1)
+
 
 @login_required
 @transaction.atomic
@@ -246,9 +248,14 @@ def take_exam_q(request, attempt_id, qno):
         if elapsed >= attempt.duration_seconds:
             return redirect("submit_exam", attempt_id=attempt.id)
 
+    # Questions frozen for THIS attempt (ordered)
     aqs = list(
-        attempt.attempt_questions.select_related("bank_question").prefetch_related("bank_question__choices")
+        AttemptQuestion.objects.filter(attempt=attempt)
+        .select_related("bank_question")
+        .prefetch_related("bank_question__choices")
+        .order_by("order")
     )
+
     total = len(aqs)
     if total == 0:
         raise Http404("No questions were generated for this attempt.")
@@ -260,19 +267,28 @@ def take_exam_q(request, attempt_id, qno):
     question = aq.bank_question
     choices = list(question.choices.all())
 
-    ans = Answer.objects.get(attempt=attempt, attempt_question=aq)
+    # ✅ Answer record for this attempt + this bank question
+    ans, _ = Answer.objects.get_or_create(
+        attempt=attempt,
+        bank_question=question,
+        defaults={"question": None},  # keep old field empty
+    )
 
+    # Save answer
     if request.method == "POST" and attempt.submitted_at is None:
-        if "answer" in request.POST:
-            choice_id = request.POST.get("answer", "").strip()
-            if choice_id:
-                ans.selected_choice = BankChoice.objects.filter(id=choice_id, question=question).first()
-            else:
-                ans.selected_choice = None
-            ans.save()
+        choice_id = request.POST.get("answer", "").strip()
+
+        if choice_id:
+            ans.selected_bank_choice = BankChoice.objects.filter(
+                id=choice_id,
+                question=question
+            ).first()
+        else:
+            ans.selected_bank_choice = None
+
+        ans.save()
 
         nav = request.POST.get("nav")
-
         if nav == "prev" and qno > 1:
             return redirect("take_exam_q", attempt_id=attempt.id, qno=qno - 1)
         if nav == "next" and qno < total:
@@ -284,13 +300,15 @@ def take_exam_q(request, attempt_id, qno):
 
     time_left = attempt.time_left_seconds()
 
-    answered_aqids = set(
-        attempt.answers.filter(selected_choice__isnull=False).values_list("attempt_question_id", flat=True)
+    # progress bar: which questions answered
+    answered_bq_ids = set(
+        Answer.objects.filter(attempt=attempt, selected_bank_choice__isnull=False)
+        .values_list("bank_question_id", flat=True)
     )
 
     progress = []
     for i, one_aq in enumerate(aqs, start=1):
-        progress.append({"no": i, "answered": (one_aq.id in answered_aqids)})
+        progress.append({"no": i, "answered": (one_aq.bank_question_id in answered_bq_ids)})
 
     return render(
         request,
@@ -302,7 +320,8 @@ def take_exam_q(request, attempt_id, qno):
             "choices": choices,
             "qno": qno,
             "total": total,
-            "selected_choice_id": ans.selected_choice_id,
+            # ✅ use selected_bank_choice now
+            "selected_choice_id": ans.selected_bank_choice_id,
             "has_prev": qno > 1,
             "has_next": qno < total,
             "time_left": time_left,
@@ -311,34 +330,47 @@ def take_exam_q(request, attempt_id, qno):
     )
 
 @login_required
-@require_POST
 @transaction.atomic
 def autosave_answer(request, attempt_id, qno):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
+
+    # ✅ don't allow autosave after submit
     if attempt.submitted_at is not None:
         return JsonResponse({"ok": False, "error": "submitted"}, status=400)
 
     aqs = list(
-        attempt.attempt_questions.select_related("bank_question").all()
+        AttemptQuestion.objects.filter(attempt=attempt)
+        .select_related("bank_question")
+        .order_by("order")
     )
+
     total = len(aqs)
-    if qno < 1 or qno > total:
-        return JsonResponse({"ok": False, "error": "bad_qno"}, status=404)
+    if total == 0 or qno < 1 or qno > total:
+        raise Http404("Question number out of range.")
 
     aq = aqs[qno - 1]
-    question = aq.bank_question
+    bq = aq.bank_question
 
-    ans = Answer.objects.get(attempt=attempt, attempt_question=aq)
+    ans, _ = Answer.objects.get_or_create(
+        attempt=attempt,
+        bank_question=bq,
+        defaults={"question": None},
+    )
 
-    choice_id = request.POST.get("answer", "").strip()
-    if choice_id:
-        ans.selected_choice = BankChoice.objects.filter(id=choice_id, question=question).first()
-    else:
-        ans.selected_choice = None
+    if request.method == "POST":
+        choice_id = request.POST.get("answer", "").strip()
 
-    ans.save()
+        if choice_id:
+            ans.selected_bank_choice = BankChoice.objects.filter(
+                id=choice_id, question=bq
+            ).first()
+        else:
+            ans.selected_bank_choice = None
+
+        ans.save()
+
     return JsonResponse({"ok": True})
-
+    
 @login_required
 @transaction.atomic
 def submit_exam(request, attempt_id):
@@ -347,15 +379,16 @@ def submit_exam(request, attempt_id):
     if not can_view_exam(request.user, attempt.exam):
         return redirect("student_dashboard")
 
-    if attempt.is_submitted:
+    if attempt.submitted_at:
         return redirect("exam_result", attempt_id=attempt.id)
 
-    answers = attempt.answers.select_related("selected_choice").all()
+    answers = attempt.answers.select_related("selected_bank_choice").all()
 
-    max_score = len(answers) * 2
     score = 0
+    max_score = len(answers) * 2
+
     for ans in answers:
-        if ans.selected_choice and ans.selected_choice.is_correct:
+        if ans.selected_bank_choice and ans.selected_bank_choice.is_correct:
             score += 2
 
     attempt.score = score

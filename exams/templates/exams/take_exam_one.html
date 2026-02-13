@@ -32,6 +32,9 @@
   .qdot.current { outline:2px solid #2563eb; }
 
   .save-status{ font-size:13px; color:#475569; margin:6px 0 0; }
+  .mcq-option { display:flex; gap:10px; align-items:flex-start; margin:10px 0; cursor:pointer; }
+  .mcq-radio { margin-top:4px; }
+  .mcq-text { display:inline-block; }
 </style>
 
 <h2>{{ exam.title }}</h2>
@@ -82,6 +85,7 @@
       <strong>Q{{ qno }} (2 pts)</strong>
       {{ question.text }}
     </p>
+
     {% for c in choices %}
       <label class="mcq-option">
         <input
@@ -94,7 +98,6 @@
         <span class="mcq-text">{{ c.text }}</span>
       </label>
     {% endfor %}
-
   </div>
 
   <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -155,7 +158,6 @@ async function autosave() {
   saveStatus.textContent = "Saving...";
 
   const formData = new FormData();
-  // only send the answer value (clean + safe)
   const selected = document.querySelector("input[name='answer']:checked");
   formData.append("answer", selected ? selected.value : "");
 
@@ -196,7 +198,7 @@ document.querySelectorAll(".mcq-radio").forEach(radio => {
 
 /* ✅ Confirm only on Submit */
 document.querySelectorAll("#examForm button[type='submit']").forEach(btn => {
-  btn.addEventListener("click", async (e) => {
+  btn.addEventListener("click", (e) => {
     if (btn.value === "submit") {
       const ok = confirm("Submit exam now?");
       if (!ok) {
@@ -204,8 +206,7 @@ document.querySelectorAll("#examForm button[type='submit']").forEach(btn => {
         return;
       }
     }
-    // let normal form submit happen for prev/next/submit
-    // (the server will save the answer again safely if "answer" exists)
+    // normal form submit continues
   });
 });
 </script>
