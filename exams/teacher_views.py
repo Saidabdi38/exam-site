@@ -49,6 +49,26 @@ def subject_create(request):
         return redirect("teacher_subject_list")
 
     return render(request, "teacher/subject_create.html")
+
+@teacher_required
+def subject_edit(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    if request.method == "POST":
+        subject.name = request.POST.get("name")
+        subject.level = request.POST.get("level")
+        subject.overview = request.POST.get("overview")
+        subject.learning_objectives = request.POST.get("learning_objectives")
+        subject.topics_covered = request.POST.get("topics_covered")
+        subject.assessment_format = request.POST.get("assessment_format")
+        subject.exam_structure = request.POST.get("exam_structure")
+        subject.preparation_tips = request.POST.get("preparation_tips")
+        subject.prerequisites = request.POST.get("prerequisites")
+        subject.study_materials = request.POST.get("study_materials")
+        subject.save()
+        return redirect("teacher_subject_list")
+
+    return render(request, "teacher/subject_edit.html", {"subject": subject})
     
 @teacher_required
 def subject_list(request):

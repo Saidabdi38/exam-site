@@ -12,26 +12,17 @@
 </div>
 
 <div class="card">
-  {% for s in subjects %}
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        padding:10px 0;
-        border-bottom:1px solid #e5e7eb;">
-      <div>
-        <strong>{{ s.name }}</strong>
-      </div>
+    <div style="display:flex; gap:8px;">
+    <a class="btn btn-secondary"
+      href="{% url 'teacher_bank_question_list' s.id %}">
+      Question Bank
+    </a>
 
-      <a class="btn btn-secondary"
-         href="{% url 'teacher_bank_question_list' s.id %}">
-         Question Bank
-      </a>
-    </div>
-
-  {% empty %}
-    <p>No subjects yet.</p>
-  {% endfor %}
+    <a class="btn btn-sm btn-warning"
+      href="{% url 'teacher_subject_edit' s.id %}">
+      Edit
+    </a>
+  </div>
 </div>
 
 {% endblock %}

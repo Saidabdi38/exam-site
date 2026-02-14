@@ -18,6 +18,7 @@ urlpatterns = [
     # Subjects list (Question Bank home)
     path("subjects/", tv.subject_list, name="teacher_subject_list"),
     path("subject/create/", tv.subject_create, name="teacher_subject_create"),
+    path("subjects/<int:subject_id>/edit/", tv.subject_edit, name="teacher_subject_edit"),
 
     # Bank Questions (per subject)
     path("bank/<int:subject_id>/", tv.bank_question_list, name="teacher_bank_question_list"),
