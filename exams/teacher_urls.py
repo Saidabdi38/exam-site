@@ -19,7 +19,8 @@ urlpatterns = [
     path("subjects/", tv.subject_list, name="teacher_subject_list"),
     path("subject/create/", tv.subject_create, name="teacher_subject_create"),
     path("subjects/<int:subject_id>/edit/", tv.subject_edit, name="teacher_subject_edit"),
-
+    path("subject/<int:subject_id>/delete/", tv.subject_delete, name="teacher_subject_delete"),
+    
     # Bank Questions (per subject)
     path("bank/<int:subject_id>/", tv.bank_question_list, name="teacher_bank_question_list"),
     path("bank/<int:subject_id>/new/", tv.bank_question_create, name="teacher_bank_question_create"),

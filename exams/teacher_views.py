@@ -69,6 +69,19 @@ def subject_edit(request, subject_id):
         return redirect("teacher_subject_list")
 
     return render(request, "teacher/subject_edit.html", {"subject": subject})
+
+@teacher_required
+def subject_delete(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    if request.method == "POST":
+        subject.delete()
+        return redirect("teacher_subject_list")
+
+    return render(request, "teacher/confirm_delete.html", {
+        "object": subject,
+        "type": "Subject",
+    })
     
 @teacher_required
 def subject_list(request):
