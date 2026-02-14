@@ -1,15 +1,37 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>Subjects</h2>
 
-  <div class="card">
-    {% for s in subjects %}
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #e5e7eb;">
-        <div><strong>{{ s.name }}</strong></div>
-        <a class="btn btn-secondary" href="{% url 'teacher_bank_question_list' s.id %}">Question Bank</a>
+<h2>Subjects</h2>
+
+<!-- ✅ Create Subject button -->
+<div style="margin-bottom:15px;">
+  <a class="btn btn-primary"
+     href="{% url 'subject_create' %}">
+     + Create Subject
+  </a>
+</div>
+
+<div class="card">
+  {% for s in subjects %}
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:10px 0;
+        border-bottom:1px solid #e5e7eb;">
+      <div>
+        <strong>{{ s.name }}</strong>
       </div>
-    {% empty %}
-      <p>No subjects yet.</p>
-    {% endfor %}
-  </div>
+
+      <a class="btn btn-secondary"
+         href="{% url 'teacher_bank_question_list' s.id %}">
+         Question Bank
+      </a>
+    </div>
+
+  {% empty %}
+    <p>No subjects yet.</p>
+  {% endfor %}
+</div>
+
 {% endblock %}

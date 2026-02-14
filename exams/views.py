@@ -182,6 +182,20 @@ def subject_detail(request, subject_id):
         "study_materials": _lines(subject.study_materials),
     }
     return render(request, "exams/subject_detail.html", ctx)
+
+@login_required
+@user_passes_test(staff_required)
+def subject_create(request):
+    if request.method == "POST":
+        Subject.objects.create(
+            name=request.POST.get("name"),
+            level=request.POST.get("level"),
+            overview=request.POST.get("overview"),
+            learning_objectives=request.POST.get("learning_objectives"),
+            topics_covered=request.POST.get("topics_covered"),
+            assessment_format=request.POST.get("assessment_format"),
+            exam_structure=request.POST.get("exa…
+[14:02, 14/02/2026] Siciid Cabdi: path("subject/create/", views.subject_create, name="subject_create"),
 # -----------------------------
 # Exam flow (resit-aware)
 # -----------------------------

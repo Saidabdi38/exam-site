@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Create Subject{% endblock %}
+
+{% block content %}
+
+<h1>Create Subject</h1>
+
+<form method="post">
+  {% csrf_token %}
+
+  <p>
+    <label>Name</label><br>
+    <input type="text" name="name" required>
+  </p>
+
+  <p>
+    <label>Level</label><br>
+    <input type="text" name="level">
+  </p>
+
+  <p>
+    <label>Overview</label><br>
+    <textarea name="overview" rows="3"></textarea>
+  </p>
+
+  <p>
+    <label>Learning Objectives (one per line)</label><br>
+    <textarea name="learning_objectives" rows="4"></textarea>
+  </p>
+
+  <p>
+    <label>Topics Covered (one per line)</label><br>
+    <textarea name="topics_covered" rows="4"></textarea>
+  </p>
+
+  <p>
+    <label>Assessment Format</label><br>
+    <textarea name="assessment_format" rows="3"></textarea>
+  </p>
+
+  <p>
+    <label>Exam Structure</label><br>
+    <textarea name="exam_structure" rows="3"></textarea>
+  </p>
+
+  <p>
+    <label>Preparation Tips</label><br>
+    <textarea name="preparation_tips" rows="3"></textarea>
+  </p>
+
+  <p>
+    <label>Prerequisites (one per line)</label><br>
+    <textarea name="prerequisites" rows="3"></textarea>
+  </p>
+
+  <p>
+    <label>Study Materials (one per line)</label><br>
+    <textarea name="study_materials" rows="3"></textarea>
+  </p>
+
+  <button class="btn btn-primary" type="submit">
+    Save Subject
+  </button>
+
+</form>
+
+{% endblock %}

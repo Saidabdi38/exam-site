@@ -16,7 +16,7 @@ urlpatterns = [
     path("exams/<int:exam_id>/delete/", tv.exam_delete, name="teacher_exam_delete"),
 
     # Subjects list (Question Bank home)
-    path("bank/", tv.subject_list, name="teacher_subject_list"),
+    path("subjects/", tv.subject_list, name="teacher_subject_list"),
 
     # Bank Questions (per subject)
     path("bank/<int:subject_id>/", tv.bank_question_list, name="teacher_bank_question_list"),
