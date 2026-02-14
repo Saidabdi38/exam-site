@@ -3,7 +3,7 @@
 
 <h2>Subjects</h2>
 
-<!-- ✅ Create Subject button -->
+<!-- Create button -->
 <div style="margin-bottom:15px;">
   <a class="btn btn-primary"
      href="{% url 'teacher_subject_create' %}">
@@ -12,17 +12,40 @@
 </div>
 
 <div class="card">
-    <div style="display:flex; gap:8px;">
-    <a class="btn btn-secondary"
-      href="{% url 'teacher_bank_question_list' s.id %}">
-      Question Bank
-    </a>
 
-    <a class="btn btn-sm btn-warning"
-      href="{% url 'teacher_subject_edit' s.id %}">
-      Edit
-    </a>
+  {% for s in subjects %}
+  <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:10px 0;
+      border-bottom:1px solid #e5e7eb;">
+
+    <!-- LEFT SIDE -->
+    <div>
+      <strong>{{ s.name }}</strong>
+    </div>
+
+    <!-- RIGHT SIDE BUTTONS -->
+    <div style="display:flex; gap:8px;">
+
+      <a class="btn btn-secondary"
+         href="{% url 'teacher_bank_question_list' s.id %}">
+         Question Bank
+      </a>
+
+      <a class="btn btn-sm btn-warning"
+         href="{% url 'teacher_subject_edit' s.id %}">
+         Edit
+      </a>
+
+    </div>
+
   </div>
+  {% empty %}
+    <p>No subjects yet.</p>
+  {% endfor %}
+
 </div>
 
 {% endblock %}
