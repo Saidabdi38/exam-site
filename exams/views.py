@@ -182,26 +182,7 @@ def subject_detail(request, subject_id):
         "study_materials": _lines(subject.study_materials),
     }
     return render(request, "exams/subject_detail.html", ctx)
-
-@login_required
-@user_passes_test(is_teacher)
-def subject_create(request):
-    if request.method == "POST":
-        Subject.objects.create(
-            name=request.POST.get("name"),
-            level=request.POST.get("level"),
-            overview=request.POST.get("overview"),
-            learning_objectives=request.POST.get("learning_objectives"),
-            topics_covered=request.POST.get("topics_covered"),
-            assessment_format=request.POST.get("assessment_format"),
-            exam_structure=request.POST.get("exam_structure"),
-            preparation_tips=request.POST.get("preparation_tips"),
-            prerequisites=request.POST.get("prerequisites"),
-            study_materials=request.POST.get("study_materials"),
-        )
-        return redirect("home")
-
-    return render(request, "subjects/create.html")
+    
 # -----------------------------
 # Exam flow (resit-aware)
 # -----------------------------

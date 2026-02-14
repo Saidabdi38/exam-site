@@ -17,6 +17,7 @@ urlpatterns = [
 
     # Subjects list (Question Bank home)
     path("subjects/", tv.subject_list, name="teacher_subject_list"),
+    path("subject/create/", views.subject_create, name="subject_create"),
 
     # Bank Questions (per subject)
     path("bank/<int:subject_id>/", tv.bank_question_list, name="teacher_bank_question_list"),

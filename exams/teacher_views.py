@@ -30,6 +30,26 @@ def teacher_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped
 
+@login_required
+@user_passes_test(is_teacher)
+def subject_create(request):
+    if request.method == "POST":
+        Subject.objects.create(
+            name=request.POST.get("name"),
+            level=request.POST.get("level"),
+            overview=request.POST.get("overview"),
+            learning_objectives=request.POST.get("learning_objectives"),
+            topics_covered=request.POST.get("topics_covered"),
+            assessment_format=request.POST.get("assessment_format"),
+            exam_structure=request.POST.get("exam_structure"),
+            preparation_tips=request.POST.get("preparation_tips"),
+            prerequisites=request.POST.get("prerequisites"),
+            study_materials=request.POST.get("study_materials"),
+        )
+        return redirect("home")
+
+    return render(request, "subjects/create.html")
+    
 @teacher_required
 def subject_list(request):
     subjects = Subject.objects.order_by("name")
