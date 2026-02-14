@@ -46,9 +46,9 @@ def subject_create(request):
             prerequisites=request.POST.get("prerequisites"),
             study_materials=request.POST.get("study_materials"),
         )
-        return redirect("home")
+        return redirect("teacher_subject_create")
 
-    return render(request, "subjects/create.html")
+    return render(request, "teacher/subject_create.html")
     
 @teacher_required
 def subject_list(request):
