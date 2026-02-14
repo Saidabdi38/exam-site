@@ -184,7 +184,7 @@ def subject_detail(request, subject_id):
     return render(request, "exams/subject_detail.html", ctx)
 
 @login_required
-@user_passes_test(staff_required)
+@user_passes_test(is_teacher)
 def subject_create(request):
     if request.method == "POST":
         Subject.objects.create(
