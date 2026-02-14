@@ -35,6 +35,8 @@ class Subject(models.Model):
     prerequisites = models.TextField(blank=True, help_text="One per line")
     study_materials = models.TextField(blank=True, help_text="One per line")
 
+    def __str__(self):
+        return self.name
 
 class BankQuestion(models.Model):
     MCQ = "MCQ"
