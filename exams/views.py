@@ -194,8 +194,14 @@ def subject_create(request):
             learning_objectives=request.POST.get("learning_objectives"),
             topics_covered=request.POST.get("topics_covered"),
             assessment_format=request.POST.get("assessment_format"),
-            exam_structure=request.POST.get("exa…
-[14:02, 14/02/2026] Siciid Cabdi: path("subject/create/", views.subject_create, name="subject_create"),
+            exam_structure=request.POST.get("exam_structure"),
+            preparation_tips=request.POST.get("preparation_tips"),
+            prerequisites=request.POST.get("prerequisites"),
+            study_materials=request.POST.get("study_materials"),
+        )
+        return redirect("home")
+
+    return render(request, "subjects/create.html")
 # -----------------------------
 # Exam flow (resit-aware)
 # -----------------------------
