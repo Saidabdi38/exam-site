@@ -22,25 +22,37 @@
   <h2>Assessment Areas</h2>
 
   <div class="skill-grid">
-    <div class="skill-card">
-      <h3>Accounting</h3>
-      <p>Journalizing, ledgers, adjustments, and financial statements.</p>
-    </div>
 
-    <div class="skill-card">
-      <h3>QuickBooks</h3>
-      <p>Transactions, reports, customers/vendors, and workflows.</p>
-    </div>
+    {% for s in subjects %}
+      <div class="skill-card">
+        <h3>{{ s.name }}</h3>
 
-    <div class="skill-card">
-      <h3>Basic Computer</h3>
-      <p>Files & folders, internet, typing, and daily digital tasks.</p>
-    </div>
+        {% if s.short_description %}
+          <p>{{ s.short_description }}</p>
+        {% else %}
+          <p>{{ s.overview|default:"Click View Description to see details."|truncatechars:80 }}</p>
+        {% endif %}
 
-    <div class="skill-card">
-      <h3>Microsoft Excel</h3>
-      <p>Formulas, formatting, tables, charts, and productivity skills.</p>
-    </div>
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn btn-secondary" href="{% url 'subject_detail' s.id %}">
+            View Description
+          </a>
+
+          {% if user.is_authenticated %}
+            <a class="btn btn-primary" href="{% url 'student_dashboard' %}">
+              Go to Dashboard
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <!-- fallback if no subjects created yet -->
+      <div class="skill-card">
+        <h3>No subjects yet</h3>
+        <p>Create subjects in Admin, then they will appear here.</p>
+      </div>
+    {% endfor %}
+
   </div>
 </section>
 
@@ -54,7 +66,7 @@
     <div class="step">
       <div class="step-num">1</div>
       <h3>Choose a Skill</h3>
-      <p>Select Accounting, QuickBooks, Computer, or Excel.</p>
+      <p>Select a subject and read the course description.</p>
     </div>
 
     <div class="step">

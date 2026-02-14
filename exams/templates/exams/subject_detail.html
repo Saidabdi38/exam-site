@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .section { margin: 18px 0; }
+  .title { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+  .sub { color:#64748b; margin-bottom: 12px; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:16px; }
+  .h { font-size: 16px; font-weight: 800; margin: 0 0 8px; }
+  ul { margin: 0; padding-left: 18px; }
+  .badge { display:inline-block; padding:6px 10px; border-radius:999px; background:#f1f5f9; font-size:12px; margin-right:8px; }
+</style>
+
+<div class="card">
+  <div class="title">{{ subject.name }}</div>
+  <div class="sub">
+    <span class="badge">Level: {{ subject.level|default:"Beginner" }}</span>
+  </div>
+
+  <div class="section">
+    <p class="h">Overview</p>
+    <p>{{ subject.overview|linebreaksbr }}</p>
+  </div>
+
+  <div class="section">
+    <p class="h">Learning Objectives</p>
+    <ul>
+      {% for x in learning_objectives %}
+        <li>{{ x }}</li>
+      {% empty %}
+        <li>No objectives added yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="section">
+    <p class="h">Topics Covered</p>
+    <ul>
+      {% for x in topics_covered %}
+        <li>{{ x }}</li>
+      {% empty %}
+        <li>No topics added yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="section">
+    <p class="h">Assessment Format</p>
+    <p>{{ subject.assessment_format|linebreaksbr }}</p>
+  </div>
+
+  <div class="section">
+    <p class="h">Exam Structure</p>
+    <p>{{ subject.exam_structure|linebreaksbr }}</p>
+  </div>
+
+  <div class="section">
+    <p class="h">Preparation Tips</p>
+    <p>{{ subject.preparation_tips|linebreaksbr }}</p>
+  </div>
+
+  <div class="section">
+    <p class="h">Prerequisites</p>
+    <ul>
+      {% for x in prerequisites %}
+        <li>{{ x }}</li>
+      {% empty %}
+        <li>None.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="section">
+    <p class="h">Study Materials</p>
+    <ul>
+      {% for x in study_materials %}
+        <li>{{ x }}</li>
+      {% empty %}
+        <li>No study materials added yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <a class="btn btn-primary" href="{% url 'home' %}" style="margin-top:12px;">
+    Back
+  </a>
+</div>
+
+{% endblock %}

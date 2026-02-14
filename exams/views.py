@@ -60,7 +60,8 @@ def get_resume_qno(attempt):
 # Public pages
 # -----------------------------
 def home(request):
-    return render(request, "home.html")
+    subjects = Subject.objects.all().order_by("name")
+    return render(request, "home.html", {"subjects": subjects})
 
 
 def exam_list(request):
@@ -165,12 +166,25 @@ def student_dashboard(request):
         {"rows": rows, "recent_results": recent_results},
     )
 
+def _lines(text):
+    if not text:
+        return []
+    return [i.strip() for i in text.splitlines() if i.strip()]
+
+def subject_detail(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    ctx = {
+        "subject": subject,
+        "learning_objectives": _lines(subject.learning_objectives),
+        "topics_covered": _lines(subject.topics_covered),
+        "prerequisites": _lines(subject.prerequisites),
+        "study_materials": _lines(subject.study_materials),
+    }
+    return render(request, "exams/subject_detail.html", ctx)
 # -----------------------------
 # Exam flow (resit-aware)
 # -----------------------------
-from random import sample
-from .models import BankQuestion, AttemptQuestion, BankChoice, Answer, Attempt, Exam
-
 @login_required
 @transaction.atomic
 def start_exam(request, exam_id):

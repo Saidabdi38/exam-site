@@ -15,7 +15,7 @@ urlpatterns = [
     # Exams
     path("exams/", views.exam_list, name="exam_list"),
     path("exam/<int:exam_id>/start/", views.start_exam, name="start_exam"),
-
+    path("subjects/<int:subject_id>/", views.subject_detail, name="subject_detail"),
     # Attempts
     path("attempt/<int:attempt_id>/take/", views.take_exam, name="take_exam"),  # keep
     path("attempt/<int:attempt_id>/q/<int:qno>/", views.take_exam_q, name="take_exam_q"),  # ✅ new

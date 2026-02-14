@@ -20,10 +20,20 @@ class TeacherProfile(models.Model):
         return self.display_name or getattr(self.user, "username", str(self.user))
 
 class Subject(models.Model):
-    name = models.CharField(max_length=120, unique=True)
+    name = models.CharField(max_length=200)
 
-    def __str__(self):
-        return self.name
+    level = models.CharField(max_length=50, blank=True, default="Beginner")
+    overview = models.TextField(blank=True)
+
+    learning_objectives = models.TextField(blank=True, help_text="One per line")
+    topics_covered = models.TextField(blank=True, help_text="One per line")
+
+    assessment_format = models.TextField(blank=True)
+    exam_structure = models.TextField(blank=True)
+    preparation_tips = models.TextField(blank=True)
+
+    prerequisites = models.TextField(blank=True, help_text="One per line")
+    study_materials = models.TextField(blank=True, help_text="One per line")
 
 
 class BankQuestion(models.Model):
