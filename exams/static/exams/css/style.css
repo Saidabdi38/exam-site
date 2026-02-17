@@ -758,3 +758,23 @@ a, button, .btn, .navlink, .menu-toggle, img{
   .how .steps{ grid-template-columns: 1fr; }
 }
 
+/* ===== LOGO BRAND ===== */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.brand-logo {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.brand-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: #0b4f7a;
+}
