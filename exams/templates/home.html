@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+[10:07, 17/02/2026] Siciid Cabdi: {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
 
@@ -103,6 +103,167 @@
   <h2>Start Your Skills Assessment</h2>
   <p>Browse available assessments and choose the best level for you.</p>
   <a class="btn btn-primary" href="{% url 'exam_prices' %}">View Assessments</a>
+</section>
+
+{% endblock %}
+[10:14, 17/02/2026] Siciid Cabdi: {% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Skills Assessments for Real-World Competency</h1>
+  <p>
+    Xirfadyaal helps learners and organizations assess skills in Accounting, QuickBooks,
+    Basic Computer, and Microsoft Excel — with clear scoring, controlled attempts, and progress tracking.
+  </p>
+
+  {% if user.is_authenticated %}
+    <a class="btn btn-primary" href="{% url 'student_dashboard' %}">
+      Go to Dashboard
+    </a>
+  {% endif %}
+</section>
+
+<div class="divider"></div>
+
+<!-- ===============================
+     VISION / MISSION / GOALS / VALUES
+================================ -->
+<section class="about">
+  <h2>Vision</h2>
+  <p>
+    Measuring skills through competency-based assessments.
+  </p>
+
+  <h2>Mission</h2>
+  <p>
+    To deliver reliable digital assessments that accurately measure practical skills.
+  </p>
+
+  <h2>Goals</h2>
+  <ul class="feature-list">
+    <li>✔ Provide fair and structured assessments</li>
+    <li>✔ Support skill development through measurable evaluation</li>
+    <li>✔ Help learners track progress and improvement</li>
+    <li>✔ Offer teacher-controlled assessment management</li>
+  </ul>
+
+  <h2>Values</h2>
+  <ul class="feature-list">
+    <li>✔ Integrity</li>
+    <li>✔ Accuracy</li>
+    <li>✔ Transparency</li>
+    <li>✔ Innovation</li>
+    <li>✔ Continuous Improvement</li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===============================
+       SKILL CATEGORIES / SUBJECTS
+================================ -->
+<section class="skills">
+  <h2>Assessment Areas</h2>
+
+  <div class="skill-grid">
+
+    {% for s in subjects %}
+      <div class="skill-card">
+        <h3>{{ s.name }}</h3>
+
+        {% if s.short_description %}
+          <p>{{ s.short_description }}</p>
+        {% else %}
+          <p>
+            {{ s.overview|default:"Click View Description to see details."|truncatechars:80 }}
+          </p>
+        {% endif %}
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn btn-secondary"
+             href="{% url 'subject_detail' s.id %}">
+            View Description
+          </a>
+
+          {% if user.is_authenticated %}
+            <a class="btn btn-primary"
+               href="{% url 'student_dashboard' %}">
+              Go to Dashboard
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="skill-card">
+        <h3>No subjects yet</h3>
+        <p>Create subjects and they will appear here.</p>
+      </div>
+    {% endfor %}
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===============================
+          HOW IT WORKS
+================================ -->
+<section class="how">
+  <h2>How It Works</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Choose a Skill</h3>
+      <p>Select a subject and read the course description.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Take an Assessment</h3>
+      <p>Complete timed tests with attempt limits set by teachers.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>View Results</h3>
+      <p>See scores, track progress, and improve weak areas.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===============================
+            VALUE SECTION
+================================ -->
+<section class="value">
+  <h2>Built for Training Centers & Schools</h2>
+  <ul class="feature-list">
+    <li>✔ Teacher controls: attempts, resits, publishing</li>
+    <li>✔ Student tracking: performance and history</li>
+    <li>✔ Mobile-friendly experience</li>
+    <li>✔ Competency-based skill assessment</li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===============================
+              CTA
+================================ -->
+<section class="cta">
+  <h2>Start Your Skills Assessment</h2>
+  <p>
+    Browse available assessments and choose the best level for you.
+  </p>
+
+  <a class="btn btn-primary"
+     href="{% url 'exam_prices' %}">
+     View Assessments
+  </a>
 </section>
 
 {% endblock %}
