@@ -778,3 +778,14 @@ a, button, .btn, .navlink, .menu-toggle, img{
     font-weight: bold;
     color: #0b4f7a;
 }
+
+/* ===== MOBILE LOGO ===== */
+.mobile-logo {
+    text-align: center;
+    padding: 12px 0;
+}
+
+.mobile-brand-logo {
+    height: 45px;
+    width: auto;
+}
