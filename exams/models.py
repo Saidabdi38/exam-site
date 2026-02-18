@@ -41,15 +41,34 @@ class Subject(models.Model):
 class BankQuestion(models.Model):
     MCQ = "MCQ"
     TF = "TF"
-    TYPES = [(MCQ, "Multiple Choice"), (TF, "True/False")]
+    STRUCT = "STRUCT"
 
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="bank_questions")
+    TYPES = [
+        (MCQ, "Multiple Choice"),
+        (TF, "True/False"),
+        (STRUCT, "Structured Question"),
+    ]
+
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.CASCADE,
+        related_name="bank_questions"
+    )
+
     text = models.TextField()
-    qtype = models.CharField(max_length=10, choices=TYPES, default=MCQ)
+    qtype = models.CharField(
+        max_length=10,
+        choices=TYPES,
+        default=MCQ
+    )
 
-    def __str__(self):
+    # ⭐ structured answers
+    correct_part_a = models.CharField(max_length=150, blank=True, null=True)
+    correct_part_b = models.CharField(max_length=150, blank=True, null=True)
+    correct_part_c = models.CharField(max_length=150, blank=True, null=True)
+
+    def _str_(self):
         return f"{self.subject.name} - Q{self.id}"
-
 
 class BankChoice(models.Model):
     question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE, related_name="choices")

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+
 <h2>Attempt Detail: {{ exam.title }}</h2>
 
 <p>
@@ -26,8 +27,17 @@
 <hr>
 
 {% for r in rows %}
-  <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
-    <p><strong>Q{{ forloop.counter }} ({{ r.question.points }} pts)</strong> {{ r.question.text }}</p>
+<div style="border:1px solid #ddd; padding:12px; margin:10px 0; border-radius:10px;">
+
+  <p>
+    <strong>Q{{ forloop.counter }}</strong>
+    {{ r.question_text }}
+  </p>
+
+  <!-- ========================= -->
+  <!-- MCQ / TRUE FALSE -->
+  <!-- ========================= -->
+  {% if r.qtype == "MCQ" or r.qtype == "TF" %}
 
     <p>
       <strong>Student answer:</strong>
@@ -39,14 +49,42 @@
       {{ r.correct.text|default:"(not set)" }}
     </p>
 
-    <p>
-      <strong>Result:</strong>
-      {% if r.is_correct %}
-        <span style="color:green;">✅ Correct</span>
-      {% else %}
-        <span style="color:red;">❌ Wrong</span>
-      {% endif %}
-    </p>
-  </div>
+  {% endif %}
+
+  <!-- ========================= -->
+  <!-- STRUCTURED QUESTION -->
+  <!-- ========================= -->
+  {% if r.qtype == "STRUCT" %}
+
+    <p><strong>Student answer:</strong></p>
+    <ul>
+      <li><strong>Part A:</strong> {{ r.selected.part_a|default:"-" }}</li>
+      <li><strong>Part B:</strong> {{ r.selected.part_b|default:"-" }}</li>
+      <li><strong>Part C:</strong> {{ r.selected.part_c|default:"-" }}</li>
+    </ul>
+
+    <p><strong>Correct answer:</strong></p>
+    <ul>
+      <li><strong>Part A:</strong> {{ r.correct.part_a|default:"-" }}</li>
+      <li><strong>Part B:</strong> {{ r.correct.part_b|default:"-" }}</li>
+      <li><strong>Part C:</strong> {{ r.correct.part_c|default:"-" }}</li>
+    </ul>
+
+  {% endif %}
+
+  <!-- ========================= -->
+  <!-- RESULT -->
+  <!-- ========================= -->
+  <p>
+    <strong>Result:</strong>
+    {% if r.is_correct %}
+      <span style="color:green;">✅ Correct</span>
+    {% else %}
+      <span style="color:red;">❌ Wrong</span>
+    {% endif %}
+  </p>
+
+</div>
 {% endfor %}
+
 {% endblock %}

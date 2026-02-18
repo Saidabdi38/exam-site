@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Count, Q
 from django.db import models
+from django import forms
 
 from .models import Subject, BankQuestion, BankChoice, Answer, Attempt, Choice, Exam, ExamResitPermission, Question
 
@@ -105,18 +106,40 @@ def bank_question_create(request, subject_id):
     form = BankQuestionForm(request.POST or None, instance=q)
     formset = BankChoiceFormSet(request.POST or None, instance=q)
 
-    if request.method == "POST" and form.is_valid() and formset.is_valid():
+    if request.method == "POST" and form.is_valid():
+
         q = form.save(commit=False)
         q.subject = subject
         q.save()
-        formset.instance = q
-        formset.save()
 
-        # keep only 1 correct
-        correct = q.choices.filter(is_correct=True).order_by("-id")
-        if correct.count() > 1:
-            keep_id = correct.first().id
-            q.choices.exclude(id=keep_id).update(is_correct=False)
+        # ==========================
+        # MCQ / TF (choices needed)
+        # ==========================
+        if q.qtype != "STRUCT":
+
+            if formset.is_valid():
+                formset.instance = q
+                formset.save()
+
+                # keep ONLY one correct choice
+                correct = q.choices.filter(is_correct=True).order_by("-id")
+                if correct.count() > 1:
+                    keep_id = correct.first().id
+                    q.choices.exclude(id=keep_id).update(is_correct=False)
+
+            else:
+                return render(request, "teacher/bank_question_form.html", {
+                    "form": form,
+                    "formset": formset,
+                    "subject": subject,
+                    "mode": "Create",
+                })
+
+        # ==========================
+        # STRUCT (no choices)
+        # ==========================
+        else:
+            q.choices.all().delete()
 
         return redirect("teacher_bank_question_list", subject_id=subject.id)
 
@@ -126,7 +149,7 @@ def bank_question_create(request, subject_id):
         "subject": subject,
         "mode": "Create",
     })
-
+    
 @teacher_required
 def bank_question_edit(request, subject_id, pk):
     subject = get_object_or_404(Subject, id=subject_id)
@@ -135,14 +158,27 @@ def bank_question_edit(request, subject_id, pk):
     form = BankQuestionForm(request.POST or None, instance=q)
     formset = BankChoiceFormSet(request.POST or None, instance=q)
 
-    if request.method == "POST" and form.is_valid() and formset.is_valid():
-        form.save()
-        formset.save()
+    if request.method == "POST" and form.is_valid():
+        q = form.save()
 
-        correct = q.choices.filter(is_correct=True).order_by("-id")
-        if correct.count() > 1:
-            keep_id = correct.first().id
-            q.choices.exclude(id=keep_id).update(is_correct=False)
+        if q.qtype != BankQuestion.STRUCT:
+            if formset.is_valid():
+                formset.save()
+
+                correct = q.choices.filter(is_correct=True).order_by("-id")
+                if correct.count() > 1:
+                    keep_id = correct.first().id
+                    q.choices.exclude(id=keep_id).update(is_correct=False)
+            else:
+                return render(request, "teacher/bank_question_form.html", {
+                    "form": form,
+                    "formset": formset,
+                    "subject": subject,
+                    "mode": "Edit",
+                })
+        else:
+            # STRUCT → remove choices
+            q.choices.all().delete()
 
         return redirect("teacher_bank_question_list", subject_id=subject.id)
 
@@ -191,13 +227,13 @@ class ExamForm(ModelForm):
 class QuestionForm(ModelForm):
     class Meta:
         model = Question
-        fields = ["text", "qtype", "points"]
+        fields = ["text", "qtype", "points", "correct_part_a", "correct_part_b", "correct_part_c"]
 
 # ---------- Bank Forms ----------
 class BankQuestionForm(ModelForm):
     class Meta:
         model = BankQuestion
-        fields = ["text", "qtype"]
+        fields = ["text", "qtype", "correct_part_a", "correct_part_b", "correct_part_c"]
 
 BankChoiceFormSet = inlineformset_factory(
     BankQuestion,
@@ -291,15 +327,27 @@ def question_edit(request, exam_id: int, question_id: int):
     form = QuestionForm(request.POST or None, instance=q)
     formset = ChoiceFormSet(request.POST or None, instance=q)
 
-    if request.method == "POST" and form.is_valid() and formset.is_valid():
-        form.save()
-        formset.save()
+    if request.method == "POST" and form.is_valid():
+        q = form.save()
 
-        # Keep ONLY one correct choice (MCQ/TF)
-        correct_qs = q.choices.filter(is_correct=True).order_by("-id")
-        if correct_qs.count() > 1:
-            keep_id = correct_qs.first().id
-            q.choices.exclude(id=keep_id).update(is_correct=False)
+        if q.qtype != Question.STRUCT:
+            if formset.is_valid():
+                formset.save()
+
+                correct_qs = q.choices.filter(is_correct=True).order_by("-id")
+                if correct_qs.count() > 1:
+                    keep_id = correct_qs.first().id
+                    q.choices.exclude(id=keep_id).update(is_correct=False)
+            else:
+                return render(request, "teacher/question_edit.html", {
+                    "form": form,
+                    "formset": formset,
+                    "exam": exam,
+                    "question": q,
+                })
+        else:
+            # STRUCT: remove choices (optional but clean)
+            q.choices.all().delete()
 
         return redirect("teacher_exam_detail", exam_id=exam.id)
 
@@ -336,35 +384,112 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
     exam = _get_owned_exam_or_404(request, exam_id)
     attempt = get_object_or_404(Attempt, id=attempt_id, exam=exam)
 
-    answers = Answer.objects.filter(attempt=attempt).select_related(
-        "question", "bank_question", "selected_choice"
-    ).order_by("id")
+    answers = (
+        Answer.objects.filter(attempt=attempt)
+        .select_related(
+            "question",
+            "bank_question",
+            "selected_choice",
+            "selected_bank_choice",
+        )
+        .order_by("id")
+    )
 
     rows = []
+
     for a in answers:
-        # Decide where question came from
+        # -----------------------------
+        # Decide question source
+        # -----------------------------
         if a.bank_question:
-            qtext = a.bank_question.text
-            correct = a.bank_question.choices.filter(is_correct=True).first()
+            qobj = a.bank_question
+            qtext = qobj.text
+            qtype = qobj.qtype
+
+            # correct MCQ/TF choice (bank)
+            correct_choice = qobj.choices.filter(is_correct=True).first()
+
+            # student's selected choice (bank)
+            selected_choice = a.selected_bank_choice
+
         else:
-            qtext = a.question.text if a.question else ""
-            correct = a.question.choices.filter(is_correct=True).first() if a.question else None
+            qobj = a.question
+            qtext = qobj.text if qobj else ""
+            qtype = qobj.qtype if qobj else None
 
-        is_correct = bool(a.selected_choice_id and correct and a.selected_choice_id == correct.id)
+            # correct MCQ/TF choice (exam)
+            correct_choice = qobj.choices.filter(is_correct=True).first() if qobj else None
 
-        rows.append({
+            # student's selected choice (exam)
+            selected_choice = a.selected_choice
+
+        # -----------------------------
+        # Build row output
+        # -----------------------------
+        row = {
             "question_text": qtext,
-            "selected": a.selected_choice,
-            "correct": correct,
-            "is_correct": is_correct,
-        })
+            "qtype": qtype,
+            "selected": None,
+            "correct": None,
+            "is_correct": False,
+        }
+
+        # -----------------------------
+        # MCQ / TF grading
+        # -----------------------------
+        if qtype in ("MCQ", "TF"):
+            row["selected"] = selected_choice  # Choice object (or None)
+            row["correct"] = correct_choice    # Choice object (or None)
+
+            if selected_choice and correct_choice and selected_choice.id == correct_choice.id:
+                row["is_correct"] = True
+
+        # -----------------------------
+        # STRUCT grading (Part A/B/C)
+        # -----------------------------
+        elif qtype == "STRUCT":
+            # Student answers saved on Answer model
+            student_a = (a.structured_part_a or "").strip()
+            student_b = (a.structured_part_b or "").strip()
+            student_c = (a.structured_part_c or "").strip()
+
+            # Correct answers saved on Question/BankQuestion
+            correct_a = (getattr(qobj, "correct_part_a", "") or "").strip()
+            correct_b = (getattr(qobj, "correct_part_b", "") or "").strip()
+            correct_c = (getattr(qobj, "correct_part_c", "") or "").strip()
+
+            row["selected"] = {
+                "part_a": student_a,
+                "part_b": student_b,
+                "part_c": student_c,
+            }
+            row["correct"] = {
+                "part_a": correct_a,
+                "part_b": correct_b,
+                "part_c": correct_c,
+            }
+
+            # TVET-style correctness: all parts must match
+            row["is_correct"] = (
+                student_a.lower() == correct_a.lower()
+                and student_b.lower() == correct_b.lower()
+                and student_c.lower() == correct_c.lower()
+            )
+
+        # Unknown type safety
+        else:
+            row["selected"] = selected_choice
+            row["correct"] = correct_choice
+            row["is_correct"] = False
+
+        rows.append(row)
 
     return render(request, "teacher/attempt_detail.html", {
         "exam": exam,
         "attempt": attempt,
         "rows": rows,
     })
-
+    
 @teacher_required
 def manage_resits(request, exam_id: int):
     """Page where teachers can give extra attempts (resits) to students."""

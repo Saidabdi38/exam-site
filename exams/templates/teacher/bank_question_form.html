@@ -2,16 +2,50 @@
 {% block content %}
 
 <h2>{{ mode }} Question - {{ subject.name }}</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        {{ formset.management_form }}
-        {% for f in formset %}
-            {{ f.as_p }}
-        {% endfor %}
-        <button type="submit" class="btn btn-primary">Save</button>
-    </form>
+
+<form method="post" id="bankQForm">
+  {% csrf_token %}
+
+  <!-- Bank question basics -->
+  {{ form.text.as_p }}
+  {{ form.qtype.as_p }}
+
+  <!-- Structured fields -->
+  <div id="structuredBox" style="display:none; border:1px solid #ddd; padding:10px; border-radius:10px; margin:10px 0;">
+    <h4>Structured Answers</h4>
+    {{ form.correct_part_a.as_p }}
+    {{ form.correct_part_b.as_p }}
+    {{ form.correct_part_c.as_p }}
+  </div>
+
+  <!-- Choices formset (MCQ/TF only) -->
+  <div id="choicesBox">
+    {{ formset.management_form }}
+    {% for f in formset %}
+      {{ f.as_p }}
+    {% endfor %}
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
 
 <a href="{% url 'teacher_bank_question_list' subject.id %}">Back</a>
+
+<script>
+function toggleBoxes(){
+  const qtypeEl = document.getElementById("id_qtype");
+  if(!qtypeEl) return;
+
+  const isStruct = (qtypeEl.value === "STRUCT");
+  document.getElementById("structuredBox").style.display = isStruct ? "block" : "none";
+  document.getElementById("choicesBox").style.display = isStruct ? "none" : "block";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  toggleBoxes();
+  const qtypeEl = document.getElementById("id_qtype");
+  if(qtypeEl) qtypeEl.addEventListener("change", toggleBoxes);
+});
+</script>
 
 {% endblock %}
