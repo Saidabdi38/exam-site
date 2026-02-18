@@ -1,35 +1,67 @@
-{% extends "base.html" %}
+% extends "base.html" %}
 {% block content %}
-<h2>Edit Question + Choices</h2>
+
+<h2>Edit Question - {{ exam.title }}</h2>
 <p><a href="{% url 'teacher_exam_detail' exam.id %}">Back</a></p>
 
-<form method="post" id="qForm">
+<form method="post" id="examQForm">
   {% csrf_token %}
 
-  <fieldset style="border:1px solid #ddd; padding:10px;">
-    <legend>Question</legend>
+  <!-- ✅ QUESTION SECTION -->
+  <fieldset style="border:1px solid #ddd; padding:12px; border-radius:10px;">
+    <legend><strong>Question</strong></legend>
 
-    {{ form.text.as_p }}
-    {{ form.qtype.as_p }}
-    {{ form.points.as_p }}
+    <div style="margin:10px 0;">
+      <label><strong>Question Text</strong></label><br>
+      {{ form.text }}
+      {% if form.text.errors %}<div style="color:red">{{ form.text.errors }}</div>{% endif %}
+    </div>
 
-    <!-- STRUCTURED fields -->
-    <div id="structuredBox" style="display:none; border:1px solid #eee; padding:10px; margin-top:10px; border-radius:10px;">
-      <strong>Structured Answers</strong>
-      {{ form.correct_part_a.as_p }}
-      {{ form.correct_part_b.as_p }}
-      {{ form.correct_part_c.as_p }}
+    <div style="margin:10px 0;">
+      <label><strong>Question Type</strong></label><br>
+      {{ form.qtype }}
+      {% if form.qtype.errors %}<div style="color:red">{{ form.qtype.errors }}</div>{% endif %}
+    </div>
+
+    <div style="margin:10px 0;">
+      <label><strong>Points</strong></label><br>
+      {{ form.points }}
+      {% if form.points.errors %}<div style="color:red">{{ form.points.errors }}</div>{% endif %}
+    </div>
+
+    <!-- ✅ STRUCTURED FIELDS -->
+    <div id="structuredBox"
+         style="display:none; border:1px solid #eee; padding:10px; border-radius:10px; margin-top:12px;">
+      <p><strong>Structured Answers</strong></p>
+
+      <div style="margin:8px 0;">
+        <label>Correct Part A</label><br>
+        {{ form.correct_part_a }}
+      </div>
+
+      <div style="margin:8px 0;">
+        <label>Correct Part B</label><br>
+        {{ form.correct_part_b }}
+      </div>
+
+      <div style="margin:8px 0;">
+        <label>Correct Part C</label><br>
+        {{ form.correct_part_c }}
+      </div>
     </div>
   </fieldset>
 
-  <!-- CHOICES -->
-  <fieldset id="choicesBox" style="border:1px solid #ddd; padding:10px; margin-top:12px;">
-    <legend>Choices (tick ONE correct)</legend>
+  <!-- ✅ CHOICES SECTION -->
+  <fieldset id="choicesBox"
+            style="border:1px solid #ddd; padding:12px; border-radius:10px; margin-top:14px;">
+    <legend><strong>Choices (tick ONE correct)</strong></legend>
 
     {{ formset.management_form }}
     {% for f in formset %}
-      <div style="border:1px solid #eee; padding:8px; margin:8px 0;">
-        {{ f.as_p }}
+      <div style="border:1px solid #eee; padding:10px; margin:10px 0; border-radius:10px;">
+        {{ f.text.label_tag }} {{ f.text }} <br><br>
+        {{ f.is_correct }} {{ f.is_correct.label_tag }} <br>
+        {{ f.DELETE }} {{ f.DELETE.label_tag }}
       </div>
     {% endfor %}
   </fieldset>
@@ -38,20 +70,36 @@
 </form>
 
 <script>
-function toggleBoxes(){
-  const qtypeEl = document.getElementById("id_qtype");
-  if(!qtypeEl) return;
+(function(){
+  function setDisabledInside(el, disabled){
+    if(!el) return;
+    el.querySelectorAll("input, select, textarea, button").forEach(i => {
+      i.disabled = disabled;
+    });
+  }
 
-  const isStruct = (qtypeEl.value === "STRUCT");
-  document.getElementById("structuredBox").style.display = isStruct ? "block" : "none";
-  document.getElementById("choicesBox").style.display = isStruct ? "none" : "block";
-}
+  function toggleBoxes(){
+    const qtypeEl = document.getElementById("id_qtype");
+    if(!qtypeEl) return;
 
-document.addEventListener("DOMContentLoaded", () => {
-  toggleBoxes();
-  const qtypeEl = document.getElementById("id_qtype");
-  if(qtypeEl) qtypeEl.addEventListener("change", toggleBoxes);
-});
+    const structuredBox = document.getElementById("structuredBox");
+    const choicesBox = document.getElementById("choicesBox");
+
+    const isStruct = (qtypeEl.value === "STRUCT");
+
+    if(structuredBox) structuredBox.style.display = isStruct ? "block" : "none";
+    if(choicesBox) choicesBox.style.display = isStruct ? "none" : "block";
+
+    // ✅ Prevent accidental choice submission when STRUCT
+    setDisabledInside(choicesBox, isStruct);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    toggleBoxes();
+    const qtypeEl = document.getElementById("id_qtype");
+    if(qtypeEl) qtypeEl.addEventListener("change", toggleBoxes);
+  });
+})();
 </script>
 
 {% endblock %}

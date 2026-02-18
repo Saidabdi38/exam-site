@@ -23,7 +23,8 @@
     </div>
 
     <!-- ✅ STRUCTURED FIELDS -->
-    <div id="structuredBox" style="display:none; border:1px solid #eee; padding:10px; border-radius:10px; margin-top:12px;">
+    <div id="structuredBox"
+         style="display:none; border:1px solid #eee; padding:10px; border-radius:10px; margin-top:12px;">
       <p><strong>Structured Answers</strong></p>
 
       <div style="margin:8px 0;">
@@ -44,7 +45,8 @@
   </fieldset>
 
   <!-- ✅ CHOICES SECTION -->
-  <fieldset id="choicesBox" style="border:1px solid #ddd; padding:12px; border-radius:10px; margin-top:14px;">
+  <fieldset id="choicesBox"
+            style="border:1px solid #ddd; padding:12px; border-radius:10px; margin-top:14px;">
     <legend><strong>Choices (tick ONE correct)</strong></legend>
 
     {{ formset.management_form }}
@@ -63,20 +65,37 @@
 <a href="{% url 'teacher_bank_question_list' subject.id %}">Back</a>
 
 <script>
-function toggleBoxes(){
-  const qtypeEl = document.getElementById("id_qtype");
-  if(!qtypeEl) return;
+(function(){
+  function setDisabledInside(el, disabled){
+    if(!el) return;
+    el.querySelectorAll("input, select, textarea, button").forEach(i => {
+      // don't disable the main Save button (it's outside choicesBox anyway)
+      i.disabled = disabled;
+    });
+  }
 
-  const isStruct = (qtypeEl.value === "STRUCT");
-  document.getElementById("structuredBox").style.display = isStruct ? "block" : "none";
-  document.getElementById("choicesBox").style.display = isStruct ? "none" : "block";
-}
+  function toggleBoxes(){
+    const qtypeEl = document.getElementById("id_qtype");
+    if(!qtypeEl) return;
 
-document.addEventListener("DOMContentLoaded", () => {
-  toggleBoxes();
-  const qtypeEl = document.getElementById("id_qtype");
-  if(qtypeEl) qtypeEl.addEventListener("change", toggleBoxes);
-});
+    const structuredBox = document.getElementById("structuredBox");
+    const choicesBox = document.getElementById("choicesBox");
+
+    const isStruct = (qtypeEl.value === "STRUCT");
+
+    if(structuredBox) structuredBox.style.display = isStruct ? "block" : "none";
+    if(choicesBox) choicesBox.style.display = isStruct ? "none" : "block";
+
+    // ✅ Prevent accidental choice submission when STRUCT
+    setDisabledInside(choicesBox, isStruct);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    toggleBoxes();
+    const qtypeEl = document.getElementById("id_qtype");
+    if(qtypeEl) qtypeEl.addEventListener("change", toggleBoxes);
+  });
+})();
 </script>
 
 {% endblock %}
