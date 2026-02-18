@@ -6,34 +6,58 @@
 <form method="post" id="bankQForm">
   {% csrf_token %}
 
-  <!-- ✅ MAIN QUESTION FIELDS (THIS IS WHAT YOU ARE MISSING) -->
-  <fieldset style="border:1px solid #ddd; padding:10px; margin-bottom:12px;">
-    <legend>Question</legend>
+  <!-- ✅ QUESTION SECTION -->
+  <fieldset style="border:1px solid #ddd; padding:12px; border-radius:10px;">
+    <legend><strong>Question</strong></legend>
 
-    {{ form.text.as_p }}
-    {{ form.qtype.as_p }}
+    <div style="margin:10px 0;">
+      <label><strong>Question Text</strong></label><br>
+      {{ form.text }}
+      {% if form.text.errors %}<div style="color:red">{{ form.text.errors }}</div>{% endif %}
+    </div>
 
-    <div id="structuredBox" style="display:none; border:1px solid #eee; padding:10px; margin-top:10px; border-radius:10px;">
-      <strong>Structured Answers</strong>
-      {{ form.correct_part_a.as_p }}
-      {{ form.correct_part_b.as_p }}
-      {{ form.correct_part_c.as_p }}
+    <div style="margin:10px 0;">
+      <label><strong>Question Type</strong></label><br>
+      {{ form.qtype }}
+      {% if form.qtype.errors %}<div style="color:red">{{ form.qtype.errors }}</div>{% endif %}
+    </div>
+
+    <!-- ✅ STRUCTURED FIELDS -->
+    <div id="structuredBox" style="display:none; border:1px solid #eee; padding:10px; border-radius:10px; margin-top:12px;">
+      <p><strong>Structured Answers</strong></p>
+
+      <div style="margin:8px 0;">
+        <label>Correct Part A</label><br>
+        {{ form.correct_part_a }}
+      </div>
+
+      <div style="margin:8px 0;">
+        <label>Correct Part B</label><br>
+        {{ form.correct_part_b }}
+      </div>
+
+      <div style="margin:8px 0;">
+        <label>Correct Part C</label><br>
+        {{ form.correct_part_c }}
+      </div>
     </div>
   </fieldset>
 
-  <!-- ✅ CHOICES -->
-  <fieldset id="choicesBox" style="border:1px solid #ddd; padding:10px;">
-    <legend>Choices (tick ONE correct)</legend>
+  <!-- ✅ CHOICES SECTION -->
+  <fieldset id="choicesBox" style="border:1px solid #ddd; padding:12px; border-radius:10px; margin-top:14px;">
+    <legend><strong>Choices (tick ONE correct)</strong></legend>
 
     {{ formset.management_form }}
     {% for f in formset %}
-      <div style="border:1px solid #eee; padding:8px; margin:8px 0;">
-        {{ f.as_p }}
+      <div style="border:1px solid #eee; padding:10px; margin:10px 0; border-radius:10px;">
+        {{ f.text.label_tag }} {{ f.text }} <br><br>
+        {{ f.is_correct }} {{ f.is_correct.label_tag }} <br>
+        {{ f.DELETE }} {{ f.DELETE.label_tag }}
       </div>
     {% endfor %}
   </fieldset>
 
-  <button type="submit" class="btn btn-primary">Save</button>
+  <button type="submit">Save</button>
 </form>
 
 <a href="{% url 'teacher_bank_question_list' subject.id %}">Back</a>
