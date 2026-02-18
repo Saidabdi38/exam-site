@@ -95,12 +95,23 @@ class Exam(models.Model):
 class Question(models.Model):
     MCQ = "MCQ"
     TF = "TF"
-    TYPES = [(MCQ, "Multiple Choice"), (TF, "True/False")]
+    STRUCT = "STRUCT"
+
+    TYPES = [
+        (MCQ, "Multiple Choice"),
+        (TF, "True/False"),
+        (STRUCT, "Structured Question"),
+    ]
 
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="questions")
     text = models.TextField()
     qtype = models.CharField(max_length=10, choices=TYPES, default=MCQ)
     points = models.PositiveIntegerField(default=1)
+
+    # ⭐ NEW FIELDS FOR STRUCTURED
+    correct_part_a = models.CharField(max_length=150, blank=True, null=True)
+    correct_part_b = models.CharField(max_length=150, blank=True, null=True)
+    correct_part_c = models.CharField(max_length=150, blank=True, null=True)
 
     def __str__(self):
         return f"{self.exam.title} - Q{self.id}"
@@ -140,8 +151,16 @@ class ExamResitPermission(models.Model):
 
 
 class Attempt(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="attempts")
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="attempts")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="attempts"
+    )
+    exam = models.ForeignKey(
+        Exam,
+        on_delete=models.CASCADE,
+        related_name="attempts"
+    )
 
     attempt_no = models.PositiveIntegerField(default=1)
     started_at = models.DateTimeField(default=timezone.now)
@@ -156,7 +175,9 @@ class Attempt(models.Model):
     class Meta:
         ordering = ["-started_at"]
 
-    # ✅ ADD THIS BACK
+    # ==============================
+    # TIMER
+    # ==============================
     def time_left_seconds(self):
         if self.submitted_at:
             return 0
@@ -165,18 +186,62 @@ class Attempt(models.Model):
         remaining = self.duration_seconds - int(elapsed)
         return max(0, remaining)
 
+    # ==============================
+    # UPDATED SCORE CALCULATION
+    # ==============================
     def calculate_score(self):
         total = 0
         max_score = 0
 
-        for answer in self.answers.select_related("selected_choice"):
-            max_score += 2
-            if answer.selected_choice and answer.selected_choice.is_correct:
-                total += 2
+        for answer in self.answers.select_related("selected_choice", "question"):
+
+            q = answer.question
+            if not q:
+                continue
+
+            # ===== MCQ & TRUE/FALSE =====
+            if q.qtype in ["MCQ", "TF"]:
+                max_score += 2
+
+                if answer.selected_choice and answer.selected_choice.is_correct:
+                    total += 2
+
+            # ===== STRUCTURED QUESTIONS =====
+            elif q.qtype == "STRUCT":
+
+                # each part = 1 mark
+                max_score += 3
+
+                if (
+                    answer.structured_part_a
+                    and q.correct_part_a
+                    and answer.structured_part_a.strip().lower()
+                    == q.correct_part_a.strip().lower()
+                ):
+                    total += 1
+
+                if (
+                    answer.structured_part_b
+                    and q.correct_part_b
+                    and answer.structured_part_b.strip().lower()
+                    == q.correct_part_b.strip().lower()
+                ):
+                    total += 1
+
+                if (
+                    answer.structured_part_c
+                    and q.correct_part_c
+                    and answer.structured_part_c.strip().lower()
+                    == q.correct_part_c.strip().lower()
+                ):
+                    total += 1
 
         self.score = total
         self.max_score = max_score
 
+    # ==============================
+    # RESULTS
+    # ==============================
     @property
     def percentage(self):
         if self.max_score == 0:
@@ -191,11 +256,14 @@ class Attempt(models.Model):
     def is_submitted(self):
         return self.submitted_at is not None
 
+    # ==============================
+    # SAVE
+    # ==============================
     def save(self, *args, **kwargs):
         if self.submitted_at:
             self.calculate_score()
         super().save(*args, **kwargs)
-
+        
 class Answer(models.Model):
     attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name="answers")
 
@@ -210,6 +278,11 @@ class Answer(models.Model):
     selected_bank_choice = models.ForeignKey(BankChoice, on_delete=models.SET_NULL, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # ⭐ structured answers from student
+    structured_part_a = models.CharField(max_length=150, blank=True, null=True)
+    structured_part_b = models.CharField(max_length=150, blank=True, null=True)
+    structured_part_c = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
         constraints = [

@@ -86,10 +86,11 @@
       {{ question.text }}
     </p>
 
+    {% if question.qtype == "MCQ" or question.qtype == "TF" %}
+
     {% for c in choices %}
       <label class="mcq-option">
-        <input
-          type="radio"
+        <input type="radio"
           name="answer"
           value="{{ c.id }}"
           class="mcq-radio"
@@ -98,6 +99,33 @@
         <span class="mcq-text">{{ c.text }}</span>
       </label>
     {% endfor %}
+
+    {% elif question.qtype == "STRUCT" %}
+
+      <div style="margin-top:10px;">
+
+        <label>Part A:</label>
+        <input type="text"
+              name="part_a"
+              value="{{ structured_a|default:'' }}"
+              class="form-control">
+
+        <label>Part B:</label>
+        <input type="text"
+              name="part_b"
+              value="{{ structured_b|default:'' }}"
+              class="form-control">
+
+        <label>Part C:</label>
+        <input type="text"
+              name="part_c"
+              value="{{ structured_c|default:'' }}"
+              class="form-control">
+
+      </div>
+
+    {% endif %}
+
   </div>
 
   <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -159,7 +187,17 @@ async function autosave() {
 
   const formData = new FormData();
   const selected = document.querySelector("input[name='answer']:checked");
-  formData.append("answer", selected ? selected.value : "");
+        formData.append("answer", selected ? selected.value : "");
+
+        // ⭐ STRUCTURED
+        formData.append("part_a",
+            document.querySelector("input[name='part_a']")?.value || "");
+
+        formData.append("part_b",
+            document.querySelector("input[name='part_b']")?.value || "");
+
+        formData.append("part_c",
+            document.querySelector("input[name='part_c']")?.value || "");
 
   try {
     const res = await fetch(autosaveUrl, {
@@ -194,6 +232,11 @@ async function saveThenGo(url) {
 /* ✅ Save immediately when selecting option */
 document.querySelectorAll(".mcq-radio").forEach(radio => {
   radio.addEventListener("change", () => autosave());
+});
+
+document.querySelectorAll("input[name='part_a'], input[name='part_b'], input[name='part_c']")
+.forEach(input => {
+    input.addEventListener("blur", () => autosave());
 });
 
 /* ✅ Confirm only on Submit */

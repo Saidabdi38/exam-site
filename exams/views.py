@@ -389,7 +389,12 @@ def autosave_answer(request, attempt_id, qno):
 @login_required
 @transaction.atomic
 def submit_exam(request, attempt_id):
-    attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
+
+    attempt = get_object_or_404(
+        Attempt,
+        id=attempt_id,
+        user=request.user
+    )
 
     if not can_view_exam(request.user, attempt.exam):
         return redirect("student_dashboard")
@@ -397,18 +402,68 @@ def submit_exam(request, attempt_id):
     if attempt.submitted_at:
         return redirect("exam_result", attempt_id=attempt.id)
 
-    answers = attempt.answers.select_related("selected_bank_choice").all()
+    answers = attempt.answers.select_related(
+        "selected_bank_choice",
+        "question"
+    ).all()
 
     score = 0
-    max_score = len(answers) * 2
+    max_score = 0
 
     for ans in answers:
-        if ans.selected_bank_choice and ans.selected_bank_choice.is_correct:
-            score += 2
+
+        q = ans.question
+        if not q:
+            continue
+
+        # =====================
+        # MCQ + TRUE/FALSE
+        # =====================
+        if q.qtype in ["MCQ", "TF"]:
+
+            max_score += 2
+
+            if (
+                ans.selected_bank_choice
+                and ans.selected_bank_choice.is_correct
+            ):
+                score += 2
+
+        # =====================
+        # STRUCTURED QUESTIONS
+        # =====================
+        elif q.qtype == "STRUCT":
+
+            max_score += 3
+
+            if (
+                ans.structured_part_a
+                and q.correct_part_a
+                and ans.structured_part_a.strip().lower()
+                == q.correct_part_a.strip().lower()
+            ):
+                score += 1
+
+            if (
+                ans.structured_part_b
+                and q.correct_part_b
+                and ans.structured_part_b.strip().lower()
+                == q.correct_part_b.strip().lower()
+            ):
+                score += 1
+
+            if (
+                ans.structured_part_c
+                and q.correct_part_c
+                and ans.structured_part_c.strip().lower()
+                == q.correct_part_c.strip().lower()
+            ):
+                score += 1
 
     attempt.score = score
     attempt.max_score = max_score
     attempt.submitted_at = timezone.now()
+
     attempt.save()
 
     return redirect("exam_result", attempt_id=attempt.id)
