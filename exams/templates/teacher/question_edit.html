@@ -1,26 +1,57 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Edit Question + Choices</h2>
-  <p><a href="{% url 'teacher_exam_detail' exam.id %}">Back</a></p>
+<p><a href="{% url 'teacher_exam_detail' exam.id %}">Back</a></p>
 
-  <form method="post">
-    {% csrf_token %}
+<form method="post" id="qForm">
+  {% csrf_token %}
 
-    <fieldset style="border:1px solid #ddd; padding:10px;">
-      <legend>Question</legend>
-      {{ form.as_p }}
-    </fieldset>
+  <fieldset style="border:1px solid #ddd; padding:10px;">
+    <legend>Question</legend>
 
-    <fieldset style="border:1px solid #ddd; padding:10px; margin-top:12px;">
-      <legend>Choices (tick ONE correct)</legend>
-      {{ formset.management_form }}
-      {% for f in formset %}
-        <div style="border:1px solid #eee; padding:8px; margin:8px 0;">
-          {{ f.as_p }}
-        </div>
-      {% endfor %}
-    </fieldset>
+    {{ form.text.as_p }}
+    {{ form.qtype.as_p }}
+    {{ form.points.as_p }}
 
-    <button type="submit">Save</button>
-  </form>
+    <!-- STRUCTURED fields -->
+    <div id="structuredBox" style="display:none; border:1px solid #eee; padding:10px; margin-top:10px; border-radius:10px;">
+      <strong>Structured Answers</strong>
+      {{ form.correct_part_a.as_p }}
+      {{ form.correct_part_b.as_p }}
+      {{ form.correct_part_c.as_p }}
+    </div>
+  </fieldset>
+
+  <!-- CHOICES -->
+  <fieldset id="choicesBox" style="border:1px solid #ddd; padding:10px; margin-top:12px;">
+    <legend>Choices (tick ONE correct)</legend>
+
+    {{ formset.management_form }}
+    {% for f in formset %}
+      <div style="border:1px solid #eee; padding:8px; margin:8px 0;">
+        {{ f.as_p }}
+      </div>
+    {% endfor %}
+  </fieldset>
+
+  <button type="submit">Save</button>
+</form>
+
+<script>
+function toggleBoxes(){
+  const qtypeEl = document.getElementById("id_qtype");
+  if(!qtypeEl) return;
+
+  const isStruct = (qtypeEl.value === "STRUCT");
+  document.getElementById("structuredBox").style.display = isStruct ? "block" : "none";
+  document.getElementById("choicesBox").style.display = isStruct ? "none" : "block";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  toggleBoxes();
+  const qtypeEl = document.getElementById("id_qtype");
+  if(qtypeEl) qtypeEl.addEventListener("change", toggleBoxes);
+});
+</script>
+
 {% endblock %}
