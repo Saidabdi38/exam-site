@@ -10,8 +10,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
 # ENV SWITCH
 # -------------------------
 # Set DEBUG=True only in local/dev environment variables
-# DEBUG = os.environ.get("DEBUG", "False") == "True"
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
+# DEBUG = True
 
 # Hosts (comma-separated in env)
 ALLOWED_HOSTS = os.environ.get(
