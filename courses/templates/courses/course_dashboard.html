@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .course-wrap{max-width:900px;margin:0 auto}
+  .course-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .course-title{margin:0}
+  .muted{color:#6b7280}
+  .card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff;margin:12px 0}
+  .progress-outer{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+  .progress-inner{height:10px;background:#2563eb;width:0%}
+  .btn{display:inline-block;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:600}
+  .btn-primary{background:#2563eb;color:#fff}
+  .btn-secondary{background:#f3f4f6;color:#111827}
+  .lessons{display:flex;flex-direction:column;gap:10px}
+  .lesson-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .lesson-left{display:flex;align-items:center;gap:10px;min-width:240px}
+  .badge{font-size:12px;padding:3px 8px;border-radius:999px;background:#f3f4f6;color:#111827}
+  .badge-done{background:#ecfdf5;color:#065f46}
+  .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .check{font-weight:700}
+</style>
+
+<div class="course-wrap">
+
+  <div class="course-head">
+    <div>
+      <h2 class="course-title">{{ course.title }}</h2>
+      {% if course.overview %}
+        <p class="muted" style="margin:6px 0 0;">{{ course.overview }}</p>
+      {% endif %}
+    </div>
+
+    {% if next_lesson %}
+      <a class="btn btn-primary"
+         href="{% url 'courses:lesson_detail' course.id next_lesson.id %}">
+        ▶ Continue Learning
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="progress-outer" aria-label="Course progress">
+      <div class="progress-inner" style="width: {{ progress.percent }}%;"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <div>
+        <strong>{{ progress.done }}</strong> / <strong>{{ progress.total }}</strong> lessons completed
+        <span class="muted">({{ progress.percent }}%)</span>
+      </div>
+
+      {% if progress.percent >= 100 %}
+        <span class="badge badge-done">✅ Course Completed</span>
+      {% else %}
+        <span class="badge">In Progress</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 10px;">Lessons</h3>
+
+    <div class="lessons">
+      {% for r in rows %}
+        <div class="lesson-row">
+          <div class="lesson-left">
+            <span class="check">{% if r.done %}✅{% else %}⬜{% endif %}</span>
+            <div>
+              <div style="font-weight:600;">{{ r.lesson.title }}</div>
+              {% if r.done %}
+                <div class="muted" style="font-size:12px;">Completed</div>
+              {% else %}
+                <div class="muted" style="font-size:12px;">Not completed</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="actions">
+            <a class="btn btn-secondary"
+               href="{% url 'courses:lesson_detail' course.id r.lesson.id %}">
+              Open
+            </a>
+
+            {# Quiz link (only if your URL name is lesson_quiz) #}
+            <a class="btn btn-secondary"
+               href="{% url 'courses:lesson_quiz' course.id r.lesson.id %}">
+              Quiz
+            </a>
+
+            {% if next_lesson and next_lesson.id == r.lesson.id %}
+              <span class="badge">Next</span>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p class="muted">No lessons found for this course.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
