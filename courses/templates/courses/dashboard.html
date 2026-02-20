@@ -1,0 +1,16 @@
+
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ course.title }}</h2>
+<p>Progress: {{ progress }}%</p>
+
+<ul>
+{% for l in lessons %}
+<li>
+{{ l.title }}
+{% if l.id in completed_ids %} ✅ {% endif %}
+<a href="{% url 'lesson_view' l.id %}">Open</a>
+</li>
+{% endfor %}
+</ul>
+{% endblock %}

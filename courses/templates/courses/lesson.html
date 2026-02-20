@@ -1,0 +1,11 @@
+
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ lesson.title }}</h2>
+<div>{{ lesson.content|linebreaks }}</div>
+
+<form method="post">
+{% csrf_token %}
+<button type="submit">Mark Completed</button>
+</form>
+{% endblock %}
