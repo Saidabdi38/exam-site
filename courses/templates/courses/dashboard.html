@@ -7,9 +7,23 @@
 <ul>
 {% for l in lessons %}
 <li>
-{{ l.title }}
-{% if l.id in completed_ids %} ✅ {% endif %}
-<a href="{% url 'lesson_view' l.id %}">Open</a>
+
+    {{ l.title }}
+
+    {% if l.id in completed_ids %}
+        ✅ Completed
+    {% endif %}
+
+    <!-- Open Lesson -->
+    <a href="{% url 'lesson_detail' course.id l.id %}">
+        Open Lesson
+    </a>
+
+    <!-- Lesson Quiz -->
+    <a href="{% url 'lesson_quiz' course.id l.id %}">
+        Take Quiz
+    </a>
+
 </li>
 {% endfor %}
 </ul>
