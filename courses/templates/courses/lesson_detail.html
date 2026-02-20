@@ -1,8 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{{lesson.title}}</h2>
-<div>{{lesson.content|linebreaks}}</div>
-<form method="post">{% csrf_token %}
-<button class="btn btn-primary">Mark Completed</button>
-</form>
+
+<div style="max-width:800px;margin:auto;">
+
+  <h2>{{ lesson.title }}</h2>
+
+  <div style="margin-top:15px;">
+    {{ lesson.content|linebreaks }}
+  </div>
+
+  <hr>
+
+  <!-- MARK COMPLETE -->
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-primary">
+      ✅ Mark Lesson Completed
+    </button>
+  </form>
+
+</div>
+
 {% endblock %}

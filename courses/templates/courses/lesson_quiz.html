@@ -1,13 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Lesson Quiz</h2>
-<form method="post">{% csrf_token %}
-{% for q in questions %}
-<p>{{q.text}}</p>
-{% for c in q.choices.all %}
-<label><input type="radio" name="q_{{q.id}}" value="{{c.id}}">{{c.text}}</label>
-{% endfor %}
-{% endfor %}
-<button class="btn btn-primary">Submit</button>
-</form>
+
+<div style="max-width:800px;margin:auto;">
+
+  <h2>Lesson Quiz</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% for q in questions %}
+      <div style="margin-bottom:20px;">
+
+        <p><strong>{{ forloop.counter }}. {{ q.text }}</strong></p>
+
+        {% for c in q.choices.all %}
+          <label style="display:block;margin-left:10px;">
+            <input type="radio"
+                   name="q_{{ q.id }}"
+                   value="{{ c.id }}">
+            {{ c.text }}
+          </label>
+        {% endfor %}
+
+      </div>
+    {% endfor %}
+
+    <button class="btn btn-primary">
+      Submit Quiz
+    </button>
+
+  </form>
+
+</div>
+
 {% endblock %}
