@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "exams.apps.ExamsConfig",
-    "courses",
+    "courses.apps.ExamsConfig",
 ]
 
 MIDDLEWARE = [
