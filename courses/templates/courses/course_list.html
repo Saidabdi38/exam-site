@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Available Courses</h2>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+
+  {% if user.is_staff %}
+  <a class="btn btn-primary" href="{% url 'courses:course_create' %}">
+    ➕ Create Course
+  </a>
+  {% endif %}   
+
+  {% for course in courses %}
+    <div style="border:1px solid #ddd;padding:15px;border-radius:10px;">
+      
+      <h3>{{ course.title }}</h3>
+
+      {% if course.overview %}
+        <p>{{ course.overview }}</p>
+      {% endif %}
+
+      <a class="btn btn-primary"
+        href="{% url 'courses:course_dashboard' course.id %}">
+        Open Course
+      </a>
+
+    </div>
+  {% empty %}
+    <p>No courses available.</p>
+  {% endfor %}
+
+  </div>
+
+  {% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Course</h2>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div style="margin-bottom:10px;">
+    <label><strong>Subject</strong></label><br>
+    <select name="subject" required style="width:100%;padding:8px;">
+      <option value="">-- Select Subject --</option>
+      {% for s in subjects %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <label><strong>Title</strong></label><br>
+    <input type="text" name="title" required style="width:100%;padding:8px;">
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <label><strong>Overview</strong></label><br>
+    <textarea name="overview" rows="4" style="width:100%;padding:8px;"></textarea>
+  </div>
+
+  <label style="display:block;margin-bottom:12px;">
+    <input type="checkbox" name="is_published" checked>
+    Publish now
+  </label>
+
+  <button class="btn btn-primary" type="submit">Create</button>
+  <a class="btn btn-secondary" href="{% url 'courses:course_list' %}">Cancel</a>
+</form>
+{% endblock %}

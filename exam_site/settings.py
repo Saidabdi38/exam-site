@@ -1,3 +1,4 @@
+# exam_site/settings.py
 from pathlib import Path
 import os
 
@@ -9,13 +10,13 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
 # ENV SWITCH
 # -------------------------
 # Set DEBUG=True only in local/dev environment variables
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+# DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = True
 
 # Hosts (comma-separated in env)
-# Default is your domain(s) so production works even if env is missing
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
-    "xirfadyaal.com,www.xirfadyaal.com"
+    "xirfadyaal.com,www.xirfadyaal.com,127.0.0.1,localhost"
 ).split(",")
 
 # Clean spaces
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+
     "exams.apps.ExamsConfig",
     "courses.apps.CoursesConfig",
 ]
@@ -56,7 +58,7 @@ ROOT_URLCONF = "exam_site.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [],  # if you have a global templates folder, add it here
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -72,23 +74,45 @@ TEMPLATES = [
 WSGI_APPLICATION = "exam_site.wsgi.application"
 
 # -------------------------
-# DATABASE (PostgreSQL both)
+# DATABASE SWITCH
 # -------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "exam_db"),
-        "USER": os.environ.get("DB_USER", "exam_user"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "xirfadyaal@123"),
-        "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+
+USE_SQLITE = os.environ.get("USE_SQLITE", "True") == "True"
+
+if USE_SQLITE:
+    # ✅ LOCAL DEVELOPMENT
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+
+else:
+    # ✅ PRODUCTION (POSTGRESQL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME", "exam_db"),
+            "USER": os.environ.get("DB_USER", "exam_user"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", "xirfadyaal@123"),
+            "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+        }
+    }
+# -------------------------
+# PASSWORD VALIDATION
+# -------------------------
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
 
 # -------------------------
 # CSRF / SECURITY (FIX)
 # -------------------------
-# Default trusted origins so HTTPS works even if env is missing
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "CSRF_TRUSTED_ORIGINS",
     "https://xirfadyaal.com,https://www.xirfadyaal.com"
@@ -115,6 +139,10 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# If you serve uploaded media later:
+# MEDIA_URL = "/media/"
+# MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

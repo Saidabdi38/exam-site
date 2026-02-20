@@ -17,20 +17,25 @@
 
   <!-- LEFT NAV -->
   <div class="nav-left">
-      <a class="brand" href="{% url 'home' %}">
-        <img src="{% static 'exams/images/logo.jpeg' %}"
-         alt="Xirfadyaal Logo"
-         class="brand-logo">
-      </a>
+    <a class="brand" href="{% url 'home' %}">
+      <img src="{% static 'exams/images/logo.jpeg' %}"
+           alt="Xirfadyaal Logo"
+           class="brand-logo">
+    </a>
 
     {% if user.is_authenticated %}
       <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
-      <!-- <a class="navlink" href="{% url 'course_dashboard' %}">Courses</a> -->
+
+      <!-- ✅ FIX: Course list does not need course_id -->
+      <a class="navlink" href="{% url 'courses:course_list' %}">Courses</a>
+
       {% if user.is_staff %}
         <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
         <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
       {% endif %}
+
       <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+
     {% else %}
       <a class="navlink" href="{% url 'home' %}">Home</a>
       <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
@@ -57,8 +62,9 @@
 </nav>
 
 <!-- ================= MOBILE NAV LINKS ================= -->
-  <div id="mobileNav">
-   <!-- MOBILE LOGO -->
+<div id="mobileNav">
+
+  <!-- MOBILE LOGO -->
   <div class="mobile-logo">
     <a href="{% url 'home' %}">
       <img src="{% static 'exams/images/logo.jpeg' %}"
@@ -69,11 +75,17 @@
 
   {% if user.is_authenticated %}
     <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
+
+    <!-- ✅ ADD + FIX: Course list does not need course_id -->
+    <a class="navlink" href="{% url 'courses:course_list' %}">Courses</a>
+
     {% if user.is_staff %}
       <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
       <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
     {% endif %}
+
     <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+
     <span class="nav-user">Hi, {{ user.username }}</span>
     <form method="post" action="{% url 'logout' %}" style="margin-top:8px;">
       {% csrf_token %}
@@ -160,11 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener(
     "contextmenu",
     function (e) {
-      if (
-        e.target.closest(
-          "a, button, .btn, .navlink, .menu-toggle, img"
-        )
-      ) {
+      if (e.target.closest("a, button, .btn, .navlink, .menu-toggle, img")) {
         e.preventDefault();
       }
     },
