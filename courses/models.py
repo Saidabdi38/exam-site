@@ -4,7 +4,6 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-
 class Course(models.Model):
     subject = models.ForeignKey(
         "exams.Subject",
@@ -13,19 +12,36 @@ class Course(models.Model):
     )
     title = models.CharField(max_length=200)
     overview = models.TextField(blank=True)
+
+    # Publish = course is ready/admin-visible
     is_published = models.BooleanField(default=True)
+
+    # ✅ NEW: teacher controls if students can view this course
+    allow_students_view = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["title"]
         indexes = [
             models.Index(fields=["is_published"]),
+            models.Index(fields=["allow_students_view"]),
             models.Index(fields=["created_at"]),
         ]
 
     def _str_(self):
         return self.title
 
+class CourseAccess(models.Model):
+    course = models.ForeignKey("courses.Course", on_delete=models.CASCADE, related_name="access_list")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="course_access")
+    can_view = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = [("course", "user")]
+
+    def _str_(self):
+        return f"{self.user} -> {self.course} ({'view' if self.can_view else 'no'})"
 
 class Lesson(models.Model):
     course = models.ForeignKey(
@@ -145,9 +161,7 @@ class LessonQuizChoice(models.Model):
         ]
 
     def clean(self):
-        """
-        Ensure only ONE correct choice per question.
-        """
+        # Ensure only ONE correct choice per question
         if self.is_correct:
             qs = LessonQuizChoice.objects.filter(question=self.question, is_correct=True)
             if self.pk:

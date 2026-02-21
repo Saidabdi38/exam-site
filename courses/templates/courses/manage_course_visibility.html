@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Manage Course Visibility</h2>
+<p><strong>Course:</strong> {{ course.title }}</p>
+{% load course_extras %}
+
+<form method="post">
+  {% csrf_token %}
+
+  <div style="border:1px solid #eee;border-radius:10px;overflow:hidden;">
+    <div style="display:grid;grid-template-columns: 1fr 140px;gap:0;background:#f9fafb;padding:12px;font-weight:600;">
+      <div>Student</div>
+      <div>Can View</div>
+    </div>
+
+    {% for s in students %}
+      <div style="display:grid;grid-template-columns: 1fr 140px;gap:0;padding:12px;border-top:1px solid #eee;">
+        <div>{{ s.username }}</div>
+        <div>
+         <input type="checkbox" name="can_view" value="{{ s.id }}"
+            {% if access_map|get_item:s.id %}checked{% endif %}>
+        </div>
+      </div>
+    {% empty %}
+      <div style="padding:12px;">No students found.</div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:12px;display:flex;gap:10px;">
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-secondary" href="{% url 'courses:teacher_course_list' %}">Back</a>
+  </div>
+
+</form>
+
+{% endblock %}

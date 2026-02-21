@@ -1,35 +1,46 @@
 {% extends "base.html" %}
+{% block title %}Courses{% endblock %}
 {% block content %}
 
-<h2>Available Courses</h2>
-
-<div style="display:flex;flex-direction:column;gap:12px;">
+<div class="container">
+  <h2>Available Courses</h2>
+  <p class="muted">Browse published courses and start learning.</p>
 
   {% if user.is_staff %}
-  <a class="btn btn-primary" href="{% url 'courses:course_create' %}">
-    ➕ Create Course
-  </a>
-  {% endif %}   
-
-  {% for course in courses %}
-    <div style="border:1px solid #ddd;padding:15px;border-radius:10px;">
-      
-      <h3>{{ course.title }}</h3>
-
-      {% if course.overview %}
-        <p>{{ course.overview }}</p>
-      {% endif %}
-
-      <a class="btn btn-primary"
-        href="{% url 'courses:course_dashboard' course.id %}">
-        Open Course
+    <p style="margin:12px 0;">
+      <a class="btn btn-primary" href="{% url 'courses:course_create' %}">
+        ➕ Create Course
       </a>
 
-    </div>
-  {% empty %}
-    <p>No courses available.</p>
-  {% endfor %}
+      <a class="btn btn-secondary" href="{% url 'courses:teacher_course_list' %}" style="margin-left:8px;">
+        Manage Courses
+      </a>
+    </p>
+  {% endif %}
 
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px; margin-top:14px;">
+    {% for course in courses %}
+      <div class="card" style="padding:14px;">
+        <h3 style="margin:0 0 8px;">{{ course.title }}</h3>
+
+        {% if course.overview %}
+          <p style="color:#6b7280; margin:0 0 12px;">
+            {{ course.overview|truncatewords:25 }}
+          </p>
+        {% else %}
+          <p style="color:#6b7280; margin:0 0 12px;">
+            No overview provided.
+          </p>
+        {% endif %}
+
+        <a class="btn btn-primary" href="{% url 'courses:course_dashboard' course.id %}">
+          Open Course
+        </a>
+      </div>
+    {% empty %}
+      <p>No courses available.</p>
+    {% endfor %}
   </div>
+</div>
 
-  {% endblock %}
+{% endblock %}

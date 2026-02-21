@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Manage Courses{% endblock %}
+{% block content %}
+
+<div class="container" style="max-width:1000px;margin:auto;">
+  <h2>Manage Courses</h2>
+
+  <p style="margin:12px 0;display:flex;gap:10px;flex-wrap:wrap;">
+    <a class="btn btn-primary" href="{% url 'courses:course_create' %}">
+      ➕ Create Course
+    </a>
+
+    <!-- Optional: link to teacher view only list page (if you have it) -->
+    {# <a class="btn btn-secondary" href="{% url 'courses:teacher_course_list' %}">Refresh</a> #}
+  </p>
+
+  <hr>
+
+  {% for c in courses %}
+    <div style="
+      padding:12px;
+      border:1px solid #eee;
+      border-radius:12px;
+      margin-bottom:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;">
+
+      <!-- LEFT: COURSE INFO -->
+      <div style="min-width:260px;">
+        <strong style="font-size:16px;">{{ c.title }}</strong><br>
+
+        <span style="color:#6b7280;">
+          Subject: {{ c.subject.name }}
+        </span>
+
+        <div style="margin-top:6px;">
+          {% if c.is_published %}
+            <span style="color:green;font-weight:600;">✅ Published</span>
+          {% else %}
+            <span style="color:#b45309;font-weight:600;">Hidden</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- RIGHT: ACTION BUTTONS -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;">
+
+        <!-- ✅ NEW: Manage per-student viewing permission (like your screenshot) -->
+        <a class="btn btn-secondary"
+           href="{% url 'courses:manage_course_visibility' c.id %}">
+          Visibility
+        </a>
+
+        <a class="btn btn-secondary"
+           href="{% url 'courses:lesson_create' c.id %}">
+          + Lesson
+        </a>
+
+        <form method="post"
+              action="{% url 'courses:course_toggle_publish' c.id %}"
+              style="margin:0;">
+          {% csrf_token %}
+          {% if c.is_published %}
+            <button type="submit" class="btn btn-secondary">Hide</button>
+          {% else %}
+            <button type="submit" class="btn btn-primary">Publish</button>
+          {% endif %}
+        </form>
+
+      </div>
+    </div>
+  {% empty %}
+    <p>No courses created.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

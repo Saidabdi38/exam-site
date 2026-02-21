@@ -2,104 +2,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}Exam Site{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Main CSS -->
+  <title>{% block title %}Xirfadyaal{% endblock %}</title>
+
   <link rel="stylesheet" href="{% static 'exams/css/style.css' %}">
 </head>
 
-<body class="{% block body_class %}{% endblock %}">
+<body>
 
 <!-- ================= NAVBAR ================= -->
 <nav id="siteNav">
 
-  <!-- LEFT NAV -->
+  <!-- LEFT -->
   <div class="nav-left">
+
+    <!-- LOGO -->
     <a class="brand" href="{% url 'home' %}">
       <img src="{% static 'exams/images/logo.jpeg' %}"
-           alt="Xirfadyaal Logo"
-           class="brand-logo">
+           class="brand-logo"
+           alt="Xirfadyaal">
+      <span class="brand-text">XIRFADYAAL.COM</span>
     </a>
 
     {% if user.is_authenticated %}
-      <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
 
-      <!-- ✅ FIX: Course list does not need course_id -->
-      <a class="navlink" href="{% url 'courses:course_list' %}">Courses</a>
+      <a class="navlink"
+         href="{% url 'student_dashboard' %}">
+         Dashboard
+      </a>
 
+      <!-- ✅ COURSES -->
+      <a class="navlink"
+         href="{% url 'courses:course_list' %}">
+         Courses
+      </a>
+
+      <!-- ✅ TEACHER AREA -->
       {% if user.is_staff %}
-        <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
-        <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+        <a class="navlink"
+           href="{% url 'teacher_dashboard' %}">
+           Teacher
+        </a>
+
+        <a class="navlink"
+           href="{% url 'teacher_subject_list' %}">
+           Subjects
+        </a>
       {% endif %}
 
-      <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+      <a class="navlink"
+         href="{% url 'exam_prices' %}">
+         Assessments
+      </a>
 
     {% else %}
+
       <a class="navlink" href="{% url 'home' %}">Home</a>
-      <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+      <a class="navlink" href="{% url 'exam_prices' %}">
+        Assessments
+      </a>
+
     {% endif %}
   </div>
 
-  <!-- RIGHT NAV -->
+
+  <!-- RIGHT -->
   <div class="nav-right">
+
     {% if user.is_authenticated %}
-      <span class="nav-user">Hi, {{ user.username }}</span>
-      <form method="post" action="{% url 'logout' %}" class="inline-form">
+      <span class="nav-user">
+        Hi, {{ user.username }}
+      </span>
+
+      <form method="post"
+            action="{% url 'logout' %}"
+            class="inline-form">
         {% csrf_token %}
-        <button type="submit" class="btn btn-secondary">Logout</button>
+        <button class="btn btn-secondary">
+          Logout
+        </button>
       </form>
+
     {% else %}
+
       <a class="navlink" href="{% url 'login' %}">Login</a>
-      <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
+      <a class="btn btn-primary"
+         href="{% url 'signup' %}">
+         Sign up
+      </a>
+
     {% endif %}
   </div>
 
-  <!-- MOBILE TOGGLE BUTTON -->
-  <button class="menu-toggle" id="menuToggle">☰</button>
+  <!-- MOBILE BUTTON -->
+  <button id="menuToggle" class="menu-toggle">☰</button>
 
 </nav>
 
-<!-- ================= MOBILE NAV LINKS ================= -->
+
+<!-- ================= MOBILE NAV ================= -->
 <div id="mobileNav">
 
   <!-- MOBILE LOGO -->
   <div class="mobile-logo">
     <a href="{% url 'home' %}">
       <img src="{% static 'exams/images/logo.jpeg' %}"
-           alt="Xirfadyaal Logo"
            class="mobile-brand-logo">
     </a>
   </div>
 
   {% if user.is_authenticated %}
-    <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
 
-    <!-- ✅ ADD + FIX: Course list does not need course_id -->
-    <a class="navlink" href="{% url 'courses:course_list' %}">Courses</a>
+    <a href="{% url 'student_dashboard' %}">Dashboard</a>
+    <a href="{% url 'courses:course_list' %}">Courses</a>
 
     {% if user.is_staff %}
-      <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
-      <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+      <a href="{% url 'teacher_dashboard' %}">Teacher</a>
+      <a href="{% url 'teacher_subject_list' %}">Subjects</a>
     {% endif %}
 
-    <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+    <a href="{% url 'exam_prices' %}">Assessments</a>
 
-    <span class="nav-user">Hi, {{ user.username }}</span>
-    <form method="post" action="{% url 'logout' %}" style="margin-top:8px;">
+    <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
-      <button type="submit" class="btn btn-secondary mobile-logout">Logout</button>
+      <button class="btn btn-secondary mobile-logout">
+        Logout
+      </button>
     </form>
 
   {% else %}
-    <a class="navlink" href="{% url 'home' %}">Home</a>
-    <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
-    <a class="navlink" href="{% url 'login' %}">Login</a>
-    <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
-  {% endif %}
 
+    <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'exam_prices' %}">Assessments</a>
+    <a href="{% url 'login' %}">Login</a>
+    <a class="btn btn-primary"
+       href="{% url 'signup' %}">
+       Sign up
+    </a>
+
+  {% endif %}
 </div>
+
 
 <!-- ================= MAIN CONTENT ================= -->
 <div class="container">
@@ -108,7 +153,9 @@
     {% if messages %}
       <ul class="messages">
         {% for message in messages %}
-          <li class="{{ message.tags }}">{{ message }}</li>
+          <li class="{{ message.tags }}">
+            {{ message }}
+          </li>
         {% endfor %}
       </ul>
     {% endif %}
@@ -118,66 +165,50 @@
   </div>
 </div>
 
+
 <!-- ================= FOOTER ================= -->
 <footer class="site-footer">
   <div class="footer-container">
 
     <div>
-      <h3>Assessment Site</h3>
-      <p>Online assessment platform for students and teachers.</p>
+      <h3>Xirfadyaal</h3>
+      <p>
+        Competency-based skills assessment platform.
+      </p>
     </div>
 
     <div>
       <h4>Quick Links</h4>
       <a href="{% url 'home' %}">Home</a>
-      <a href="{% url 'exam_prices' %}">Prices</a>
-      <a href="{% url 'login' %}">Login</a>
-      <a href="{% url 'signup' %}">Sign Up</a>
+      <a href="{% url 'courses:course_list' %}">Courses</a>
+      <a href="{% url 'exam_prices' %}">Assessments</a>
     </div>
 
     <div>
       <h4>Contact</h4>
-      <p>Mobile: +252906943838</p>
-      <p>Email: support@xirfadyaal.com</p>
-      <p>© {{ year|default:2026 }} </p>
+      <p>📞 +252 906 943838</p>
+      <p>✉ support@xirfadyaal.com</p>
+      <p>© 2026 Xirfadyaal</p>
     </div>
 
   </div>
 </footer>
 
-<!-- ================= MOBILE TOGGLE SCRIPT ================= -->
+
+<!-- ================= MOBILE SCRIPT ================= -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-  const menuToggle = document.getElementById("menuToggle");
-  const mobileNav  = document.getElementById("mobileNav");
+  const toggle = document.getElementById("menuToggle");
+  const mobile = document.getElementById("mobileNav");
 
-  /* ===== Toggle mobile menu ===== */
-  if (menuToggle && mobileNav) {
-    menuToggle.addEventListener("click", () => {
-      const isOpen = mobileNav.classList.toggle("show");
-      menuToggle.textContent = isOpen ? "✖" : "☰";
-    });
-
-    // Close menu when resizing to desktop
-    window.addEventListener("resize", () => {
-      if (window.innerWidth > 768) {
-        mobileNav.classList.remove("show");
-        menuToggle.textContent = "☰";
-      }
-    });
+  if(toggle){
+    toggle.onclick = () => {
+      mobile.classList.toggle("show");
+      toggle.textContent =
+        mobile.classList.contains("show") ? "✖" : "☰";
+    };
   }
-
-  /* ===== Prevent Android long-press menus ===== */
-  document.addEventListener(
-    "contextmenu",
-    function (e) {
-      if (e.target.closest("a, button, .btn, .navlink, .menu-toggle, img")) {
-        e.preventDefault();
-      }
-    },
-    { passive: false }
-  );
 
 });
 </script>

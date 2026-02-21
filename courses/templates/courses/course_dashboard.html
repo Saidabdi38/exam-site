@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% block title %}{{ course.title }}{% endblock %}
 {% block content %}
 
 <div style="max-width:900px;margin:auto;">
 
-  <!-- COURSE HEADER -->
+  <!-- HEADER -->
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
     <div>
       <h2 style="margin:0;">{{ course.title }}</h2>
@@ -18,15 +19,14 @@
       {% if next_lesson %}
         <a class="btn btn-primary"
            href="{% url 'courses:lesson_detail' course.id next_lesson.id %}">
-           ▶ Continue Learning
+          ▶ Continue Learning
         </a>
       {% endif %}
 
-      {# ✅ Add Lesson Button (only staff/teacher/admin) #}
       {% if user.is_staff %}
         <a class="btn btn-secondary"
            href="{% url 'courses:lesson_create' course.id %}">
-           ➕ Add Lesson
+          ➕ Add Lesson
         </a>
       {% endif %}
     </div>
@@ -34,13 +34,9 @@
 
   <hr>
 
-  <!-- PROGRESS BAR -->
+  <!-- PROGRESS -->
   <div style="height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden;">
-    <div style="
-        height:10px;
-        width:{{ progress.percent }}%;
-        background:#2563eb;">
-    </div>
+    <div style="height:10px;width:{{ progress.percent }}%;background:#2563eb;"></div>
   </div>
 
   <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;">
@@ -52,9 +48,7 @@
     </p>
 
     {% if progress.percent >= 100 %}
-      <span style="color:green;font-weight:bold;">
-        ✅ Course Completed
-      </span>
+      <span style="color:green;font-weight:bold;">✅ Course Completed</span>
     {% else %}
       <span style="color:#6b7280;">In Progress</span>
     {% endif %}
@@ -62,21 +56,15 @@
 
   <hr>
 
-  <!-- LESSON LIST -->
+  <!-- LESSONS -->
   <h3 style="margin-top:0;">Lessons</h3>
 
   {% for r in rows %}
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        gap:10px;
-        padding:10px;
-        border-bottom:1px solid #eee;
-        flex-wrap:wrap;">
-
+    <div style="display:flex;justify-content:space-between;gap:10px;padding:10px;border-bottom:1px solid #eee;flex-wrap:wrap;">
       <div style="min-width:240px;">
         {% if r.done %}✅{% else %}⬜{% endif %}
         <strong>{{ r.lesson.title }}</strong>
+
         <div style="color:#6b7280;font-size:12px;margin-top:3px;">
           {% if r.done %}Completed{% else %}Not completed{% endif %}
         </div>
@@ -85,18 +73,16 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <a class="btn btn-secondary"
            href="{% url 'courses:lesson_detail' course.id r.lesson.id %}">
-           Open
+          Open
         </a>
 
-        {# Only show Quiz if lesson has quiz #}
         {% if r.lesson.quiz %}
           <a class="btn btn-secondary"
              href="{% url 'courses:lesson_quiz' course.id r.lesson.id %}">
-             Quiz
+            Quiz
           </a>
         {% endif %}
       </div>
-
     </div>
   {% empty %}
     <p>No lessons available.</p>
