@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -16,24 +17,21 @@ from .utils import course_progress, get_next_lesson
 User = get_user_model()
 
 # ===============================
-# STUDENT / GENERAL
+# STUDENT / GENERALa
 # ===============================
 
 @login_required
 def course_list(request):
-    if request.user.is_staff:
-        # teachers can see all published courses
-        courses = Course.objects.all().order_by("title")
-    else:
-        # students see only courses they are allowed to view (and published)
-        courses = Course.objects.filter(
-            is_published=True,
-            access_list__user=request.user,
-            access_list__can_view=True,
-        ).order_by("title")
+    access_qs = CourseAccess.objects.filter(
+        user=request.user,
+        can_view=True,
+        course__is_published=True,
+        course__allow_students_view=True,
+    ).select_related("course")
 
+    courses = [a.course for a in access_qs]
     return render(request, "courses/course_list.html", {"courses": courses})
-
+    
 @login_required
 def course_edit(request, course_id):
     if not request.user.is_staff:
@@ -78,21 +76,37 @@ def course_delete(request, course_id):
 @staff_member_required
 def manage_course_visibility(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-
-    # Choose who counts as a student in your system:
     students = User.objects.filter(is_staff=False).order_by("username")
+    lessons = Lesson.objects.filter(course=course).order_by("order", "id")
 
-    # Ensure every student has a CourseAccess row (so template is easy)
+    # Ensure every student has a CourseAccess row
     for s in students:
         CourseAccess.objects.get_or_create(course=course, user=s)
 
     if request.method == "POST":
-        allowed_ids = set(request.POST.getlist("can_view"))  # list of user IDs as strings
+        # Global course switch
+        course.allow_students_view = ("course_allow_students_view" in request.POST)
+        course.save(update_fields=["allow_students_view"])
+
+        # Per-student course view
+        course_view_ids = set(request.POST.getlist("student_course_view"))
+        lessons_view_ids = set(request.POST.getlist("student_lessons_view"))
 
         for s in students:
             access = CourseAccess.objects.get(course=course, user=s)
-            access.can_view = str(s.id) in allowed_ids
+            access.can_view = str(s.id) in course_view_ids
+
+            # Only if you added lessons_can_view field
+            if hasattr(access, "lessons_can_view"):
+                access.lessons_can_view = str(s.id) in lessons_view_ids
+
             access.save()
+
+        # Lesson flags
+        for l in lessons:
+            l.is_published = (f"lesson_is_published_{l.id}" in request.POST)
+            l.allow_students_view = (f"lesson_allow_students_{l.id}" in request.POST)
+            l.save(update_fields=["is_published", "allow_students_view"])
 
         messages.success(request, "Course visibility updated.")
         return redirect("courses:manage_course_visibility", course_id=course.id)
@@ -102,39 +116,91 @@ def manage_course_visibility(request, course_id):
         for a in CourseAccess.objects.filter(course=course, user__in=students)
     }
 
+    lesson_access_map = None
+    if any(getattr(f, "name", "") == "lessons_can_view" for f in CourseAccess._meta.get_fields()):
+        lesson_access_map = {
+            a.user_id: a.lessons_can_view
+            for a in CourseAccess.objects.filter(course=course, user__in=students)
+        }
+
     return render(request, "courses/manage_course_visibility.html", {
         "course": course,
         "students": students,
+        "lessons": lessons,
         "access_map": access_map,
+        "lesson_access_map": lesson_access_map,
     })
-
+    
 @login_required
 def course_dashboard(request, course_id):
+
     course = get_object_or_404(Course, id=course_id)
 
-    # ✅ Block students if teacher didn't allow view
-    if (not request.user.is_staff) and (not course.allow_students_view):
-        messages.error(request, "This course is not available yet.")
-        return redirect("courses:course_list")
+    # ===============================
+    # STUDENT ACCESS CHECK
+    # ===============================
+    if not request.user.is_staff:
 
-    lessons = Lesson.objects.filter(course=course, is_published=True).order_by("order")
+        access = CourseAccess.objects.filter(
+            course=course,
+            user=request.user,
+            can_view=True
+        ).exists()
 
-    completed = set(
-        LessonCompletion.objects.filter(user=request.user, lesson__course=course)
-        .values_list("lesson_id", flat=True)
+        if not (course.is_published and access):
+            messages.error(request, "This course is not available yet.")
+            return redirect("courses:course_list")
+
+    # ===============================
+    # LESSONS QUERY
+    # ===============================
+    lessons_qs = Lesson.objects.filter(
+        course=course,
+        is_published=True,
+        allow_students_view=True
+    ).order_by("order", "id")
+
+    # ===============================
+    # PAGINATION
+    # ===============================
+    paginator = Paginator(lessons_qs, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    completed_ids = set(
+        LessonCompletion.objects.filter(
+            user=request.user,
+            lesson__course=course
+        ).values_list("lesson_id", flat=True)
     )
-    rows = [{"lesson": l, "done": l.id in completed} for l in lessons]
 
-    prog = course_progress(request.user, course)
-    nxt = get_next_lesson(request.user, course)
+    rows = [
+        {"lesson": l, "done": l.id in completed_ids}
+        for l in page_obj.object_list
+    ]
 
-    return render(
-        request,
-        "courses/course_dashboard.html",
-        {"course": course, "rows": rows, "progress": prog, "next_lesson": nxt},
-    )
+    total = lessons_qs.count()
+    done = len(completed_ids)
+    percent = int((done / total) * 100) if total else 0
 
+    next_lesson = None
+    for l in lessons_qs:
+        if l.id not in completed_ids:
+            next_lesson = l
+            break
 
+    # ✅ VERY IMPORTANT FINAL RETURN
+    return render(request, "courses/course_dashboard.html", {
+        "course": course,
+        "rows": rows,
+        "progress": {
+            "done": done,
+            "total": total,
+            "percent": percent
+        },
+        "next_lesson": next_lesson,
+        "page_obj": page_obj,
+    })            
 @login_required
 def lesson_create(request, course_id):
     course = get_object_or_404(Course, id=course_id)

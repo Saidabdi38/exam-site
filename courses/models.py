@@ -3,6 +3,10 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 class Course(models.Model):
     subject = models.ForeignKey(
@@ -33,15 +37,14 @@ class Course(models.Model):
         return self.title
 
 class CourseAccess(models.Model):
-    course = models.ForeignKey("courses.Course", on_delete=models.CASCADE, related_name="access_list")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="course_access")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     can_view = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = [("course", "user")]
+    lessons_can_view = models.BooleanField(default=True)  # ✅ add this
 
-    def __str__(self):
-        return f"{self.user} -> {self.course} ({'view' if self.can_view else 'no'})"
+    class Meta:
+        unique_together = ("course", "user")
 
 class Lesson(models.Model):
     course = models.ForeignKey(
@@ -49,27 +52,28 @@ class Lesson(models.Model):
         on_delete=models.CASCADE,
         related_name="lessons",
     )
+
     title = models.CharField(max_length=200)
     content = models.TextField()
     order = models.PositiveIntegerField(default=1)
+
+    # Teacher control
     is_published = models.BooleanField(default=True)
+
+    # Student visibility control ✅
+    allow_students_view = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["course", "order", "id"]
+
         indexes = [
             models.Index(fields=["course", "order"]),
             models.Index(fields=["is_published"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["course", "order"],
-                name="uniq_lesson_order_per_course",
-            )
+            models.Index(fields=["allow_students_view"]),
         ]
 
-    def ___str___(self):
+    def _str_(self):
         return f"{self.course.title} - {self.order}. {self.title}"
-
 
 class LessonCompletion(models.Model):
     user = models.ForeignKey(

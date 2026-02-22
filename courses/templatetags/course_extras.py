@@ -4,12 +4,14 @@ register = template.Library()
 
 
 @register.filter
-def get_item(dictionary, key):
+def get_item(obj, key):
     """
-    Allows dictionary lookup inside template
-    usage:
-    {{ dict|get_item:key }}
+    Safe dictionary lookup
+    Works only if object supports .get()
     """
-    if dictionary:
-        return dictionary.get(key)
+    try:
+        if hasattr(obj, "get"):
+            return obj.get(key)
+    except Exception:
+        pass
     return None
