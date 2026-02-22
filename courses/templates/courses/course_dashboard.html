@@ -5,7 +5,8 @@
 <div style="max-width:900px;margin:auto;">
 
   <!-- HEADER -->
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:flex-start;">
+
     <div>
       <h2 style="margin:0;">{{ course.title }}</h2>
 
@@ -14,21 +15,40 @@
       {% endif %}
     </div>
 
-    <!-- ACTION BUTTONS -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <!-- ===== COURSE ACTIONS ===== -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
       {% if next_lesson %}
         <a class="btn btn-primary"
            href="{% url 'courses:lesson_detail' course.id next_lesson.id %}">
-          ▶ Continue Learning
+          ▶ Continue
         </a>
       {% endif %}
 
       {% if user.is_staff %}
         <a class="btn btn-secondary"
+           href="{% url 'courses:course_edit' course.id %}">
+          ✏ Edit Course
+        </a>
+
+        <a class="btn btn-secondary"
            href="{% url 'courses:lesson_create' course.id %}">
           ➕ Add Lesson
         </a>
+
+        <!-- ✅ Delete Course (POST only) -->
+        <form method="post"
+              action="{% url 'courses:course_delete' course.id %}"
+              style="margin:0;display:inline;">
+          {% csrf_token %}
+          <button type="submit"
+                  class="btn btn-secondary"
+                  onclick="return confirm('Delete this course and ALL its lessons?');">
+            🗑 Delete Course
+          </button>
+        </form>
       {% endif %}
+
     </div>
   </div>
 
@@ -39,38 +59,34 @@
     <div style="height:10px;width:{{ progress.percent }}%;background:#2563eb;"></div>
   </div>
 
-  <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;">
-    <p style="margin:0;">
-      <strong>{{ progress.done }}</strong> /
-      <strong>{{ progress.total }}</strong>
-      lessons completed
-      <span style="color:#6b7280;">({{ progress.percent }}%)</span>
-    </p>
-
-    {% if progress.percent >= 100 %}
-      <span style="color:green;font-weight:bold;">✅ Course Completed</span>
-    {% else %}
-      <span style="color:#6b7280;">In Progress</span>
-    {% endif %}
-  </div>
+  <p style="margin:10px 0 0;">
+    <strong>{{ progress.done }}</strong> /
+    <strong>{{ progress.total }}</strong>
+    lessons <span style="color:#6b7280;">({{ progress.percent }}%)</span>
+  </p>
 
   <hr>
 
-  <!-- LESSONS -->
+  <!-- LESSON LIST -->
   <h3 style="margin-top:0;">Lessons</h3>
 
   {% for r in rows %}
-    <div style="display:flex;justify-content:space-between;gap:10px;padding:10px;border-bottom:1px solid #eee;flex-wrap:wrap;">
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        padding:10px 0;
+        border-bottom:1px solid #eee;
+        flex-wrap:wrap;
+        gap:10px;
+    ">
+
       <div style="min-width:240px;">
         {% if r.done %}✅{% else %}⬜{% endif %}
         <strong>{{ r.lesson.title }}</strong>
-
-        <div style="color:#6b7280;font-size:12px;margin-top:3px;">
-          {% if r.done %}Completed{% else %}Not completed{% endif %}
-        </div>
       </div>
 
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+
         <a class="btn btn-secondary"
            href="{% url 'courses:lesson_detail' course.id r.lesson.id %}">
           Open
@@ -82,7 +98,28 @@
             Quiz
           </a>
         {% endif %}
+
+        {% if user.is_staff %}
+          <a class="btn btn-secondary"
+             href="{% url 'courses:lesson_edit' course.id r.lesson.id %}">
+            ✏ Edit
+          </a>
+
+          <!-- ✅ Delete Lesson (POST only) -->
+          <form method="post"
+                action="{% url 'courses:lesson_delete' course.id r.lesson.id %}"
+                style="margin:0;display:inline;">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-secondary"
+                    onclick="return confirm('Delete this lesson?');">
+              🗑 Delete
+            </button>
+          </form>
+        {% endif %}
+
       </div>
+
     </div>
   {% empty %}
     <p>No lessons available.</p>

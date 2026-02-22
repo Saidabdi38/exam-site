@@ -23,7 +23,7 @@
       <img src="{% static 'exams/images/logo.jpeg' %}"
            class="brand-logo"
            alt="Xirfadyaal">
-      <span class="brand-text">XIRFADYAAL.COM</span>
+      <!-- <span class="brand-text">XIRFADYAAL.COM</span> -->
     </a>
 
     {% if user.is_authenticated %}
@@ -60,6 +60,9 @@
     {% else %}
 
       <a class="navlink" href="{% url 'home' %}">Home</a>
+      <a class="navlink" href="{% url 'courses:course_prices' %}">
+        Courses
+      </a>
       <a class="navlink" href="{% url 'exam_prices' %}">
         Assessments
       </a>

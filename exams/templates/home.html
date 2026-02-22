@@ -2,159 +2,174 @@
 {% block title %}Home{% endblock %}
 {% block content %}
 
-<!-- HERO -->
+<!-- ================= HERO ================= -->
 <section class="hero">
-  <h1>Skills Assessments for Competency</h1>
+  <h1>Competency-Based Skills Learning & Assessment</h1>
+
   <p>
-    Xirfadyaal provides competency-based assessments in Accounting, QuickBooks, Basic Computer,
-    and Microsoft Excel — with clear scoring, controlled attempts, and progress tracking.
+    Xirfadyaal provides structured Courses and Skills Assessments
+    for Accounting Clerk, Accountant and Finance Officer —
+    combining learning, practice, and competency evaluation.
   </p>
 
-  {% if user.is_authenticated %}
-    <a class="btn btn-primary" href="{% url 'student_dashboard' %}">
-      Go to Dashboard
-    </a>
-  {% else %}
-    <a class="btn btn-primary" href="{% url 'login' %}">
-      Sign In
-    </a>
-  {% endif %}
+  <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;">
+
+    {% if user.is_authenticated %}
+      <a class="btn btn-primary"
+         href="{% url 'student_dashboard' %}">
+        Go to Dashboard
+      </a>
+
+      <a class="btn btn-secondary"
+         href="{% url 'courses:course_list' %}">
+        View Courses
+      </a>
+
+    {% else %}
+      <a class="btn btn-primary"
+         href="{% url 'login' %}">
+        Sign In
+      </a>
+
+      <a class="btn btn-secondary"
+         href="{% url 'signup' %}">
+        Create Account
+      </a>
+    {% endif %}
+
+  </div>
 </section>
 
 <div class="divider"></div>
 
-<!-- ===============================
-     VISION / MISSION / GOALS / VALUES
-================================ -->
+<!-- ================= VISION ================= -->
 <section class="about">
+
   <h2>Vision</h2>
   <p>
-    Measuring skills through competency-based assessments.
+    Measuring real workplace skills through competency-based
+    digital learning and assessment.
   </p>
 
   <h2>Mission</h2>
   <p>
-    To deliver reliable digital assessments that accurately measure practical skills and support learning progress.
+    To deliver reliable training courses and practical assessments
+    that prepare learners for professional accounting roles.
   </p>
 
   <h2>Goals</h2>
   <ul class="feature-list">
-    <li>Provide fair, structured, and consistent assessments</li>
-    <li>Support skills development through measurable evaluation</li>
-    <li>Help learners track progress and improve performance</li>
-    <li>Enable teacher-controlled assessment management (publish, attempts, resits)</li>
+    <li>Structured course learning before assessment</li>
+    <li>Fair and measurable competency testing</li>
+    <li>Progress tracking for students</li>
+    <li>Teacher-controlled publishing & visibility</li>
   </ul>
 
   <h2>Values</h2>
   <ul class="feature-list">
-    <li><strong>Integrity</strong> – Fair and honest assessment.</li>
-    <li><strong>Quality</strong> – Accurate and meaningful evaluation.</li>
-    <li><strong>Innovation</strong> – Technology-driven solutions.</li>
-    <li><strong>Transparency</strong> – Clear processes and results.</li>
-    <li><strong>Growth</strong> – Continuous skills development.</li>
+    <li><strong>Integrity</strong> – Fair assessment</li>
+    <li><strong>Quality</strong> – Practical evaluation</li>
+    <li><strong>Innovation</strong> – Digital learning</li>
+    <li><strong>Transparency</strong> – Clear results</li>
+    <li><strong>Growth</strong> – Continuous improvement</li>
   </ul>
+
 </section>
 
 <div class="divider"></div>
 
-<!-- ===============================
-       SKILL CATEGORIES / SUBJECTS
-================================ -->
+<!-- ================= COURSES ================= -->
 <section class="skills">
-  <h2>Assessment Areas</h2>
 
-  <div class="skill-grid">
+  <h2>📘 Learning Courses</h2>
 
-    {% for s in subjects %}
-      <div class="skill-card">
-        <h3>{{ s.name }}</h3>
+  <p>
+    Start learning step-by-step lessons before attempting assessments.
+  </p>
 
-        {% if s.overview %}
-          <p>{{ s.overview|truncatechars:110 }}</p>
-        {% else %}
-          <p>Click “View Description” to see details.</p>
-        {% endif %}
-
-        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-          <a class="btn btn-secondary" href="{% url 'subject_detail' s.id %}">
-            View Description
-          </a>
-
-          {% if user.is_authenticated %}
-            <a class="btn btn-primary" href="{% url 'student_dashboard' %}">
-              Go to Dashboard
-            </a>
-          {% endif %}
-        </div>
-      </div>
-    {% empty %}
-      <div class="skill-card">
-        <h3>No subjects yet</h3>
-        <p>Create subjects and they will appear here.</p>
-      </div>
-    {% endfor %}
-
+  <div style="margin-top:15px;">
+    <a class="btn btn-primary"
+        href="{% url 'courses:course_prices' %}">
+       Browse Courses
+    </a>
   </div>
+
 </section>
 
 <div class="divider"></div>
 
-<!-- ===============================
-          HOW IT WORKS
-================================ -->
+<!-- ================= ASSESSMENTS ================= -->
+<section class="skills">
+
+  <h2>📝 Skills Assessments</h2>
+
+  <p>
+    Take competency-based exams and measure your professional readiness.
+  </p>
+
+  <div style="margin-top:15px;">
+    <a class="btn btn-primary"
+       href="{% url 'exam_prices' %}">
+       View Assessments
+    </a>
+  </div>
+
+</section>
+
+<div class="divider"></div>
+
+<!-- ================= HOW IT WORKS ================= -->
 <section class="how">
+
   <h2>How It Works</h2>
 
   <div class="steps">
+
     <div class="step">
       <div class="step-num">1</div>
-      <h3>Choose a Subject</h3>
-      <p>Select a subject and review the course description.</p>
+      <h3>Enroll in Course</h3>
+      <p>Learn accounting concepts through guided lessons.</p>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
-      <h3>Take an Assessment</h3>
-      <p>Complete timed tests with attempt limits and resits controlled by teachers.</p>
+      <h3>Practice & Quiz</h3>
+      <p>Complete lesson quizzes and track progress.</p>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
-      <h3>View Results</h3>
-      <p>See scores, check progress, and focus on weak areas to improve.</p>
+      <h3>Take Assessment</h3>
+      <p>Verify competency using controlled exams.</p>
     </div>
+
   </div>
+
 </section>
 
 <div class="divider"></div>
 
-<!-- ===============================
-            VALUE SECTION
-================================ -->
-<section class="value">
-  <h2>Built for Training Centers & Schools</h2>
-  <ul class="feature-list">
-    <li>Teacher controls: publishing, attempts, resits, visibility</li>
-    <li>Student tracking: performance, attempt history, progress</li>
-    <li>Mobile-friendly experience</li>
-    <li>Competency-based skill measurement</li>
-  </ul>
-</section>
-
-<div class="divider"></div>
-
-<!-- ===============================
-              CTA
-================================ -->
+<!-- ================= CTA ================= -->
 <section class="cta">
-  <h2>Start Your Skills Assessment</h2>
+
+  <h2>Start Your Professional Journey</h2>
+
   <p>
-    Browse available assessments and choose the best level for you.
+    Learn → Practice → Get Assessed → Prove Your Skills.
   </p>
 
-  <a class="btn btn-primary" href="{% url 'exam_prices' %}">
-    View Assessments
-  </a>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+    <a class="btn btn-primary"
+       href="{% url 'courses:course_prices' %}">
+       Start Learning
+    </a>
+
+    <a class="btn btn-secondary"
+       href="{% url 'exam_prices' %}">
+       Take Assessment
+    </a>
+  </div>
+
 </section>
 
 {% endblock %}

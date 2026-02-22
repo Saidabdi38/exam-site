@@ -4,78 +4,33 @@ from . import views
 app_name = "courses"
 
 urlpatterns = [
+    # STUDENT
+    path("", views.course_list, name="course_list"),
+    path("<int:course_id>/", views.course_dashboard, name="course_dashboard"),
+    path("<int:course_id>/lesson/<int:lesson_id>/", views.lesson_detail, name="lesson_detail"),
+    path("<int:course_id>/lesson/<int:lesson_id>/quiz/", views.lesson_quiz, name="lesson_quiz"),
 
-    # =====================================================
-    # STUDENT AREA
-    # =====================================================
-    path(
-        "",
-        views.course_list,
-        name="course_list"
-    ),
-
-    path(
-        "<int:course_id>/",
-        views.course_dashboard,
-        name="course_dashboard"
-    ),
-
-    path(
-        "<int:course_id>/lesson/<int:lesson_id>/",
-        views.lesson_detail,
-        name="lesson_detail"
-    ),
-
-    path(
-        "<int:course_id>/lesson/<int:lesson_id>/quiz/",
-        views.lesson_quiz,
-        name="lesson_quiz"
-    ),
-
-
-    # =====================================================
+    # ===============================
     # TEACHER COURSE MANAGEMENT
-    # =====================================================
-    path(
-        "create/",
-        views.course_create,
-        name="course_create"
-    ),
+    # ===============================
 
-    path(
-        "<int:course_id>/lesson/add/",
-        views.lesson_create,
-        name="lesson_create"
-    ),
+    path("create/", views.course_create, name="course_create"),
+    path("<int:course_id>/edit/", views.course_edit, name="course_edit"),
+    path("<int:course_id>/lesson/add/", views.lesson_create, name="lesson_create"),
 
+    # ✅ LESSON EDIT
+    path("<int:course_id>/lesson/<int:lesson_id>/edit/", views.lesson_edit, name="lesson_edit"),
 
-    # =====================================================
-    # TEACHER CONTROL PANEL
-    # =====================================================
-    path(
-        "teacher/",
-        views.teacher_course_list,
-        name="teacher_course_list"
-    ),
+    # ✅ NEW: DELETE
+    path("<int:course_id>/delete/", views.course_delete, name="course_delete"),
+    path("<int:course_id>/lesson/<int:lesson_id>/delete/", views.lesson_delete, name="lesson_delete"),
 
-    # ✅ Publish / Hide course globally
-    path(
-        "teacher/<int:course_id>/toggle-publish/",
-        views.course_toggle_publish,
-        name="course_toggle_publish"
-    ),
+    # Course Visibility Management
+    path("teacher/<int:course_id>/visibility/", views.manage_course_visibility, name="manage_course_visibility"),
 
-    # ✅ NEW — Student visibility control
-    path(
-        "teacher/<int:course_id>/visibility/",
-        views.manage_course_visibility,
-        name="manage_course_visibility"
-    ),
+    # TEACHER PANEL
+    path("teacher/", views.teacher_course_list, name="teacher_course_list"),
+    path("teacher/<int:course_id>/toggle-publish/", views.course_toggle_publish, name="course_toggle_publish"),
 
-    # ✅ Allow / Remove student access
-    path(
-        "teacher/<int:course_id>/toggle-view/<int:user_id>/",
-        views.course_toggle_view,
-        name="course_toggle_view"
-    ),
+    path("prices/", views.course_prices, name="course_prices"),
 ]

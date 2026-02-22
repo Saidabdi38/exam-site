@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Courses{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <h1>🎓 Available Courses</h1>
+    <p>Select a course and start learning.</p>
+
+    <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+        gap:20px;
+    ">
+
+        {% for course in courses %}
+        <div class="card">
+
+            <h3>{{ course.title }}</h3>
+
+            {% if course.overview %}
+                <p>{{ course.overview|truncatewords:20 }}</p>
+            {% endif %}
+
+            <h2 style="margin:10px 0;color:var(--primary);">
+                Free Course
+            </h2>
+
+            {% if user.is_authenticated %}
+                <!-- Logged in -->
+                <a href="{% url 'courses:course_dashboard' course.id %}"
+                   class="btn btn-primary">
+                   Start Learning
+                </a>
+            {% else %}
+                <!-- Not logged -->
+                <a href="{% url 'login' %}?next={% url 'courses:course_dashboard' course.id %}"
+                   class="btn btn-primary">
+                   Login to Start
+                </a>
+
+                <a href="{% url 'signup' %}?next={% url 'courses:course_dashboard' course.id %}"
+                   class="btn btn-secondary">
+                   Sign Up
+                </a>
+            {% endif %}
+
+        </div>
+        {% empty %}
+            <p>No courses available.</p>
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}

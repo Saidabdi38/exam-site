@@ -29,7 +29,7 @@ class Course(models.Model):
             models.Index(fields=["created_at"]),
         ]
 
-    def _str_(self):
+    def __str__(self):
         return self.title
 
 class CourseAccess(models.Model):
@@ -40,7 +40,7 @@ class CourseAccess(models.Model):
     class Meta:
         unique_together = [("course", "user")]
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.user} -> {self.course} ({'view' if self.can_view else 'no'})"
 
 class Lesson(models.Model):
@@ -67,7 +67,7 @@ class Lesson(models.Model):
             )
         ]
 
-    def _str_(self):
+    def ___str___(self):
         return f"{self.course.title} - {self.order}. {self.title}"
 
 
@@ -93,7 +93,7 @@ class LessonCompletion(models.Model):
             )
         ]
 
-    def _str_(self):
+    def ___str___(self):
         return f"{self.user} completed {self.lesson}"
 
 
@@ -115,7 +115,7 @@ class LessonQuiz(models.Model):
         if not (0 <= self.pass_percent <= 100):
             raise ValidationError({"pass_percent": "pass_percent must be between 0 and 100."})
 
-    def _str_(self):
+    def ___str___(self):
         return f"Quiz: {self.lesson}"
 
 
@@ -140,7 +140,7 @@ class LessonQuizQuestion(models.Model):
             )
         ]
 
-    def _str_(self):
+    def ___str___(self):
         return f"Q{self.order} - {self.quiz.lesson.title}"
 
 
@@ -169,7 +169,7 @@ class LessonQuizChoice(models.Model):
             if qs.exists():
                 raise ValidationError("Only one choice can be marked correct per question.")
 
-    def _str_(self):
+    def ___str___(self):
         return f"Choice for Q{self.question.order}"
 
 
@@ -197,7 +197,7 @@ class LessonQuizAttempt(models.Model):
             models.Index(fields=["passed"]),
         ]
 
-    def _str_(self):
+    def ___str___(self):
         return f"{self.user} attempt on {self.quiz}"
 
 
@@ -228,7 +228,7 @@ class LessonQuizAnswer(models.Model):
             )
         ]
 
-    def _str_(self):
+    def ___str___(self):
         return f"Answer: {self.attempt} - Q{self.question.order}"
 
 
@@ -253,5 +253,5 @@ class CourseExamLink(models.Model):
             )
         ]
 
-    def _str_(self):
+    def ___str___(self):
         return f"{self.course} -> {self.exam}"

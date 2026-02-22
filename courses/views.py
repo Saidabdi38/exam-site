@@ -34,6 +34,47 @@ def course_list(request):
 
     return render(request, "courses/course_list.html", {"courses": courses})
 
+@login_required
+def course_edit(request, course_id):
+    if not request.user.is_staff:
+        messages.error(request, "You are not allowed to edit courses.")
+        return redirect("courses:course_list")
+
+    course = get_object_or_404(Course, id=course_id)
+
+    if request.method == "POST":
+        course.title = request.POST.get("title", "").strip()
+        course.overview = request.POST.get("overview", "").strip()
+        course.is_published = request.POST.get("is_published") == "on"
+
+        # Optional if you have is_visible in model
+        if hasattr(course, "is_visible"):
+            course.is_visible = request.POST.get("is_visible") == "on"
+
+        if not course.title:
+            messages.error(request, "Title is required.")
+            return render(request, "courses/course_edit.html", {"course": course})
+
+        course.save()
+        messages.success(request, "Course updated successfully.")
+        return redirect("courses:course_dashboard", course_id=course.id)
+
+    return render(request, "courses/course_edit.html", {"course": course})
+
+@staff_member_required
+def course_delete(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    if request.method == "POST":
+        title = course.title
+        course.delete()
+        messages.success(request, f"Course deleted: {title}")
+        return redirect("courses:teacher_course_list")
+
+    # If someone opens delete URL by GET, just go back (safe)
+    messages.warning(request, "Delete must be confirmed.")
+    return redirect("courses:course_dashboard", course_id=course.id)
+
 @staff_member_required
 def manage_course_visibility(request, course_id):
     course = get_object_or_404(Course, id=course_id)
@@ -124,7 +165,53 @@ def lesson_create(request, course_id):
 
     return render(request, "courses/lesson_form.html", {"course": course})
 
+@staff_member_required
+def lesson_delete(request, course_id, lesson_id):
+    course = get_object_or_404(Course, id=course_id)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
 
+    if request.method == "POST":
+        title = lesson.title
+        lesson.delete()
+        messages.success(request, f"Lesson deleted: {title}")
+        return redirect("courses:course_dashboard", course_id=course.id)
+
+    messages.warning(request, "Delete must be confirmed.")
+    return redirect("courses:course_dashboard", course_id=course.id)
+    
+@login_required
+def lesson_edit(request, course_id, lesson_id):
+    if not request.user.is_staff:
+        messages.error(request, "You are not allowed to edit lessons.")
+        return redirect("courses:course_list")
+
+    course = get_object_or_404(Course, id=course_id)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
+
+    if request.method == "POST":
+        lesson.title = request.POST.get("title", "").strip()
+        lesson.content = request.POST.get("content", "").strip()
+
+        # optional fields
+        order_val = request.POST.get("order")
+        if order_val:
+            try:
+                lesson.order = int(order_val)
+            except ValueError:
+                pass
+
+        lesson.is_published = request.POST.get("is_published") == "on"
+
+        if not lesson.title:
+            messages.error(request, "Lesson title is required.")
+            return render(request, "courses/lesson_edit.html", {"course": course, "lesson": lesson})
+
+        lesson.save()
+        messages.success(request, "Lesson updated successfully.")
+        return redirect("courses:course_dashboard", course_id=course.id)
+
+    return render(request, "courses/lesson_edit.html", {"course": course, "lesson": lesson})
+    
 @login_required
 @transaction.atomic
 def lesson_detail(request, course_id, lesson_id):
@@ -238,7 +325,13 @@ def course_create(request):
 
     return render(request, "courses/course_create.html", {"subjects": subjects})
 
-
+def course_prices(request):
+    courses = Course.objects.filter(is_published=True)
+    return render(
+        request,
+        "public/course_prices.html",
+        {"courses": courses})
+        
 @staff_member_required
 def teacher_course_list(request):
     # teachers see all courses (published or not)
