@@ -36,7 +36,7 @@ class Chapter(models.Model):
     # ✅ ADD THIS
     order = models.PositiveIntegerField(default=1)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.course.title} - {self.title}"
 
 class CourseAccess(models.Model):
@@ -101,7 +101,7 @@ class LessonCompletion(models.Model):
             )
         ]
 
-    def ___str___(self):
+    def __str__(self):
         return f"{self.user} completed {self.lesson}"
 
 
@@ -123,7 +123,7 @@ class LessonQuiz(models.Model):
         if not (0 <= self.pass_percent <= 100):
             raise ValidationError({"pass_percent": "pass_percent must be between 0 and 100."})
 
-    def ___str___(self):
+    def __str__(self):
         return f"Quiz: {self.lesson}"
 
 
@@ -148,7 +148,7 @@ class LessonQuizQuestion(models.Model):
             )
         ]
 
-    def ___str___(self):
+    def __str__(self):
         return f"Q{self.order} - {self.quiz.lesson.title}"
 
 
@@ -177,7 +177,7 @@ class LessonQuizChoice(models.Model):
             if qs.exists():
                 raise ValidationError("Only one choice can be marked correct per question.")
 
-    def ___str___(self):
+    def __str__(self):
         return f"Choice for Q{self.question.order}"
 
 
@@ -205,7 +205,7 @@ class LessonQuizAttempt(models.Model):
             models.Index(fields=["passed"]),
         ]
 
-    def ___str___(self):
+    def __str__(self):
         return f"{self.user} attempt on {self.quiz}"
 
 
@@ -236,7 +236,7 @@ class LessonQuizAnswer(models.Model):
             )
         ]
 
-    def ___str___(self):
+    def __str__(self):
         return f"Answer: {self.attempt} - Q{self.question.order}"
 
 
@@ -261,5 +261,5 @@ class CourseExamLink(models.Model):
             )
         ]
 
-    def ___str___(self):
+    def __str__(self):
         return f"{self.course} -> {self.exam}"

@@ -32,5 +32,7 @@ urlpatterns = [
     path("teacher/", views.teacher_course_list, name="teacher_course_list"),
     path("teacher/<int:course_id>/toggle-publish/", views.course_toggle_publish, name="course_toggle_publish"),
 
+    path("<int:course_id>/chapters/add/", views.chapter_create, name="chapter_create"),
+    path("<int:course_id>/chapters/<int:chapter_id>/edit/", views.chapter_edit, name="chapter_edit"),
     path("prices/", views.course_prices, name="course_prices"),
 ]
