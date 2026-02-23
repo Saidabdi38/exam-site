@@ -9,6 +9,20 @@
 <form method="post">
     {% csrf_token %}
 
+    <!-- ✅ CHAPTER (NEW) -->
+    <label><strong>Chapter</strong></label>
+    <select name="chapter" class="form-control">
+        <option value="">-- No Chapter --</option>
+
+        {% for ch in chapters %}
+            <option value="{{ ch.id }}">
+                {{ ch.order }}. {{ ch.title }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <br>
+
     <!-- TITLE -->
     <label><strong>Lesson Title</strong></label>
     <input type="text"

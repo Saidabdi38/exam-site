@@ -67,64 +67,45 @@
 
   <hr>
 
-  <!-- LESSON LIST -->
   <h3 style="margin-top:0;">Lessons</h3>
 
-  {% for r in rows %}
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        padding:10px 0;
-        border-bottom:1px solid #eee;
-        flex-wrap:wrap;
-        gap:10px;
-    ">
+  {% for chapter_title, items in grouped.items %}
+    <div style="margin-top:14px;">
+      <h4 style="margin:0 0 8px;">📌 {{ chapter_title }}</h4>
 
-      <div style="min-width:240px;">
-        {% if r.done %}✅{% else %}⬜{% endif %}
-        <strong>{{ r.lesson.title }}</strong>
-      </div>
+      {% for r in items %}
+        <div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee;flex-wrap:wrap;">
+          <div style="min-width:240px;">
+            {% if r.done %}✅{% else %}⬜{% endif %}
+            <strong>{{ r.lesson.title }}</strong>
+          </div>
 
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <a class="btn btn-secondary"
+              href="{% url 'courses:lesson_detail' course.id r.lesson.id %}">
+              Open
+            </a>
 
-        <a class="btn btn-secondary"
-           href="{% url 'courses:lesson_detail' course.id r.lesson.id %}">
-          Open
-        </a>
+            {% if r.lesson.quiz %}
+              <a class="btn btn-secondary"
+                href="{% url 'courses:lesson_quiz' course.id r.lesson.id %}">
+                Quiz
+              </a>
+            {% endif %}
 
-        {% if r.lesson.quiz %}
-          <a class="btn btn-secondary"
-             href="{% url 'courses:lesson_quiz' course.id r.lesson.id %}">
-            Quiz
-          </a>
-        {% endif %}
-
-        {% if user.is_staff %}
-          <a class="btn btn-secondary"
-             href="{% url 'courses:lesson_edit' course.id r.lesson.id %}">
-            ✏ Edit
-          </a>
-
-          <!-- ✅ Delete Lesson (POST only) -->
-          <form method="post"
-                action="{% url 'courses:lesson_delete' course.id r.lesson.id %}"
-                style="margin:0;display:inline;">
-            {% csrf_token %}
-            <button type="submit"
-                    class="btn btn-secondary"
-                    onclick="return confirm('Delete this lesson?');">
-              🗑 Delete
-            </button>
-          </form>
-        {% endif %}
-
-      </div>
-
+            {% if user.is_staff %}
+              <a class="btn btn-secondary"
+                href="{% url 'courses:lesson_edit' course.id r.lesson.id %}">
+                ✏ Edit
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
     </div>
   {% empty %}
     <p>No lessons available.</p>
   {% endfor %}
-
-</div>
+  </div>
 
 {% endblock %}

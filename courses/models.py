@@ -9,31 +9,35 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Course(models.Model):
-    subject = models.ForeignKey(
-        "exams.Subject",
-        on_delete=models.CASCADE,
-        related_name="courses",
-    )
+    subject = models.ForeignKey("exams.Subject", on_delete=models.CASCADE, related_name="courses")
     title = models.CharField(max_length=200)
     overview = models.TextField(blank=True)
 
-    # Publish = course is ready/admin-visible
     is_published = models.BooleanField(default=True)
-
-    # NEW: teacher controls if students can view this course
     allow_students_view = models.BooleanField(default=False, verbose_name="Allow Students View")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["title"]
-        indexes = [
-            models.Index(fields=["is_published"]),
-            models.Index(fields=["allow_students_view"]),
-            models.Index(fields=["created_at"]),
-        ]
 
-    def __str__(self):
+    def _str_(self):
         return self.title
+
+class Chapter(models.Model):
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="chapters"
+    )
+
+    title = models.CharField(max_length=200)
+
+    # ✅ ADD THIS
+    order = models.PositiveIntegerField(default=1)
+
+    def _str_(self):
+        return f"{self.course.title} - {self.title}"
 
 class CourseAccess(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -46,34 +50,35 @@ class CourseAccess(models.Model):
         unique_together = ("course", "user")
 
 class Lesson(models.Model):
+
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
         related_name="lessons",
     )
 
+    # ✅ ADD THIS
+    chapter = models.ForeignKey(
+        "Chapter",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lessons")
+
     title = models.CharField(max_length=200)
     content = models.TextField()
     order = models.PositiveIntegerField(default=1)
 
-    # Teacher control
     is_published = models.BooleanField(default=True)
-
-    # Student visibility control ✅
     allow_students_view = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ["course", "order", "id"]
-
-        indexes = [
-            models.Index(fields=["course", "order"]),
-            models.Index(fields=["is_published"]),
-            models.Index(fields=["allow_students_view"]),
-        ]
+        ordering = ["course", "chapter__order", "order", "id"]
 
     def _str_(self):
-        return f"{self.course.title} - {self.order}. {self.title}"
-
+        ch = f"Ch {self.chapter.order} - " if self.chapter else ""
+        return f"{self.course.title} - {ch}{self.order}. {self.title}"
+        
 class LessonCompletion(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

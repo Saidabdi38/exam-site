@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from collections import OrderedDict
 
 from .models import (
     Course, CourseAccess, Lesson, LessonCompletion,
@@ -152,58 +153,41 @@ def manage_course_visibility(request, course_id):
 def course_dashboard(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    access_row = None  # ✅ important: define it for both staff + student
-
-    # ===============================
-    # STUDENT ACCESS CONTROL
-    # ===============================
+    # ✅ Student access (keep your existing CourseAccess rules if you use them)
     if not request.user.is_staff:
-        access_row = CourseAccess.objects.filter(
-            course=course,
-            user=request.user,
-            can_view=True,
-        ).first()
-
-        # must exist + must pass global course switches
-        if not access_row or not (course.is_published and course.allow_students_view):
+        access = CourseAccess.objects.filter(course=course, user=request.user, can_view=True).exists()
+        if not (access and course.is_published and course.allow_students_view):
             messages.error(request, "This course is not available yet.")
             return redirect("courses:course_list")
 
-    # ===============================
-    # LESSONS QUERY
-    # ===============================
-    lessons_qs = Lesson.objects.filter(
-        course=course,
-        is_published=True,
-    ).order_by("order", "id")
-
-    # Students only: must have lessons_can_view + lesson allow flag
-    if not request.user.is_staff:
-        if not access_row.lessons_can_view:
-            lessons_qs = lessons_qs.none()
-        else:
-            lessons_qs = lessons_qs.filter(allow_students_view=True)
-
-    # ===============================
-    # PAGINATION
-    # ===============================
-    paginator = Paginator(lessons_qs, 10)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    completed_ids = set(
-        LessonCompletion.objects.filter(
-            user=request.user,
-            lesson__course=course
-        ).values_list("lesson_id", flat=True)
+    # ✅ Base lessons queryset
+    lessons_qs = Lesson.objects.filter(course=course).select_related("chapter").order_by(
+        "chapter__order", "chapter_id", "order", "id"
     )
 
-    rows = [{"lesson": l, "done": (l.id in completed_ids)} for l in page_obj.object_list]
+    # ✅ Student filters
+    if not request.user.is_staff:
+        lessons_qs = lessons_qs.filter(is_published=True, allow_students_view=True)
 
+    # ✅ Completions
+    completed_ids = set(
+        LessonCompletion.objects.filter(user=request.user, lesson__course=course)
+        .values_list("lesson_id", flat=True)
+    )
+
+    # ✅ Group lessons by chapter (None chapter = "No Chapter")
+    grouped = OrderedDict()
+    for l in lessons_qs:
+        key = l.chapter.title if l.chapter else "No Chapter"
+        grouped.setdefault(key, [])
+        grouped[key].append({"lesson": l, "done": (l.id in completed_ids)})
+
+    # ✅ Progress based on visible lessons
     total = lessons_qs.count()
-    done = len(completed_ids)
+    done = sum(1 for l in lessons_qs if l.id in completed_ids)
     percent = int((done / total) * 100) if total else 0
 
+    # ✅ Next lesson
     next_lesson = None
     for l in lessons_qs:
         if l.id not in completed_ids:
@@ -212,58 +196,45 @@ def course_dashboard(request, course_id):
 
     return render(request, "courses/course_dashboard.html", {
         "course": course,
-        "rows": rows,
+        "grouped": grouped,  # ✅ NEW
         "progress": {"done": done, "total": total, "percent": percent},
         "next_lesson": next_lesson,
-        "page_obj": page_obj,
-        "lessons_locked": (
-            (not request.user.is_staff) and (access_row is not None) and (not access_row.lessons_can_view)
-        ),
     })
 
 @login_required
 def lesson_create(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # ✅ Only teachers/admins allowed
     if not request.user.is_staff:
         messages.error(request, "You are not allowed to add lessons.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
+    chapters = course.chapters.all().order_by("order", "id")
+
     if request.method == "POST":
         title = (request.POST.get("title") or "").strip()
         content = (request.POST.get("content") or "").strip()
+        chapter_id = request.POST.get("chapter") or None
 
         if not title:
             messages.error(request, "Lesson title is required.")
-            return render(
-                request,
-                "courses/lesson_form.html",
-                {"course": course}
-            )
+            return render(request, "courses/lesson_form.html", {"course": course, "chapters": chapters})
 
-        # ✅ CREATE LESSON (VISIBLE TO STUDENTS)
         Lesson.objects.create(
             course=course,
+            chapter_id=chapter_id,         # ✅ NEW
             title=title,
             content=content,
             order=course.lessons.count() + 1,
-            is_published=True,          # lesson active
-            allow_students_view=True,   # ⭐ students can see lesson
+            is_published=True,
+            allow_students_view=True,
         )
 
         messages.success(request, "Lesson added successfully.")
-        return redirect(
-            "courses:course_dashboard",
-            course_id=course.id
-        )
+        return redirect("courses:course_dashboard", course_id=course.id)
 
-    return render(
-        request,
-        "courses/lesson_form.html",
-        {"course": course}
-    )
-    
+    return render(request, "courses/lesson_form.html", {"course": course, "chapters": chapters})
+        
 @staff_member_required
 def lesson_delete(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)
