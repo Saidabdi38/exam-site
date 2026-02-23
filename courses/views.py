@@ -22,16 +22,33 @@ User = get_user_model()
 
 @login_required
 def course_list(request):
+
+    # STAFF sees everything
+    if request.user.is_staff:
+        courses = Course.objects.filter(is_published=True)
+        return render(
+            request,
+            "courses/course_list.html",
+            {"courses": courses}
+        )
+
+    # STUDENT ACCESS CONTROL
     access_qs = CourseAccess.objects.filter(
         user=request.user,
         can_view=True,
+        lessons_can_view=True,
         course__is_published=True,
-        course__allow_students_view=True,
+        course__allow_students_view=True,   # ✅ FIX HERE
     ).select_related("course")
 
     courses = [a.course for a in access_qs]
-    return render(request, "courses/course_list.html", {"courses": courses})
-    
+
+    return render(
+        request,
+        "courses/course_list.html",
+        {"courses": courses}
+    )
+        
 @login_required
 def course_edit(request, course_id):
     if not request.user.is_staff:
@@ -133,21 +150,22 @@ def manage_course_visibility(request, course_id):
     
 @login_required
 def course_dashboard(request, course_id):
-
     course = get_object_or_404(Course, id=course_id)
 
+    access_row = None  # ✅ important: define it for both staff + student
+
     # ===============================
-    # STUDENT ACCESS CHECK
+    # STUDENT ACCESS CONTROL
     # ===============================
     if not request.user.is_staff:
-
-        access = CourseAccess.objects.filter(
+        access_row = CourseAccess.objects.filter(
             course=course,
             user=request.user,
-            can_view=True
-        ).exists()
+            can_view=True,
+        ).first()
 
-        if not (course.is_published and access):
+        # must exist + must pass global course switches
+        if not access_row or not (course.is_published and course.allow_students_view):
             messages.error(request, "This course is not available yet.")
             return redirect("courses:course_list")
 
@@ -157,8 +175,14 @@ def course_dashboard(request, course_id):
     lessons_qs = Lesson.objects.filter(
         course=course,
         is_published=True,
-        allow_students_view=True
     ).order_by("order", "id")
+
+    # Students only: must have lessons_can_view + lesson allow flag
+    if not request.user.is_staff:
+        if not access_row.lessons_can_view:
+            lessons_qs = lessons_qs.none()
+        else:
+            lessons_qs = lessons_qs.filter(allow_students_view=True)
 
     # ===============================
     # PAGINATION
@@ -174,10 +198,7 @@ def course_dashboard(request, course_id):
         ).values_list("lesson_id", flat=True)
     )
 
-    rows = [
-        {"lesson": l, "done": l.id in completed_ids}
-        for l in page_obj.object_list
-    ]
+    rows = [{"lesson": l, "done": (l.id in completed_ids)} for l in page_obj.object_list]
 
     total = lessons_qs.count()
     done = len(completed_ids)
@@ -189,23 +210,22 @@ def course_dashboard(request, course_id):
             next_lesson = l
             break
 
-    # ✅ VERY IMPORTANT FINAL RETURN
     return render(request, "courses/course_dashboard.html", {
         "course": course,
         "rows": rows,
-        "progress": {
-            "done": done,
-            "total": total,
-            "percent": percent
-        },
+        "progress": {"done": done, "total": total, "percent": percent},
         "next_lesson": next_lesson,
         "page_obj": page_obj,
-    })            
+        "lessons_locked": (
+            (not request.user.is_staff) and (access_row is not None) and (not access_row.lessons_can_view)
+        ),
+    })
+
 @login_required
 def lesson_create(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # ✅ Only staff can add lessons
+    # ✅ Only teachers/admins allowed
     if not request.user.is_staff:
         messages.error(request, "You are not allowed to add lessons.")
         return redirect("courses:course_dashboard", course_id=course.id)
@@ -216,21 +236,34 @@ def lesson_create(request, course_id):
 
         if not title:
             messages.error(request, "Lesson title is required.")
-            return render(request, "courses/lesson_form.html", {"course": course})
+            return render(
+                request,
+                "courses/lesson_form.html",
+                {"course": course}
+            )
 
+        # ✅ CREATE LESSON (VISIBLE TO STUDENTS)
         Lesson.objects.create(
             course=course,
             title=title,
             content=content,
             order=course.lessons.count() + 1,
-            is_published=True,
+            is_published=True,          # lesson active
+            allow_students_view=True,   # ⭐ students can see lesson
         )
 
-        messages.success(request, "Lesson added.")
-        return redirect("courses:course_dashboard", course_id=course.id)
+        messages.success(request, "Lesson added successfully.")
+        return redirect(
+            "courses:course_dashboard",
+            course_id=course.id
+        )
 
-    return render(request, "courses/lesson_form.html", {"course": course})
-
+    return render(
+        request,
+        "courses/lesson_form.html",
+        {"course": course}
+    )
+    
 @staff_member_required
 def lesson_delete(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)
@@ -247,6 +280,8 @@ def lesson_delete(request, course_id, lesson_id):
     
 @login_required
 def lesson_edit(request, course_id, lesson_id):
+
+    # Only teacher/staff
     if not request.user.is_staff:
         messages.error(request, "You are not allowed to edit lessons.")
         return redirect("courses:course_list")
@@ -255,10 +290,11 @@ def lesson_edit(request, course_id, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
 
     if request.method == "POST":
+
         lesson.title = request.POST.get("title", "").strip()
         lesson.content = request.POST.get("content", "").strip()
 
-        # optional fields
+        # ORDER
         order_val = request.POST.get("order")
         if order_val:
             try:
@@ -266,42 +302,63 @@ def lesson_edit(request, course_id, lesson_id):
             except ValueError:
                 pass
 
-        lesson.is_published = request.POST.get("is_published") == "on"
+        # ✅ IMPORTANT CHECKBOX FIX
+        lesson.is_published = "is_published" in request.POST
+        lesson.allow_students_view = "allow_students_view" in request.POST
 
         if not lesson.title:
             messages.error(request, "Lesson title is required.")
-            return render(request, "courses/lesson_edit.html", {"course": course, "lesson": lesson})
+            return render(
+                request,
+                "courses/lesson_edit.html",
+                {"course": course, "lesson": lesson},
+            )
 
+        # ✅ SAVE MUST BE HERE
         lesson.save()
+
         messages.success(request, "Lesson updated successfully.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
-    return render(request, "courses/lesson_edit.html", {"course": course, "lesson": lesson})
-    
+    return render(
+        request,
+        "courses/lesson_edit.html",
+        {"course": course, "lesson": lesson},
+    )
+        
 @login_required
 @transaction.atomic
 def lesson_detail(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # ✅ Block students if teacher didn't allow view
-    if (not request.user.is_staff) and (not course.allow_students_view):
-        messages.error(request, "This course is not available yet.")
-        return redirect("courses:course_list")
+    # course-level gate
+    if not request.user.is_staff:
+        access = CourseAccess.objects.filter(
+            course=course,
+            user=request.user,
+            can_view=True,
+            lessons_can_view=True
+        ).exists()
+
+        if not (course.is_published and course.allow_students_view and access):
+            messages.error(request, "This course is not available yet.")
+            return redirect("courses:course_list")
 
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course, is_published=True)
 
+    # ✅ lesson-level gate (content lock)
+    if not request.user.is_staff and not lesson.allow_students_view:
+        messages.error(request, "This lesson is not available yet.")
+        return redirect("courses:course_dashboard", course_id=course.id)
+
     if request.method == "POST":
         LessonCompletion.objects.get_or_create(user=request.user, lesson=lesson)
-
-        # if lesson has a quiz, go to it
         if hasattr(lesson, "quiz") and lesson.quiz:
             return redirect("courses:lesson_quiz", course_id=course.id, lesson_id=lesson.id)
-
         messages.success(request, "Lesson completed")
         return redirect("courses:course_dashboard", course_id=course.id)
 
     return render(request, "courses/lesson_detail.html", {"course": course, "lesson": lesson})
-
 
 @login_required
 @transaction.atomic

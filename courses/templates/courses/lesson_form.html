@@ -2,17 +2,24 @@
 
 {% block content %}
 
-<h2>Add Lesson - {{ course.title }}</h2>
+<div class="container" style="max-width:820px;">
+
+<h2>Add Lesson — {{ course.title }}</h2>
 
 <form method="post">
     {% csrf_token %}
 
-    <label>Lesson Title</label>
-    <input type="text" name="title" required class="form-control">
+    <!-- TITLE -->
+    <label><strong>Lesson Title</strong></label>
+    <input type="text"
+           name="title"
+           required
+           class="form-control">
 
     <br>
 
-    <label>Content</label>
+    <!-- CONTENT -->
+    <label><strong>Content</strong></label>
     <textarea name="content"
               rows="8"
               required
@@ -20,10 +27,35 @@
 
     <br>
 
+    <!-- ✅ PUBLISH -->
+    <label style="display:flex;gap:8px;align-items:center;">
+        <input type="checkbox"
+               name="is_published"
+               checked>
+        Published
+    </label>
+
+    <!-- ✅ STUDENT VISIBILITY -->
+    <label style="display:flex;gap:8px;align-items:center;margin-top:6px;">
+        <input type="checkbox"
+               name="allow_students_view"
+               checked>
+        Allow students to view this lesson
+    </label>
+
+    <br>
+
     <button class="btn btn-primary">
         Save Lesson
     </button>
 
+    <a class="btn btn-secondary"
+       href="{% url 'courses:course_dashboard' course.id %}">
+       Cancel
+    </a>
+
 </form>
+
+</div>
 
 {% endblock %}

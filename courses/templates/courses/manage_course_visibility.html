@@ -4,68 +4,77 @@
 
 <div style="max-width:900px;margin:auto;padding:15px;">
 
-<h2>Manage Course Visibility</h2>
-<p><strong>Course:</strong> {{ course.title }}</p>
+  <h2>Manage Course Visibility</h2>
+  <p><strong>Course:</strong> {{ course.title }}</p>
 
-<form method="post">
-{% csrf_token %}
+  <form method="post">
+    {% csrf_token %}
 
-<!-- ================= TABLE ================= -->
-<div style="border:1px solid #ddd;border-radius:10px;overflow:hidden;">
-<table style="width:100%;border-collapse:collapse;">
+    <!-- ✅ GLOBAL COURSE SWITCH (THIS WAS MISSING) -->
+    <div style="margin:12px 0 18px;padding:12px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;">
+      <label style="display:flex;align-items:center;gap:10px;font-weight:600;">
+        <input type="checkbox"
+               name="course_allow_students_view"
+               {% if course.allow_students_view %}checked{% endif %}>
+        Allow students to view this course (Global)
+      </label>
+      <div style="margin-top:6px;color:#666;font-size:13px;">
+        If OFF, students will not open the course even if Course View + Lessons View are checked.
+      </div>
+    </div>
 
-<thead style="background:#f3f4f6;">
-<tr>
-    <th style="padding:10px;text-align:left;">Student</th>
-    <th style="padding:10px;text-align:center;">Course View</th>
-    <th style="padding:10px;text-align:center;">Lessons View</th>
-</tr>
-</thead>
+    <!-- ================= TABLE ================= -->
+    <div style="border:1px solid #ddd;border-radius:10px;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
 
-<tbody>
+        <thead style="background:#f3f4f6;">
+          <tr>
+            <th style="padding:10px;text-align:left;">Student</th>
+            <th style="padding:10px;text-align:center;">Course View</th>
+            <th style="padding:10px;text-align:center;">Lessons View</th>
+          </tr>
+        </thead>
 
-{% for s in students %}
-<tr style="border-top:1px solid #eee;">
+        <tbody>
+          {% for s in students %}
+            <tr style="border-top:1px solid #eee;">
+              <td style="padding:10px;">
+                {{ s.username }}
+              </td>
 
-<td style="padding:10px;">
-    {{ s.username }}
-</td>
+              <!-- COURSE VIEW -->
+              <td style="text-align:center;">
+                <input type="checkbox"
+                       name="student_course_view"
+                       value="{{ s.id }}"
+                       {% if access_map|get_item:s.id %}checked{% endif %}>
+              </td>
 
-<!-- COURSE VIEW -->
-<td style="text-align:center;">
-    <input type="checkbox"
-           name="student_course_view"
-           value="{{ s.id }}"
-           {% if access_map|get_item:s.id %}checked{% endif %}>
-</td>
+              <!-- LESSON VIEW -->
+              <td style="text-align:center;">
+                <input type="checkbox"
+                       name="student_lessons_view"
+                       value="{{ s.id }}"
+                       {% if lesson_access_map and lesson_access_map|get_item:s.id %}checked{% endif %}>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3" style="padding:12px;color:#777;">No students found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
 
-<!-- LESSON VIEW -->
-<td style="text-align:center;">
-    <input type="checkbox"
-           name="student_lessons_view"
-           value="{{ s.id }}"
-           {% if lesson_access_map and lesson_access_map|get_item:s.id %}
-           checked
-           {% endif %}>
-</td>
+      </table>
+    </div>
 
-</tr>
-{% endfor %}
+    <!-- SAVE -->
+    <div style="margin-top:15px;">
+      <button class="btn btn-primary" type="submit">Save</button>
+      <a class="btn btn-secondary" href="{% url 'courses:teacher_course_list' %}">Back</a>
+    </div>
 
-</tbody>
-</table>
-</div>
-
-<!-- SAVE -->
-<div style="margin-top:15px;">
-    <button class="btn btn-primary">Save</button>
-    <a class="btn btn-secondary"
-       href="{% url 'courses:teacher_course_list' %}">
-       Back
-    </a>
-</div>
-
-</form>
+  </form>
 
 </div>
 

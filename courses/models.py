@@ -20,9 +20,8 @@ class Course(models.Model):
     # Publish = course is ready/admin-visible
     is_published = models.BooleanField(default=True)
 
-    # ✅ NEW: teacher controls if students can view this course
-    allow_students_view = models.BooleanField(default=False)
-
+    # NEW: teacher controls if students can view this course
+    allow_students_view = models.BooleanField(default=False, verbose_name="Allow Students View")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
