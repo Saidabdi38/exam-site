@@ -346,7 +346,13 @@ def lesson_edit(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
 
+    # ✅ needed for chapter dropdown in template
+    chapters = course.chapters.all().order_by("order", "id")
+
     if request.method == "POST":
+
+        # ✅ CHAPTER (new)
+        lesson.chapter_id = request.POST.get("chapter") or None
 
         lesson.title = request.POST.get("title", "").strip()
         lesson.content = request.POST.get("content", "").strip()
@@ -359,7 +365,7 @@ def lesson_edit(request, course_id, lesson_id):
             except ValueError:
                 pass
 
-        # ✅ IMPORTANT CHECKBOX FIX
+        # ✅ checkbox fix
         lesson.is_published = "is_published" in request.POST
         lesson.allow_students_view = "allow_students_view" in request.POST
 
@@ -368,10 +374,9 @@ def lesson_edit(request, course_id, lesson_id):
             return render(
                 request,
                 "courses/lesson_edit.html",
-                {"course": course, "lesson": lesson},
+                {"course": course, "lesson": lesson, "chapters": chapters},
             )
 
-        # ✅ SAVE MUST BE HERE
         lesson.save()
 
         messages.success(request, "Lesson updated successfully.")
@@ -380,9 +385,9 @@ def lesson_edit(request, course_id, lesson_id):
     return render(
         request,
         "courses/lesson_edit.html",
-        {"course": course, "lesson": lesson},
+        {"course": course, "lesson": lesson, "chapters": chapters},
     )
-        
+            
 @login_required
 @transaction.atomic
 def lesson_detail(request, course_id, lesson_id):
