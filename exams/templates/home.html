@@ -1,15 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Bogga Hore{% endblock %}
 {% block content %}
 
 <!-- ================= HERO ================= -->
 <section class="hero">
-  <h1>Competency-Based Skills Learning & Assessment</h1>
+  <h1>Barasho iyo Qiimeyn Xirfadeed oo Ku Saleysan Awoodda Shaqo</h1>
 
   <p>
-    Xirfadyaal provides structured Courses and Skills Assessments
-    for Accounting Clerk, Accountant and Finance Officer —
-    combining learning, practice, and competency evaluation.
+    Xirfadyaal waxay bixisaa Koorsooyin iyo Imtixaanno Xirfadeed
+    oo habaysan oo loogu talagalay Accounting Clerk, Accountant,
+    iyo Finance Officer — iyadoo la isku darayo barasho,
+    tababar, iyo qiimeyn xirfadeed dhab ah.
   </p>
 
   <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;">
@@ -17,23 +18,23 @@
     {% if user.is_authenticated %}
       <a class="btn btn-primary"
          href="{% url 'student_dashboard' %}">
-        Go to Dashboard
+        Aad Dashboard-ka
       </a>
 
       <a class="btn btn-secondary"
          href="{% url 'courses:course_list' %}">
-        View Courses
+        Arag Koorsooyinka
       </a>
 
     {% else %}
       <a class="btn btn-primary"
          href="{% url 'login' %}">
-        Sign In
+        Soo Gal
       </a>
 
       <a class="btn btn-secondary"
          href="{% url 'signup' %}">
-        Create Account
+        Samee Akoon
       </a>
     {% endif %}
 
@@ -45,33 +46,33 @@
 <!-- ================= VISION ================= -->
 <section class="about">
 
-  <h2>Vision</h2>
+  <h2>Himilada (Vision)</h2>
   <p>
-    Measuring real workplace skills through competency-based
-    digital learning and assessment.
+    In la cabbiro xirfadaha shaqo ee dhabta ah iyadoo la adeegsanayo
+    barasho iyo qiimeyn dijitaal ah oo ku saleysan kartida qofka.
   </p>
 
-  <h2>Mission</h2>
+  <h2>Ujeeddo (Mission)</h2>
   <p>
-    To deliver reliable training courses and practical assessments
-    that prepare learners for professional accounting roles.
+    In la bixiyo koorsooyin tababar iyo imtixaanno wax ku ool ah
+    oo ardayda u diyaariya shaqooyinka xirfadeed ee xisaabaadka.
   </p>
 
-  <h2>Goals</h2>
+  <h2>Yoolalka (Goals)</h2>
   <ul class="feature-list">
-    <li>Structured course learning before assessment</li>
-    <li>Fair and measurable competency testing</li>
-    <li>Progress tracking for students</li>
-    <li>Teacher-controlled publishing & visibility</li>
+    <li>Barasho koorsooyin habaysan ka hor qiimeynta</li>
+    <li>Imtixaan xirfadeed oo cadaalad ah oo la cabbiri karo</li>
+    <li>La socodka horumarka ardayda</li>
+    <li>Xakamayn macallin oo ku saabsan daabacaadda iyo muuqaalka koorsooyinka</li>
   </ul>
 
-  <h2>Values</h2>
+  <h2>Qiyamka (Values)</h2>
   <ul class="feature-list">
-    <li><strong>Integrity</strong> – Fair assessment</li>
-    <li><strong>Quality</strong> – Practical evaluation</li>
-    <li><strong>Innovation</strong> – Digital learning</li>
-    <li><strong>Transparency</strong> – Clear results</li>
-    <li><strong>Growth</strong> – Continuous improvement</li>
+    <li><strong>Daacadnimo</strong> – Qiimeyn cadaalad ah</li>
+    <li><strong>Tayo</strong> – Imtixaan wax ku ool ah</li>
+    <li><strong>Hal-abuurnimo</strong> – Barasho dijitaal ah</li>
+    <li><strong>Hufnaan</strong> – Natiijooyin cad</li>
+    <li><strong>Horumar</strong> – Koboc joogto ah</li>
   </ul>
 
 </section>
@@ -81,16 +82,17 @@
 <!-- ================= COURSES ================= -->
 <section class="skills">
 
-  <h2>📘 Learning Courses</h2>
+  <h2>📘 Koorsooyinka Waxbarasho</h2>
 
   <p>
-    Start learning step-by-step lessons before attempting assessments.
+    Ku bilow barashada casharro tallaabo-tallaabo ah
+    ka hor intaadan gelin qiimeynta.
   </p>
 
   <div style="margin-top:15px;">
     <a class="btn btn-primary"
         href="{% url 'courses:course_prices' %}">
-       Browse Courses
+       Baadh Koorsooyinka
     </a>
   </div>
 
@@ -101,16 +103,17 @@
 <!-- ================= ASSESSMENTS ================= -->
 <section class="skills">
 
-  <h2>📝 Skills Assessments</h2>
+  <h2>📝 Qiimeynta Xirfadaha</h2>
 
   <p>
-    Take competency-based exams and measure your professional readiness.
+    Qaado imtixaanno xirfadeed si aad u cabbirto
+    heerka diyaargarowgaaga shaqo.
   </p>
 
   <div style="margin-top:15px;">
     <a class="btn btn-primary"
        href="{% url 'exam_prices' %}">
-       View Assessments
+       Arag Imtixaannada
     </a>
   </div>
 
@@ -121,26 +124,26 @@
 <!-- ================= HOW IT WORKS ================= -->
 <section class="how">
 
-  <h2>How It Works</h2>
+  <h2>Sida Ay U Shaqeyso</h2>
 
   <div class="steps">
 
     <div class="step">
       <div class="step-num">1</div>
-      <h3>Enroll in Course</h3>
-      <p>Learn accounting concepts through guided lessons.</p>
+      <h3>Iska Diiwaan Geli Koorso</h3>
+      <p>Baro fikradaha xisaabaadka adigoo raacaya casharro hagan.</p>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
-      <h3>Practice & Quiz</h3>
-      <p>Complete lesson quizzes and track progress.</p>
+      <h3>Tababar & Quiz</h3>
+      <p>Dhamee quiz-yada casharrada oo la soco horumarkaaga.</p>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
-      <h3>Take Assessment</h3>
-      <p>Verify competency using controlled exams.</p>
+      <h3>Qaado Imtixaan</h3>
+      <p>Xaqiiji xirfaddaada adigoo maraya imtixaan rasmi ah.</p>
     </div>
 
   </div>
@@ -152,21 +155,21 @@
 <!-- ================= CTA ================= -->
 <section class="cta">
 
-  <h2>Start Your Professional Journey</h2>
+  <h2>Bilow Safarkaaga Xirfadeed</h2>
 
   <p>
-    Learn → Practice → Get Assessed → Prove Your Skills.
+    Baro → Ku Tababaro → Imtixaan Qaado → Caddee Xirfaddaada.
   </p>
 
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
     <a class="btn btn-primary"
        href="{% url 'courses:course_prices' %}">
-       Start Learning
+       Bilow Barashada
     </a>
 
     <a class="btn btn-secondary"
        href="{% url 'exam_prices' %}">
-       Take Assessment
+       Qaado Imtixaan
     </a>
   </div>
 
