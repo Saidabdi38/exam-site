@@ -12,6 +12,7 @@ class Course(models.Model):
     subject = models.ForeignKey("exams.Subject", on_delete=models.CASCADE, related_name="courses")
     title = models.CharField(max_length=200)
     overview = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     is_published = models.BooleanField(default=True)
     allow_students_view = models.BooleanField(default=False, verbose_name="Allow Students View")

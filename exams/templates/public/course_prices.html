@@ -4,6 +4,7 @@
 {% block content %}
 
 <div class="container">
+
     <h1>🎓 Available Courses</h1>
     <p>Select a course and start learning.</p>
 
@@ -22,18 +23,28 @@
                 <p>{{ course.overview|truncatewords:20 }}</p>
             {% endif %}
 
-            <!-- <h2 style="margin:10px 0;color:var(--primary);">
-                Free Course
+            <!-- ✅ COURSE PRICE -->
+            <!-- <h2 style="margin:12px 0;color:var(--primary);">
+
+                {% if course.price == 0 %}
+                    Free Course
+                {% else %}
+                    ${{ course.price }}
+                {% endif %}
+
             </h2> -->
 
+            <!-- ================= BUTTONS ================= -->
+
             {% if user.is_authenticated %}
-                <!-- Logged in -->
+
                 <a href="{% url 'courses:course_dashboard' course.id %}"
                    class="btn btn-primary">
                    Start Learning
                 </a>
+
             {% else %}
-                <!-- Not logged -->
+
                 <a href="{% url 'login' %}?next={% url 'courses:course_dashboard' course.id %}"
                    class="btn btn-primary">
                    Login
@@ -43,14 +54,17 @@
                    class="btn btn-secondary">
                    Sign Up
                 </a>
+
             {% endif %}
 
         </div>
+
         {% empty %}
             <p>No courses available.</p>
         {% endfor %}
 
     </div>
+
 </div>
 
 {% endblock %}

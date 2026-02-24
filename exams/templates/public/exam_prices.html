@@ -29,7 +29,7 @@
           </a>
         {% else %}
           <a href="{% url 'login' %}?next={% url 'start_exam' exam.id %}" class="btn btn-primary">
-            Login to Start
+            Login
           </a>
 
           <a href="{% url 'signup' %}?next={% url 'start_exam' exam.id %}" class="btn btn-secondary" style="margin-left:6px;">

@@ -8,28 +8,64 @@
   <form method="post">
     {% csrf_token %}
 
+    <!-- TITLE -->
     <label><strong>Title</strong></label>
-    <input type="text" name="title" value="{{ course.title }}" class="input" style="width:100%;padding:10px;margin:6px 0 12px;">
+    <input type="text"
+           name="title"
+           value="{{ course.title }}"
+           style="width:100%;padding:10px;margin:6px 0 12px;">
 
+    <!-- OVERVIEW -->
     <label><strong>Overview</strong></label>
-    <textarea name="overview" rows="5" class="input" style="width:100%;padding:10px;margin:6px 0 12px;">{{ course.overview }}</textarea>
+    <textarea name="overview"
+              rows="5"
+              style="width:100%;padding:10px;margin:6px 0 12px;">{{ course.overview }}</textarea>
 
+    <!-- ✅ PRICE -->
+    <label><strong>Course Price ($)</strong></label>
+    <input type="number"
+           name="price"
+           step="0.01"
+           min="0"
+           value="{{ course.price }}"
+           style="width:100%;padding:10px;margin:6px 0 12px;">
+
+    <small style="color:#6b7280;">
+      Enter 0 for Free Course
+    </small>
+
+    <br><br>
+
+    <!-- PUBLISHED -->
     <label style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-      <input type="checkbox" name="is_published" {% if course.is_published %}checked{% endif %}>
+      <input type="checkbox"
+             name="is_published"
+             {% if course.is_published %}checked{% endif %}>
       Published
     </label>
 
+    <!-- VISIBILITY -->
     {% if course.is_visible is not None %}
     <label style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-      <input type="checkbox" name="is_visible" {% if course.is_visible %}checked{% endif %}>
+      <input type="checkbox"
+             name="is_visible"
+             {% if course.is_visible %}checked{% endif %}>
       Visible to Students
     </label>
     {% endif %}
 
+    <!-- BUTTONS -->
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-      <button type="submit" class="btn btn-primary">Save</button>
-      <a class="btn btn-secondary" href="{% url 'courses:course_dashboard' course.id %}">Cancel</a>
+      <button type="submit" class="btn btn-primary">
+        Save
+      </button>
+
+      <a class="btn btn-secondary"
+         href="{% url 'courses:course_dashboard' course.id %}">
+         Cancel
+      </a>
     </div>
+
   </form>
 </div>
 
