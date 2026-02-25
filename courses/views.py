@@ -77,21 +77,19 @@ def course_edit(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
     if request.method == "POST":
-        course.title = (request.POST.get("title") or "").strip()
-        course.overview = (request.POST.get("overview") or "").strip()
-        course.is_published = ("is_published" in request.POST)
+        course.title = request.POST.get("title", "").strip()
+        course.overview = request.POST.get("overview", "").strip()
 
-        # ✅ PRICE
-        price_raw = (request.POST.get("price") or "0").strip()
+        # ✅ checkbox правильный
+        course.is_published = "is_published" in request.POST
+        course.allow_students_view = "allow_students_view" in request.POST
+
+        # ✅ price
+        price_val = request.POST.get("price", "0")
         try:
-            course.price = Decimal(price_raw)  # ✅ SAVE
-        except (InvalidOperation, ValueError):
-            messages.error(request, "Invalid price value.")
-            return render(request, "courses/course_edit.html", {"course": course})
-
-        # Optional if you have is_visible in model
-        if hasattr(course, "is_visible"):
-            course.is_visible = ("is_visible" in request.POST)
+            course.price = float(price_val)
+        except ValueError:
+            course.price = 0
 
         if not course.title:
             messages.error(request, "Title is required.")
@@ -102,7 +100,6 @@ def course_edit(request, course_id):
         return redirect("courses:course_dashboard", course_id=course.id)
 
     return render(request, "courses/course_edit.html", {"course": course})
-    
 @staff_member_required
 def course_delete(request, course_id):
     course = get_object_or_404(Course, id=course_id)
@@ -270,48 +267,35 @@ def chapter_create(request, course_id):
 
 @login_required
 def chapter_edit(request, course_id, chapter_id):
-
+    # staff only
     if not request.user.is_staff:
-        messages.error(request, "You are not allowed.")
-        return redirect("courses:course_list")
+        messages.error(request, "You are not allowed to edit chapters.")
+        return redirect("courses:course_dashboard", course_id=course_id)
 
     course = get_object_or_404(Course, id=course_id)
-    chapter = get_object_or_404(
-        Chapter,
-        id=chapter_id,
-        course=course
-    )
+    chapter = get_object_or_404(Chapter, id=chapter_id, course=course)
 
     if request.method == "POST":
-        chapter.title = request.POST.get("title", "").strip()
+        title = (request.POST.get("title") or "").strip()
+        order_val = (request.POST.get("order") or "").strip()
 
-        order_val = request.POST.get("order")
+        if not title:
+            messages.error(request, "Chapter title is required.")
+            return render(request, "courses/chapter_edit.html", {"course": course, "chapter": chapter})
+
+        chapter.title = title
+
         if order_val:
             try:
                 chapter.order = int(order_val)
             except ValueError:
                 pass
 
-        if not chapter.title:
-            messages.error(request, "Chapter title required.")
-            return render(
-                request,
-                "courses/chapter_form.html",
-                {"course": course, "chapter": chapter}
-            )
-
         chapter.save()
         messages.success(request, "Chapter updated.")
-        return redirect(
-            "courses:course_dashboard",
-            course_id=course.id
-        )
+        return redirect("courses:course_dashboard", course_id=course.id)
 
-    return render(
-        request,
-        "courses/chapter_form.html",
-        {"course": course, "chapter": chapter}
-    )
+    return render(request, "courses/chapter_edit.html", {"course": course, "chapter": chapter})
     
 @login_required
 def lesson_create(request, course_id):
@@ -363,7 +347,6 @@ def lesson_delete(request, course_id, lesson_id):
     
 @login_required
 def lesson_edit(request, course_id, lesson_id):
-
     # Only teacher/staff
     if not request.user.is_staff:
         messages.error(request, "You are not allowed to edit lessons.")
@@ -372,48 +355,53 @@ def lesson_edit(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
 
-    # ✅ needed for chapter dropdown in template
+    # needed for chapter dropdown
     chapters = course.chapters.all().order_by("order", "id")
 
     if request.method == "POST":
+        # ✅ CHAPTER (safe)
+        chapter_id = (request.POST.get("chapter") or "").strip() or None
+        if chapter_id:
+            # make sure chapter belongs to this course
+            chapter = Chapter.objects.filter(id=chapter_id, course=course).first()
+            lesson.chapter = chapter  # will be None if invalid
+        else:
+            lesson.chapter = None
 
-        # ✅ CHAPTER (new)
-        lesson.chapter_id = request.POST.get("chapter") or None
+        # title/content
+        lesson.title = (request.POST.get("title") or "").strip()
+        lesson.content = (request.POST.get("content") or "").strip()
 
-        lesson.title = request.POST.get("title", "").strip()
-        lesson.content = request.POST.get("content", "").strip()
-
-        # ORDER
-        order_val = request.POST.get("order")
+        # order
+        order_val = (request.POST.get("order") or "").strip()
         if order_val:
             try:
                 lesson.order = int(order_val)
             except ValueError:
                 pass
 
-        # ✅ checkbox fix
+        # checkboxes
         lesson.is_published = "is_published" in request.POST
         lesson.allow_students_view = "allow_students_view" in request.POST
 
         if not lesson.title:
             messages.error(request, "Lesson title is required.")
-            return render(
-                request,
-                "courses/lesson_edit.html",
-                {"course": course, "lesson": lesson, "chapters": chapters},
-            )
+            return render(request, "courses/lesson_edit.html", {
+                "course": course,
+                "lesson": lesson,
+                "chapters": chapters,
+            })
 
         lesson.save()
-
         messages.success(request, "Lesson updated successfully.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
-    return render(
-        request,
-        "courses/lesson_edit.html",
-        {"course": course, "lesson": lesson, "chapters": chapters},
-    )
-            
+    return render(request, "courses/lesson_edit.html", {
+        "course": course,
+        "lesson": lesson,
+        "chapters": chapters,
+    })
+                
 @login_required
 @transaction.atomic
 def lesson_detail(request, course_id, lesson_id):
@@ -517,15 +505,10 @@ def course_create(request):
         subject_id = request.POST.get("subject")
         title = (request.POST.get("title") or "").strip()
         overview = (request.POST.get("overview") or "").strip()
-        is_published = ("is_published" in request.POST)
 
-        # ✅ PRICE
-        price_raw = (request.POST.get("price") or "0").strip()
-        try:
-            price = Decimal(price_raw)
-        except (InvalidOperation, ValueError):
-            messages.error(request, "Invalid price value.")
-            return render(request, "courses/course_create.html", {"subjects": subjects})
+        # ✅ checkbox safe handling
+        is_published = ("is_published" in request.POST)
+        allow_students_view = ("allow_students_view" in request.POST)
 
         if not subject_id or not title:
             messages.error(request, "Subject and Title are required.")
@@ -535,12 +518,11 @@ def course_create(request):
             subject_id=subject_id,
             title=title,
             overview=overview,
-            price=price,  # ✅ SAVE
             is_published=is_published,
-            allow_students_view=False,
+            allow_students_view=allow_students_view,  # ✅ now saved
         )
 
-        messages.success(request, "Course created successfully (students cannot see it yet).")
+        messages.success(request, "Course created successfully.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
     return render(request, "courses/course_create.html", {"subjects": subjects})

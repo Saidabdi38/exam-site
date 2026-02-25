@@ -1,3 +1,6 @@
+<!-- =========================
+     courses/course_create.html
+     ========================= -->
 {% extends "base.html" %}
 {% block content %}
 
@@ -20,18 +23,13 @@
   <!-- TITLE -->
   <div style="margin-bottom:10px;">
     <label><strong>Title</strong></label><br>
-    <input type="text"
-           name="title"
-           required
-           style="width:100%;padding:8px;">
+    <input type="text" name="title" required style="width:100%;padding:8px;">
   </div>
 
   <!-- OVERVIEW -->
   <div style="margin-bottom:10px;">
     <label><strong>Overview</strong></label><br>
-    <textarea name="overview"
-              rows="4"
-              style="width:100%;padding:8px;"></textarea>
+    <textarea name="overview" rows="4" style="width:100%;padding:8px;"></textarea>
   </div>
 
   <!-- ✅ PRICE FIELD -->
@@ -43,26 +41,24 @@
            min="0"
            value="0"
            style="width:100%;padding:8px;">
-    <small style="color:#6b7280;">
-      Enter 0 for Free Course
-    </small>
+    <small style="color:#6b7280;">Enter 0 for Free Course</small>
   </div>
 
-  <!-- PUBLISH -->
-  <label style="display:block;margin-bottom:12px;">
+  <!-- ✅ PUBLISH -->
+  <label style="display:block;margin:10px 0;">
     <input type="checkbox" name="is_published" checked>
     Publish now
   </label>
 
-  <!-- BUTTONS -->
-  <button class="btn btn-primary" type="submit">
-    Create Course
-  </button>
+  <!-- ✅ ALLOW STUDENTS VIEW -->
+  <label style="display:block;margin:10px 0;">
+    <input type="checkbox" name="allow_students_view">
+    Allow students to view this course
+  </label>
 
-  <a class="btn btn-secondary"
-     href="{% url 'courses:course_list' %}">
-     Cancel
-  </a>
+  <!-- BUTTONS -->
+  <button class="btn btn-primary" type="submit">Create Course</button>
+  <a class="btn btn-secondary" href="{% url 'courses:course_list' %}">Cancel</a>
 
 </form>
 
