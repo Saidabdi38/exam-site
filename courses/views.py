@@ -1,3 +1,4 @@
+from decimal import Decimal, InvalidOperation
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, get_object_or_404, redirect
@@ -59,13 +60,21 @@ def course_edit(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
     if request.method == "POST":
-        course.title = request.POST.get("title", "").strip()
-        course.overview = request.POST.get("overview", "").strip()
-        course.is_published = request.POST.get("is_published") == "on"
+        course.title = (request.POST.get("title") or "").strip()
+        course.overview = (request.POST.get("overview") or "").strip()
+        course.is_published = ("is_published" in request.POST)
+
+        # ✅ PRICE
+        price_raw = (request.POST.get("price") or "0").strip()
+        try:
+            course.price = Decimal(price_raw)  # ✅ SAVE
+        except (InvalidOperation, ValueError):
+            messages.error(request, "Invalid price value.")
+            return render(request, "courses/course_edit.html", {"course": course})
 
         # Optional if you have is_visible in model
         if hasattr(course, "is_visible"):
-            course.is_visible = request.POST.get("is_visible") == "on"
+            course.is_visible = ("is_visible" in request.POST)
 
         if not course.title:
             messages.error(request, "Title is required.")
@@ -76,7 +85,7 @@ def course_edit(request, course_id):
         return redirect("courses:course_dashboard", course_id=course.id)
 
     return render(request, "courses/course_edit.html", {"course": course})
-
+    
 @staff_member_required
 def course_delete(request, course_id):
     course = get_object_or_404(Course, id=course_id)
@@ -491,7 +500,15 @@ def course_create(request):
         subject_id = request.POST.get("subject")
         title = (request.POST.get("title") or "").strip()
         overview = (request.POST.get("overview") or "").strip()
-        is_published = request.POST.get("is_published") == "on"
+        is_published = ("is_published" in request.POST)
+
+        # ✅ PRICE
+        price_raw = (request.POST.get("price") or "0").strip()
+        try:
+            price = Decimal(price_raw)
+        except (InvalidOperation, ValueError):
+            messages.error(request, "Invalid price value.")
+            return render(request, "courses/course_create.html", {"subjects": subjects})
 
         if not subject_id or not title:
             messages.error(request, "Subject and Title are required.")
@@ -501,8 +518,9 @@ def course_create(request):
             subject_id=subject_id,
             title=title,
             overview=overview,
+            price=price,  # ✅ SAVE
             is_published=is_published,
-            allow_students_view=False,  # ✅ default locked until teacher clicks View
+            allow_students_view=False,
         )
 
         messages.success(request, "Course created successfully (students cannot see it yet).")
