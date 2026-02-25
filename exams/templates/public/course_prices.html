@@ -15,47 +15,65 @@
     ">
 
         {% for course in courses %}
-        <div class="card">
+        <div class="card" style="padding:16px;">
 
+            <!-- ================= TITLE ================= -->
             <h3>{{ course.title }}</h3>
 
+            <!-- ================= DESCRIPTION ================= -->
             {% if course.overview %}
-                <p>{{ course.overview|truncatewords:20 }}</p>
+                <p style="color:#6b7280;">
+                    {{ course.overview|truncatewords:20 }}
+                </p>
+            {% else %}
+                <p style="color:#6b7280;">
+                    Course description not available.
+                </p>
             {% endif %}
 
-            <!-- ✅ COURSE PRICE -->
+            <!-- ================= PRICE ================= -->
             <h2 style="margin:12px 0;color:var(--primary);">
-
                 {% if course.price == 0 %}
                     Free Course
                 {% else %}
                     ${{ course.price }}
                 {% endif %}
-
             </h2>
 
             <!-- ================= BUTTONS ================= -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
 
-            {% if user.is_authenticated %}
-
-                <a href="{% url 'courses:course_dashboard' course.id %}"
-                   class="btn btn-primary">
-                   Start Learning
-                </a>
-
-            {% else %}
-
-                <a href="{% url 'login' %}?next={% url 'courses:course_dashboard' course.id %}"
-                   class="btn btn-primary">
-                   Login
-                </a>
-
-                <a href="{% url 'signup' %}?next={% url 'courses:course_dashboard' course.id %}"
+                <!-- ✅ VIEW COURSE DETAILS -->
+                <a href="{% url 'courses:course_detail' course.id %}"
                    class="btn btn-secondary">
-                   Sign Up
+                   👁 View Course
                 </a>
 
-            {% endif %}
+                {% if user.is_authenticated %}
+
+                    <!-- ✅ START LEARNING -->
+                    <a href="{% url 'courses:course_dashboard' course.id %}"
+                       class="btn btn-primary">
+                       ▶ Start Learning
+                    </a>
+
+                <!-- {% else %} -->
+
+                    <!-- LOGIN -->
+                    <!-- <a href="{% url 'login' %}?next={% url 'courses:course_dashboard' course.id %}"
+                       class="btn btn-primary">
+                       Login
+                    </a> -->
+
+                    <!-- SIGNUP -->
+                    <!-- <a href="{% url 'signup' %}?next={% url 'courses:course_dashboard' course.id %}"
+                       class="btn btn-secondary">
+                       Sign Up
+                    </a> -->
+
+                {% endif %}
+
+            </div>
 
         </div>
 

@@ -50,6 +50,23 @@ def course_list(request):
         "courses/course_list.html",
         {"courses": courses}
     )
+
+def course_detail(request, course_id):
+
+    course = get_object_or_404(Course, id=course_id)
+
+    lessons_count = Lesson.objects.filter(course=course).count()
+    chapters_count = course.chapters.count()
+
+    return render(
+        request,
+        "courses/course_detail.html",
+        {
+            "course": course,
+            "lessons_count": lessons_count,
+            "chapters_count": chapters_count,
+        }
+    )
         
 @login_required
 def course_edit(request, course_id):

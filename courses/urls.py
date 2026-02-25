@@ -30,6 +30,7 @@ urlpatterns = [
 
     # TEACHER PANEL
     path("teacher/", views.teacher_course_list, name="teacher_course_list"),
+    path("<int:course_id>/detail/", views.course_detail, name="course_detail"),
     path("teacher/<int:course_id>/toggle-publish/", views.course_toggle_publish, name="course_toggle_publish"),
 
     path("<int:course_id>/chapters/add/", views.chapter_create, name="chapter_create"),

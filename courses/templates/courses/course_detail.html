@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width:900px;margin:auto;">
+
+    <h1>{{ course.title }}</h1>
+
+    <!-- PRICE -->
+    <h2 style="color:var(--primary);margin-top:10px;">
+        {% if course.price == 0 %}
+            Free Course
+        {% else %}
+            ${{ course.price }}
+        {% endif %}
+    </h2>
+
+    <hr>
+
+    <!-- DESCRIPTION -->
+    <h3>Course Description</h3>
+
+    <p style="line-height:1.7;color:#374151;">
+        {{ course.overview|linebreaks }}
+    </p>
+
+    <hr>
+
+    <!-- COURSE INFO -->
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;">
+        <div>📚 Lessons: <strong>{{ lessons_count }}</strong></div>
+        <div>📌 Chapters: <strong>{{ chapters_count }}</strong></div>
+    </div>
+
+    <hr>
+
+    <!-- ACTION BUTTON -->
+    {% if user.is_authenticated %}
+        <a class="btn btn-primary"
+           href="{% url 'courses:course_dashboard' course.id %}">
+           ▶ Start Learning
+        </a>
+    {% else %}
+        <a class="btn btn-primary"
+           href="{% url 'login' %}?next={% url 'courses:course_dashboard' course.id %}">
+           Login to Start
+        </a>
+    {% endif %}
+
+</div>
+
+{% endblock %}
