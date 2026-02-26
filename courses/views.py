@@ -118,104 +118,120 @@ def course_delete(request, course_id):
 def manage_course_visibility(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     students = User.objects.filter(is_staff=False).order_by("username")
-    lessons = Lesson.objects.filter(course=course).order_by("order", "id")
 
     # Ensure every student has a CourseAccess row
     for s in students:
         CourseAccess.objects.get_or_create(course=course, user=s)
 
     if request.method == "POST":
-        # Global course switch
+        # 1) Global course switch
         course.allow_students_view = ("course_allow_students_view" in request.POST)
         course.save(update_fields=["allow_students_view"])
 
-        # Per-student course view
-        course_view_ids = set(request.POST.getlist("student_course_view"))
-        lessons_view_ids = set(request.POST.getlist("student_lessons_view"))
+        # 2) Per-student flags
+        course_view_ids = set(request.POST.getlist("student_course_view"))   # strings
+        lessons_view_ids = set(request.POST.getlist("student_lessons_view")) # strings
 
         for s in students:
             access = CourseAccess.objects.get(course=course, user=s)
             access.can_view = str(s.id) in course_view_ids
+            access.lessons_can_view = str(s.id) in lessons_view_ids
+            access.save(update_fields=["can_view", "lessons_can_view"])
 
-            # Only if you added lessons_can_view field
-            if hasattr(access, "lessons_can_view"):
-                access.lessons_can_view = str(s.id) in lessons_view_ids
-
-            access.save()
-
-        # Lesson flags
-        for l in lessons:
-            l.is_published = (f"lesson_is_published_{l.id}" in request.POST)
-            l.allow_students_view = (f"lesson_allow_students_{l.id}" in request.POST)
-            l.save(update_fields=["is_published", "allow_students_view"])
-
-        messages.success(request, "Course visibility updated.")
+        # ✅ IMPORTANT: DO NOT update Lesson.is_published / Lesson.allow_students_view here
+        messages.success(request, "Visibility updated.")
         return redirect("courses:manage_course_visibility", course_id=course.id)
 
     access_map = {
         a.user_id: a.can_view
         for a in CourseAccess.objects.filter(course=course, user__in=students)
     }
-
-    lesson_access_map = None
-    if any(getattr(f, "name", "") == "lessons_can_view" for f in CourseAccess._meta.get_fields()):
-        lesson_access_map = {
-            a.user_id: a.lessons_can_view
-            for a in CourseAccess.objects.filter(course=course, user__in=students)
-        }
+    lesson_access_map = {
+        a.user_id: a.lessons_can_view
+        for a in CourseAccess.objects.filter(course=course, user__in=students)
+    }
 
     return render(request, "courses/manage_course_visibility.html", {
         "course": course,
         "students": students,
-        "lessons": lessons,
         "access_map": access_map,
         "lesson_access_map": lesson_access_map,
     })
-    
+
 @login_required
 def course_dashboard(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # student access (your existing rules)
+    access_row = None
+
+    # ===============================
+    # STUDENT ACCESS CHECK
+    # ===============================
     if not request.user.is_staff:
-        access = CourseAccess.objects.filter(course=course, user=request.user, can_view=True).exists()
-        if not (access and course.is_published and course.allow_students_view):
+
+        access_row = CourseAccess.objects.filter(
+            course=course,
+            user=request.user,
+            can_view=True
+        ).first()
+
+        if not access_row or not (
+            course.is_published and course.allow_students_view
+        ):
             messages.error(request, "This course is not available yet.")
             return redirect("courses:course_list")
 
-    # chapters (so even empty chapters appear)
+    # ===============================
+    # CHAPTERS
+    # ===============================
     chapters = course.chapters.all().order_by("order", "id")
 
-    lessons_qs = Lesson.objects.filter(course=course).select_related("chapter").order_by(
+    lessons_qs = Lesson.objects.filter(
+        course=course
+    ).select_related("chapter").order_by(
         "chapter__order", "chapter_id", "order", "id"
     )
 
+    # ===============================
+    # ✅ LESSON ACCESS FIX (IMPORTANT)
+    # ===============================
     if not request.user.is_staff:
-        lessons_qs = lessons_qs.filter(is_published=True, allow_students_view=True)
 
+        # student allowed course BUT lessons disabled
+        if not access_row.lessons_can_view:
+            lessons_qs = lessons_qs.none()
+        else:
+            lessons_qs = lessons_qs.filter(
+                is_published=True,
+                allow_students_view=True
+            )
+
+    # ===============================
+    # COMPLETION
+    # ===============================
     completed_ids = set(
-        LessonCompletion.objects.filter(user=request.user, lesson__course=course)
-        .values_list("lesson_id", flat=True)
+        LessonCompletion.objects.filter(
+            user=request.user,
+            lesson__course=course
+        ).values_list("lesson_id", flat=True)
     )
 
     grouped = OrderedDict()
 
-    # ✅ add all chapters first (even if no lessons)
     for ch in chapters:
         grouped[ch] = []
 
-    # ✅ add "No Chapter"
     grouped[None] = []
 
-    # fill lessons
     for l in lessons_qs:
-        key = l.chapter  # Chapter object or None
-        grouped.setdefault(key, [])
-        grouped[key].append({"lesson": l, "done": (l.id in completed_ids)})
+        grouped[l.chapter].append({
+            "lesson": l,
+            "done": l.id in completed_ids
+        })
 
-    # progress
     total = lessons_qs.count()
-    done = sum(1 for l in lessons_qs if l.id in completed_ids)
+    done = len([i for i in completed_ids if i])
+
     percent = int((done / total) * 100) if total else 0
 
     next_lesson = None
@@ -227,10 +243,14 @@ def course_dashboard(request, course_id):
     return render(request, "courses/course_dashboard.html", {
         "course": course,
         "grouped": grouped,
-        "progress": {"done": done, "total": total, "percent": percent},
+        "progress": {
+            "done": done,
+            "total": total,
+            "percent": percent
+        },
         "next_lesson": next_lesson,
     })
-        
+            
 @login_required
 def chapter_create(request, course_id):
     course = get_object_or_404(Course, id=course_id)
