@@ -4,145 +4,175 @@
 
 <div style="max-width:900px;margin:auto;">
 
-  <!-- HEADER -->
-  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:flex-start;">
+<!-- ================================================= -->
+<!-- HEADER -->
+<!-- ================================================= -->
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;">
 
-    <div>
-      <h2 style="margin:0;">{{ course.title }}</h2>
+  <div>
+    <h2 style="margin:0;">{{ course.title }}</h2>
 
-      {% if course.overview %}
-        <p style="color:#6b7280;margin:6px 0 0;">{{ course.overview }}</p>
-      {% endif %}
-    </div>
-
-    <!-- ===== COURSE ACTIONS ===== -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-
-      {% if next_lesson %}
-        <a class="btn btn-primary"
-           href="{% url 'courses:lesson_detail' course.id next_lesson.id %}">
-          ▶ Continue
-        </a>
-      {% endif %}
-
-      {% if user.is_staff %}
-        <a class="btn btn-secondary"
-           href="{% url 'courses:course_edit' course.id %}">
-          ✏ Edit Course
-        </a>
-
-        <!-- ✅ Add Chapter -->
-        <a class="btn btn-secondary"
-           href="{% url 'courses:chapter_create' course.id %}">
-          ➕ Add Chapter
-        </a>
-
-        <!-- ✅ Add Lesson -->
-        <a class="btn btn-secondary"
-           href="{% url 'courses:lesson_create' course.id %}">
-          ➕ Add Lesson
-        </a>
-
-        <!-- ✅ Delete Course -->
-        <form method="post"
-              action="{% url 'courses:course_delete' course.id %}"
-              style="margin:0;display:inline;">
-          {% csrf_token %}
-          <button type="submit"
-                  class="btn btn-secondary"
-                  onclick="return confirm('Delete this course and ALL its lessons?');">
-            🗑 Delete Course
-          </button>
-        </form>
-      {% endif %}
-
-    </div>
+    {% if course.overview %}
+      <p style="color:#6b7280;margin-top:6px;">
+        {{ course.overview }}
+      </p>
+    {% endif %}
   </div>
 
-  <hr>
+  <!-- ================= ACTIONS ================= -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
 
-  <!-- PROGRESS -->
-  <div style="height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden;">
-    <div style="height:10px;width:{{ progress.percent }}%;background:#2563eb;"></div>
+    {% if next_lesson %}
+      <a class="btn btn-primary"
+         href="{% url 'courses:lesson_detail' course.id next_lesson.id %}">
+        ▶ Continue
+      </a>
+    {% endif %}
+
+    {% if user.is_staff %}
+
+      <a class="btn btn-secondary"
+         href="{% url 'courses:course_edit' course.id %}">
+        ✏ Edit Course
+      </a>
+
+      <a class="btn btn-secondary"
+         href="{% url 'courses:chapter_create' course.id %}">
+        ➕ Add Chapter
+      </a>
+
+      <a class="btn btn-secondary"
+         href="{% url 'courses:lesson_create' course.id %}">
+        ➕ Add Lesson
+      </a>
+
+      <form method="post"
+            action="{% url 'courses:course_delete' course.id %}"
+            style="display:inline;">
+        {% csrf_token %}
+        <button class="btn btn-secondary"
+                onclick="return confirm('Delete course and all lessons?')">
+          🗑 Delete
+        </button>
+      </form>
+
+    {% endif %}
+
+  </div>
+</div>
+
+<hr>
+
+<!-- ================================================= -->
+<!-- PROGRESS BAR -->
+<!-- ================================================= -->
+<div style="height:10px;background:#e5e7eb;border-radius:6px;">
+  <div style="
+      height:10px;
+      width:{{ progress.percent }}%;
+      background:#2563eb;">
+  </div>
+</div>
+
+<p style="margin-top:10px;">
+  <strong>{{ progress.done }}</strong> /
+  <strong>{{ progress.total }}</strong>
+  lessons completed
+  ({{ progress.percent }}%)
+</p>
+
+<hr>
+
+<h3>Lessons</h3>
+
+<!-- ================================================= -->
+<!-- CHAPTER LOOP -->
+<!-- ================================================= -->
+{% for chapter, items in grouped.items %}
+
+<div style="margin-top:16px;">
+
+  <!-- CHAPTER HEADER -->
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
+
+    <h4>
+      📌 {% if chapter %}{{ chapter.title }}{% else %}No Chapter{% endif %}
+    </h4>
+
+    {% if user.is_staff and chapter %}
+      <a class="btn btn-secondary"
+         href="{% url 'courses:chapter_edit' course.id chapter.id %}">
+         ✏ Edit Chapter
+      </a>
+    {% endif %}
+
   </div>
 
-  <p style="margin:10px 0 0;">
-    <strong>{{ progress.done }}</strong> /
-    <strong>{{ progress.total }}</strong>
-    lessons <span style="color:#6b7280;">({{ progress.percent }}%)</span>
-  </p>
+  <!-- ================= LESSONS ================= -->
+  {% if items %}
 
-  <hr>
+    {% for r in items %}
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        padding:10px 0;
+        border-bottom:1px solid #eee;
+        flex-wrap:wrap;
+    ">
 
-  <h3 style="margin-top:0;">Lessons</h3>
+      <!-- LESSON TITLE -->
+      <div>
+        {% if r.done %}✅{% else %}⬜{% endif %}
+        <strong>{{ r.lesson.title }}</strong>
+      </div>
 
-  {% if grouped %}
-    {# ✅ IMPORTANT: chapter is an object (or None), not a string #}
-    {% for chapter, items in grouped.items %}
-      <div style="margin-top:14px;">
+      <!-- LESSON ACTIONS -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
 
-        <!-- ✅ CHAPTER HEADER + EDIT BUTTON -->
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <!-- OPEN -->
+        <a class="btn btn-secondary"
+           href="{% url 'courses:lesson_detail' course.id r.lesson.id %}">
+           Open
+        </a>
 
-          <h4 style="margin:0 0 8px;">
-            📌 {% if chapter %}{{ chapter.title }}{% else %}No Chapter{% endif %}
-          </h4>
-
-          {# ✅ Edit Chapter button shows whenever chapter exists #}
-          {% if user.is_staff and chapter %}
+        {% if r.has_quiz %}
+        {% if r.quiz_enabled %}
             <a class="btn btn-secondary"
-               href="{% url 'courses:chapter_edit' course.id chapter.id %}">
-              ✏ Edit Chapter
+              href="{% url 'courses:lesson_quiz' course.id r.lesson.id %}">
+              🧠 Quiz
             </a>
-          {% endif %}
-        </div>
+        {% elif user.is_staff %}
+            <a class="btn btn-secondary"
+              href="{% url 'courses:lesson_quiz_create' course.id r.lesson.id %}">
+              ➕ Enable Quiz
+            </a>
+        {% endif %}
+        {% elif user.is_staff %}
+          <a class="btn btn-secondary"
+            href="{% url 'courses:lesson_quiz_create' course.id r.lesson.id %}">
+            ➕ Create Quiz
+          </a>
+        {% endif %}
 
-        {% if items %}
-          {% for r in items %}
-            <div style="
-                display:flex;
-                justify-content:space-between;
-                gap:10px;
-                padding:10px 0;
-                border-bottom:1px solid #eee;
-                flex-wrap:wrap;
-            ">
-              <div style="min-width:240px;">
-                {% if r.done %}✅{% else %}⬜{% endif %}
-                <strong>{{ r.lesson.title }}</strong>
-              </div>
-
-              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-                <a class="btn btn-secondary"
-                   href="{% url 'courses:lesson_detail' course.id r.lesson.id %}">
-                  Open
-                </a>
-
-                {% if r.lesson.quiz %}
-                  <a class="btn btn-secondary"
-                     href="{% url 'courses:lesson_quiz' course.id r.lesson.id %}">
-                    Quiz
-                  </a>
-                {% endif %}
-
-                {% if user.is_staff %}
-                  <a class="btn btn-secondary"
-                     href="{% url 'courses:lesson_edit' course.id r.lesson.id %}">
-                    ✏ Edit
-                  </a>
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
-        {% else %}
-          <p style="color:#6b7280;margin:0 0 10px;">No lessons in this chapter yet.</p>
+        {% if user.is_staff %}
+          <a class="btn btn-secondary"
+             href="{% url 'courses:lesson_edit' course.id r.lesson.id %}">
+             ✏ Edit
+          </a>
         {% endif %}
 
       </div>
+
+    </div>
     {% endfor %}
+
   {% else %}
-    <p>No lessons available.</p>
+      <p style="color:#6b7280;">No lessons in this chapter yet.</p>
   {% endif %}
+
+</div>
+
+{% endfor %}
 
 </div>
 

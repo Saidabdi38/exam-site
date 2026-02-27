@@ -17,6 +17,7 @@ urlpatterns = [
     path("<int:course_id>/", views.course_dashboard, name="course_dashboard"),
 
     path("<int:course_id>/lesson/<int:lesson_id>/", views.lesson_detail, name="lesson_detail"),
+    path("<int:course_id>/lesson/<int:lesson_id>/quiz/create/", views.lesson_quiz_create, name="lesson_quiz_create"),
     path("<int:course_id>/lesson/<int:lesson_id>/quiz/", views.lesson_quiz, name="lesson_quiz"),
 
     # ===============================

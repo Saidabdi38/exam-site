@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from collections import OrderedDict
 
 from .models import (
-    Course, CourseAccess, Lesson, LessonCompletion,
+    Course, CourseAccess, Lesson, LessonCompletion, LessonQuiz,
     LessonQuizAttempt, LessonQuizAnswer, LessonQuizChoice, Chapter
 )
 
@@ -508,7 +508,42 @@ def lesson_quiz(request, course_id, lesson_id):
         {"course": course, "lesson": lesson, "questions": questions},
     )
 
+@staff_member_required
+def lesson_quiz_create(request, course_id, lesson_id):
 
+    course = get_object_or_404(Course, id=course_id)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
+
+    quiz = LessonQuiz.objects.filter(lesson=lesson).first()
+
+    if request.method == "POST":
+
+        pass_percent = request.POST.get("pass_percent", 60)
+        enabled = "enabled" in request.POST
+
+        if quiz:
+            quiz.pass_percent = pass_percent
+            quiz.enabled = enabled
+            quiz.save()
+        else:
+            quiz = LessonQuiz.objects.create(
+                lesson=lesson,
+                pass_percent=pass_percent,
+                enabled=enabled,
+            )
+
+        messages.success(request, "Quiz saved.")
+        return redirect("courses:course_dashboard", course_id=course.id)
+
+    return render(request,
+        "courses/lesson_quiz_form.html",
+        {
+            "course": course,
+            "lesson": lesson,
+            "quiz": quiz,
+        }
+    )
+    
 # ===============================
 # TEACHER COURSE MANAGEMENT
 # ===============================
