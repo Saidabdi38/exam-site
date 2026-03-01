@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Add Question</h2>
+
+<form method="post">
+{% csrf_token %}
+
+<textarea name="text" required></textarea>
+
+<select name="qtype" id="qtype">
+<option value="MCQ">MCQ</option>
+<option value="TF">True / False</option>
+</select>
+
+<div id="mcq">
+<input name="choice1" placeholder="Choice 1">
+<input name="choice2" placeholder="Choice 2">
+<input name="choice3">
+<input name="choice4">
+
+Correct:
+<input name="correct" placeholder="1-4">
+</div>
+
+<div id="tf" style="display:none">
+<label><input type="radio" name="correct" value="true">True</label>
+<label><input type="radio" name="correct" value="false">False</label>
+</div>
+
+<button>Add</button>
+
+</form>
+
+<script>
+qtype.onchange=function(){
+mcq.style.display=this.value=="MCQ"?"block":"none";
+tf.style.display=this.value=="TF"?"block":"none";
+}
+</script>
+
+{% endblock %}

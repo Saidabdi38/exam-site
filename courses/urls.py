@@ -18,6 +18,11 @@ urlpatterns = [
 
     path("<int:course_id>/lesson/<int:lesson_id>/", views.lesson_detail, name="lesson_detail"),
     path("<int:course_id>/lesson/<int:lesson_id>/quiz/create/", views.lesson_quiz_create, name="lesson_quiz_create"),
+    # ===============================
+    # QUIZ QUESTIONS (TEACHER)
+    # ===============================
+    path("<int:course_id>/lesson/<int:lesson_id>/quiz/manage/", views.quiz_manage, name="quiz_manage",),
+    path("<int:course_id>/lesson/<int:lesson_id>/quiz/question/add/", views.quiz_question_add, name="quiz_question_add",),
     path("<int:course_id>/lesson/<int:lesson_id>/quiz/", views.lesson_quiz, name="lesson_quiz"),
 
     # ===============================

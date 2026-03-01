@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from collections import OrderedDict
 
 from .models import (
-    Course, CourseAccess, Lesson, LessonCompletion, LessonQuiz,
+    Course, CourseAccess, Lesson, LessonCompletion, LessonQuiz, LessonQuizQuestion,
     LessonQuizAttempt, LessonQuizAnswer, LessonQuizChoice, Chapter
 )
 
@@ -543,6 +543,84 @@ def lesson_quiz_create(request, course_id, lesson_id):
             "quiz": quiz,
         }
     )
+
+@staff_member_required
+def quiz_manage(request, course_id, lesson_id):
+
+    course = get_object_or_404(Course, id=course_id)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
+    quiz = lesson.quiz
+
+    questions = quiz.questions.prefetch_related("choices")
+
+    return render(request,
+        "courses/quiz_manage.html",
+        {
+            "course": course,
+            "lesson": lesson,
+            "quiz": quiz,
+            "questions": questions,
+        }
+    )
+
+@staff_member_required
+def quiz_question_add(request, course_id, lesson_id):
+
+    course = get_object_or_404(Course, id=course_id)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
+    quiz = lesson.quiz
+
+    if request.method == "POST":
+
+        text = request.POST.get("text")
+        qtype = request.POST.get("qtype")
+
+        question = LessonQuizQuestion.objects.create(
+            quiz=quiz,
+            text=text,
+            qtype=qtype,
+            order=quiz.questions.count() + 1
+        )
+
+        # TRUE / FALSE AUTO
+        if qtype == "TF":
+            correct = request.POST.get("correct")
+
+            LessonQuizChoice.objects.create(
+                question=question,
+                text="True",
+                is_correct=(correct == "true")
+            )
+
+            LessonQuizChoice.objects.create(
+                question=question,
+                text="False",
+                is_correct=(correct == "false")
+            )
+
+        else:
+            correct = request.POST.get("correct")
+
+            for i in range(1,5):
+                txt = request.POST.get(f"choice{i}")
+                if txt:
+                    LessonQuizChoice.objects.create(
+                        question=question,
+                        text=txt,
+                        is_correct=str(i)==correct
+                    )
+
+        messages.success(request,"Question added")
+        return redirect(
+            "courses:quiz_manage",
+            course_id=course.id,
+            lesson_id=lesson.id
+        )
+
+    return render(request,"courses/question_form.html",{
+        "course":course,
+        "lesson":lesson
+    })
     
 # ===============================
 # TEACHER COURSE MANAGEMENT

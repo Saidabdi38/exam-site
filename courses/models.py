@@ -128,29 +128,33 @@ class LessonQuiz(models.Model):
 
 
 class LessonQuizQuestion(models.Model):
+
+    QUESTION_TYPES = (
+        ("MCQ", "Multiple Choice"),
+        ("TF", "True / False"),
+    )
+
     quiz = models.ForeignKey(
         LessonQuiz,
         on_delete=models.CASCADE,
         related_name="questions",
     )
+
     text = models.TextField()
+
+    qtype = models.CharField(
+        max_length=10,
+        choices=QUESTION_TYPES,
+        default="MCQ"
+    )
+
     order = models.PositiveIntegerField(default=1)
 
     class Meta:
         ordering = ["quiz", "order", "id"]
-        indexes = [
-            models.Index(fields=["quiz", "order"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["quiz", "order"],
-                name="uniq_question_order_per_quiz",
-            )
-        ]
 
-    def __str__(self):
-        return f"Q{self.order} - {self.quiz.lesson.title}"
-
+    def _str_(self):
+        return self.text
 
 class LessonQuizChoice(models.Model):
     question = models.ForeignKey(

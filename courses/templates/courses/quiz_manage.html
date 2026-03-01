@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Quiz Questions</h2>
+
+<a class="btn btn-primary"
+   href="{% url 'courses:quiz_question_add' course.id lesson.id %}">
+   ➕ Add Question
+</a>
+
+<hr>
+
+{% for q in questions %}
+<div style="margin-bottom:20px">
+
+<strong>{{ q.order }}. {{ q.text }}</strong>
+({{ q.get_qtype_display }})
+
+<ul>
+{% for c in q.choices.all %}
+<li>
+{{ c.text }}
+{% if c.is_correct %} ✅{% endif %}
+</li>
+{% endfor %}
+</ul>
+
+</div>
+{% empty %}
+<p>No questions yet.</p>
+{% endfor %}
+
+{% endblock %}
