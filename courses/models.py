@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 
 
+
 User = get_user_model()
 
 class Course(models.Model):
@@ -173,7 +174,7 @@ class LessonQuizQuestion(models.Model):
             # You can remove this if you want expected answer optional
             pass
 
-    def _str_(self):
+    def __str__(self):
         return f"Q{self.order} ({self.qtype}) - {self.quiz.lesson.title}"
 
 class LessonQuizChoice(models.Model):

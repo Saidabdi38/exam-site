@@ -8,6 +8,7 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 from collections import OrderedDict
 from django.utils import timezone
+from .forms import LessonQuizQuestionForm, ChoiceFormSet
 
 from .models import (
     Course, CourseAccess, Lesson, LessonCompletion, LessonQuiz, LessonQuizQuestion,
@@ -588,61 +589,86 @@ def quiz_manage(request, course_id, lesson_id):
 
 @staff_member_required
 def quiz_question_add(request, course_id, lesson_id):
-
     course = get_object_or_404(Course, id=course_id)
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
+
+    if not hasattr(lesson, "quiz") or not lesson.quiz:
+        messages.error(request, "Create quiz settings first.")
+        return redirect("courses:lesson_quiz_create", course_id=course.id, lesson_id=lesson.id)
+
     quiz = lesson.quiz
 
+    mode = "Add"
+
     if request.method == "POST":
+        form = LessonQuizQuestionForm(request.POST)
+        question = None
 
-        text = request.POST.get("text")
-        qtype = request.POST.get("qtype")
+        # We must create question first, then bind formset to it
+        if form.is_valid():
 
-        question = LessonQuizQuestion.objects.create(
-            quiz=quiz,
-            text=text,
-            qtype=qtype,
-            order=quiz.questions.count() + 1
-        )
+            question = form.save(commit=False)
+            question.quiz = quiz
 
-        # TRUE / FALSE AUTO
-        if qtype == "TF":
-            correct = request.POST.get("correct")
+            if question.qtype == "STRUCT":
 
-            LessonQuizChoice.objects.create(
-                question=question,
-                text="True",
-                is_correct=(correct == "true")
-            )
+                a = form.cleaned_data.get("correct_part_a","")
+                b = form.cleaned_data.get("correct_part_b","")
+                c = form.cleaned_data.get("correct_part_c","")
 
-            LessonQuizChoice.objects.create(
-                question=question,
-                text="False",
-                is_correct=(correct == "false")
-            )
+                question.expected_answer = f"""
+                A) {a}
+                B) {b}
+                C) {c}
+                """
+                question.save()
+                
+            # If STRUCT: no choices needed
+            if question.qtype == LessonQuizQuestion.TYPE_STRUCT:
+                messages.success(request, "Structured question added.")
+                return redirect("courses:quiz_manage", course_id=course.id, lesson_id=lesson.id)
 
+            # MCQ/TF: save choices via formset
+            formset = ChoiceFormSet(request.POST, instance=question)
+            if formset.is_valid():
+                formset.save()
+
+                # For TF, enforce exactly True/False if you want:
+                if question.qtype == LessonQuizQuestion.TYPE_TF:
+                    # optional strict TF normalization (recommended)
+                    LessonQuizChoice.objects.filter(question=question).delete()
+                    correct = request.POST.get("tf_correct", "true")
+                    LessonQuizChoice.objects.create(question=question, text="True",  is_correct=(correct == "true"))
+                    LessonQuizChoice.objects.create(question=question, text="False", is_correct=(correct == "false"))
+
+                messages.success(request, "Question added.")
+                return redirect("courses:quiz_manage", course_id=course.id, lesson_id=lesson.id)
+
+            # If formset invalid, show errors and keep question (or delete it)
+            question.delete()
         else:
-            correct = request.POST.get("correct")
+            formset = ChoiceFormSet(request.POST)
 
-            for i in range(1,5):
-                txt = request.POST.get(f"choice{i}")
-                if txt:
-                    LessonQuizChoice.objects.create(
-                        question=question,
-                        text=txt,
-                        is_correct=str(i)==correct
-                    )
+        return render(request, "courses/question_form.html", {
+            "course": course,
+            "lesson": lesson,
+            "quiz": quiz,
+            "mode": mode,
+            "form": form,
+            "formset": formset,
+        })
 
-        messages.success(request,"Question added")
-        return redirect(
-            "courses:quiz_manage",
-            course_id=course.id,
-            lesson_id=lesson.id
-        )
+    # GET
+    form = LessonQuizQuestionForm()
+    formset = ChoiceFormSet()
 
-    return render(request,"courses/question_form.html",{
-        "course":course,
-        "lesson":lesson
+    return render(request, "courses/question_form.html", {
+        "course": course,
+        "lesson": lesson,
+        "quiz": quiz,
+        "mode": mode,
+        "form": form,
+        "formset": formset,
     })
 
 @login_required
