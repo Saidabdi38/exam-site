@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="max-width:900px;margin:auto;padding:15px;">
+
+  <h2>Quiz Result</h2>
+  <p>
+    <strong>Course:</strong> {{ course.title }}<br>
+    <strong>Lesson:</strong> {{ lesson.title }}
+  </p>
+
+  <div style="padding:12px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:15px;">
+    <p style="margin:0;">
+      <strong>Score:</strong> {{ attempt.score }} / {{ attempt.max_score }}
+      &nbsp; (Pass mark: {{ quiz.pass_percent }}%)
+    </p>
+
+    <p style="margin:6px 0 0;">
+      <strong>Status:</strong>
+      {% if attempt.passed %}
+        ✅ Passed
+      {% else %}
+        ❌ Failed
+      {% endif %}
+    </p>
+  </div>
+
+  <h3>Review</h3>
+
+  {% for r in rows %}
+    <div style="margin-bottom:14px;padding:12px;border:1px solid #eee;border-radius:10px;">
+      <p style="margin:0 0 8px;">
+        <strong>{{ forloop.counter }}. {{ r.question.text }}</strong>
+      </p>
+
+      {% if r.qtype == "STRUCT" %}
+        <p style="margin:0;"><strong>Your answer:</strong></p>
+        <div style="white-space:pre-wrap;background:#f9fafb;padding:10px;border-radius:8px;">
+          {{ r.text_answer|default:"(No answer)" }}
+        </div>
+
+        {# Optional: show expected answer #}
+        {% if r.expected_answer %}
+          <p style="margin:10px 0 0;"><strong>Expected:</strong></p>
+          <div style="white-space:pre-wrap;background:#f3f4f6;padding:10px;border-radius:8px;">
+            {{ r.expected_answer }}
+          </div>
+        {% endif %}
+
+      {% else %}
+        <p style="margin:0;">
+          <strong>Your choice:</strong>
+          {% if r.selected %} {{ r.selected.text }} {% else %} (No answer) {% endif %}
+        </p>
+
+        <p style="margin:6px 0 0;">
+          <strong>Correct:</strong>
+          {% if r.correct_choice %} {{ r.correct_choice.text }} {% else %} (Not set) {% endif %}
+        </p>
+
+        <p style="margin:8px 0 0;">
+          {% if r.is_correct %}✅ Correct{% else %}❌ Incorrect{% endif %}
+        </p>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+  <a class="btn btn-secondary" href="{% url 'courses:course_dashboard' course.id %}">
+    Back to Course
+  </a>
+
+</div>
+
+{% endblock %}

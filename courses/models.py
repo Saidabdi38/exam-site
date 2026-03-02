@@ -128,33 +128,53 @@ class LessonQuiz(models.Model):
 
 
 class LessonQuizQuestion(models.Model):
+    TYPE_MCQ = "MCQ"
+    TYPE_TF = "TF"
+    TYPE_STRUCT = "STRUCT"
 
-    QUESTION_TYPES = (
-        ("MCQ", "Multiple Choice"),
-        ("TF", "True / False"),
-    )
+    QUESTION_TYPES = [
+        (TYPE_MCQ, "Multiple Choice"),
+        (TYPE_TF, "True / False"),
+        (TYPE_STRUCT, "Structured"),
+    ]
+
+    LEVEL_1 = 1
+    LEVEL_2 = 2
+    LEVEL_3 = 3
+    LEVELS = [
+        (LEVEL_1, "Level 1"),
+        (LEVEL_2, "Level 2"),
+        (LEVEL_3, "Level 3"),
+    ]
 
     quiz = models.ForeignKey(
-        LessonQuiz,
+        "LessonQuiz",
         on_delete=models.CASCADE,
         related_name="questions",
     )
+    qtype = models.CharField(max_length=10, choices=QUESTION_TYPES, default=TYPE_MCQ)
+
+    # ✅ 3 levels only (used mainly for STRUCT, but can be used for all)
+    level = models.PositiveSmallIntegerField(choices=LEVELS, default=LEVEL_1)
 
     text = models.TextField()
-
-    qtype = models.CharField(
-        max_length=10,
-        choices=QUESTION_TYPES,
-        default="MCQ"
-    )
-
     order = models.PositiveIntegerField(default=1)
+
+    # ✅ For STRUCT: store expected answer + marking guide
+    expected_answer = models.TextField(blank=True, default="")
+    marking_guide = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ["quiz", "order", "id"]
 
+    def clean(self):
+        # If structured => should have expected_answer (optional but recommended)
+        if self.qtype == self.TYPE_STRUCT and not self.expected_answer.strip():
+            # You can remove this if you want expected answer optional
+            pass
+
     def _str_(self):
-        return self.text
+        return f"Q{self.order} ({self.qtype}) - {self.quiz.lesson.title}"
 
 class LessonQuizChoice(models.Model):
     question = models.ForeignKey(
@@ -215,22 +235,28 @@ class LessonQuizAttempt(models.Model):
 
 class LessonQuizAnswer(models.Model):
     attempt = models.ForeignKey(
-        LessonQuizAttempt,
+        "LessonQuizAttempt",
         on_delete=models.CASCADE,
         related_name="answers",
     )
     question = models.ForeignKey(
-        LessonQuizQuestion,
+        "LessonQuizQuestion",
         on_delete=models.CASCADE,
         related_name="answers",
     )
     selected_choice = models.ForeignKey(
-        LessonQuizChoice,
+        "LessonQuizChoice",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="selected_in_answers",
     )
+
+    # ✅ NEW: for STRUCT
+    text_answer = models.TextField(blank=True, default="")
+
+    # ✅ optional: for manual marking later
+    awarded_score = models.PositiveIntegerField(default=0)
 
     class Meta:
         constraints = [
@@ -239,10 +265,6 @@ class LessonQuizAnswer(models.Model):
                 name="uniq_answer_per_question_per_attempt",
             )
         ]
-
-    def __str__(self):
-        return f"Answer: {self.attempt} - Q{self.question.order}"
-
 
 class CourseExamLink(models.Model):
     course = models.ForeignKey(

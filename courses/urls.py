@@ -24,6 +24,7 @@ urlpatterns = [
     path("<int:course_id>/lesson/<int:lesson_id>/quiz/manage/", views.quiz_manage, name="quiz_manage",),
     path("<int:course_id>/lesson/<int:lesson_id>/quiz/question/add/", views.quiz_question_add, name="quiz_question_add",),
     path("<int:course_id>/lesson/<int:lesson_id>/quiz/", views.lesson_quiz, name="lesson_quiz"),
+    path("<int:course_id>/lesson/<int:lesson_id>/quiz/result/<int:attempt_id>/", views.lesson_quiz_result, name="lesson_quiz_result"),
 
     # ===============================
     # TEACHER PANEL

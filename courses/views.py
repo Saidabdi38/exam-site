@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from collections import OrderedDict
+from django.utils import timezone
 
 from .models import (
     Course, CourseAccess, Lesson, LessonCompletion, LessonQuiz, LessonQuizQuestion,
@@ -474,18 +475,33 @@ def lesson_quiz(request, course_id, lesson_id):
         return redirect("courses:lesson_detail", course_id=course.id, lesson_id=lesson.id)
 
     quiz = lesson.quiz
+
+    # ✅ Only take enabled quiz (optional but recommended)
+    if hasattr(quiz, "enabled") and not quiz.enabled:
+        messages.warning(request, "This quiz is disabled.")
+        return redirect("courses:lesson_detail", course_id=course.id, lesson_id=lesson.id)
+
     questions = list(quiz.questions.prefetch_related("choices"))
 
     if request.method == "POST":
         attempt = LessonQuizAttempt.objects.create(user=request.user, quiz=quiz)
 
         correct = 0
+        max_score = len(questions)
+
         for q in questions:
-            cid = request.POST.get(f"q_{q.id}")
-            if not cid:
+            # STRUCT
+            if hasattr(q, "qtype") and q.qtype == "STRUCT":
+                txt = (request.POST.get(f"q_{q.id}_text") or "").strip()
+                LessonQuizAnswer.objects.create(attempt=attempt, question=q, text_answer=txt)
                 continue
 
-            # ensure selected choice belongs to this question
+            # MCQ / TF
+            cid = request.POST.get(f"q_{q.id}")
+            if not cid:
+                LessonQuizAnswer.objects.create(attempt=attempt, question=q, selected_choice=None)
+                continue
+
             choice = get_object_or_404(LessonQuizChoice, id=cid, question=q)
 
             LessonQuizAnswer.objects.create(
@@ -496,18 +512,25 @@ def lesson_quiz(request, course_id, lesson_id):
                 correct += 1
 
         attempt.score = correct
-        attempt.max_score = len(questions)
-        attempt.passed = correct >= (len(questions) * quiz.pass_percent / 100)
+        attempt.max_score = max_score
+        attempt.passed = correct >= (max_score * quiz.pass_percent / 100)
+        attempt.submitted_at = timezone.now()
         attempt.save()
 
-        return redirect("courses:course_dashboard", course_id=course.id)
+        # ✅ go to result page
+        return redirect(
+            "courses:lesson_quiz_result",
+            course_id=course.id,
+            lesson_id=lesson.id,
+            attempt_id=attempt.id,
+        )
 
     return render(
         request,
         "courses/lesson_quiz.html",
         {"course": course, "lesson": lesson, "questions": questions},
     )
-
+    
 @staff_member_required
 def lesson_quiz_create(request, course_id, lesson_id):
 
@@ -620,6 +643,59 @@ def quiz_question_add(request, course_id, lesson_id):
     return render(request,"courses/question_form.html",{
         "course":course,
         "lesson":lesson
+    })
+
+@login_required
+def lesson_quiz_result(request, course_id, lesson_id, attempt_id):
+    course = get_object_or_404(Course, id=course_id)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
+
+    # attempt must belong to this user (students) OR staff can view
+    attempt = get_object_or_404(
+        LessonQuizAttempt,
+        id=attempt_id,
+        quiz__lesson=lesson,
+    )
+
+    if not request.user.is_staff and attempt.user != request.user:
+        messages.error(request, "You are not allowed to view this result.")
+        return redirect("courses:course_dashboard", course_id=course.id)
+
+    quiz = attempt.quiz
+
+    # pull answers + question + choices
+    answers = (
+        attempt.answers
+        .select_related("question", "selected_choice")
+        .prefetch_related("question__choices")
+        .order_by("question__order", "question_id")
+    )
+
+    # For showing correct choice per question
+    def get_correct_choice(q):
+        return q.choices.filter(is_correct=True).first()
+
+    result_rows = []
+    for a in answers:
+        q = a.question
+        correct_choice = get_correct_choice(q)
+
+        result_rows.append({
+            "question": q,
+            "qtype": getattr(q, "qtype", "MCQ"),
+            "selected": a.selected_choice,
+            "correct_choice": correct_choice,
+            "is_correct": (a.selected_choice_id == (correct_choice.id if correct_choice else None)),
+            "text_answer": getattr(a, "text_answer", ""),
+            "expected_answer": getattr(q, "expected_answer", ""),
+        })
+
+    return render(request, "courses/lesson_quiz_result.html", {
+        "course": course,
+        "lesson": lesson,
+        "quiz": quiz,
+        "attempt": attempt,
+        "rows": result_rows,
     })
     
 # ===============================
