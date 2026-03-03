@@ -2,13 +2,23 @@
 {% block content %}
 
 <div style="max-width:800px;margin:auto;">
-
 <h2>Add Question</h2>
+
+<!-- ✅ SHOW ERRORS (so you know why it didn't save) -->
+{% if form.errors %}
+  <div style="background:#ffecec;border:1px solid #ffb3b3;padding:10px;border-radius:10px;margin:10px 0;">
+    {{ form.errors }}
+  </div>
+{% endif %}
+{% if formset.errors %}
+  <div style="background:#ffecec;border:1px solid #ffb3b3;padding:10px;border-radius:10px;margin:10px 0;">
+    {{ formset.errors }}
+  </div>
+{% endif %}
 
 <form method="post">
 {% csrf_token %}
 
-<!-- QUESTION -->
 <label>Question Text</label>
 {{ form.text }}
 
@@ -18,38 +28,36 @@
 <label>Level</label>
 {{ form.level }}
 
+<!-- ✅ IMPORTANT: ORDER FIELD -->
+<label>Order</label>
+{{ form.order }}
+
 <hr>
 
-<!-- ================= STRUCTURED ================= -->
 <div id="structuredBox" style="display:none">
+  <h4>Structured Answers</h4>
 
-<h4>Structured Answers</h4>
+  <label>Correct Part A</label>
+  {{ form.correct_part_a }}
 
-<label>Correct Part A</label>
-{{ form.correct_part_a }}
+  <label>Correct Part B</label>
+  {{ form.correct_part_b }}
 
-<label>Correct Part B</label>
-{{ form.correct_part_b }}
-
-<label>Correct Part C</label>
-{{ form.correct_part_c }}
-
+  <label>Correct Part C</label>
+  {{ form.correct_part_c }}
 </div>
 
-<!-- ================= MCQ ================= -->
 <div id="choicesBox">
+  <h4>Choices</h4>
 
-<h4>Choices</h4>
+  {{ formset.management_form }}
 
-{{ formset.management_form }}
-
-{% for f in formset %}
-<div style="margin-bottom:10px">
-    {{ f.text }}
-    Correct {{ f.is_correct }}
-</div>
-{% endfor %}
-
+  {% for f in formset %}
+  <div style="margin-bottom:10px">
+      {{ f.text }}
+      Correct {{ f.is_correct }}
+  </div>
+  {% endfor %}
 </div>
 
 <br>
@@ -59,30 +67,23 @@
 </div>
 
 <script>
-
 function toggleBoxes(){
+  const type = document.getElementById("id_qtype").value;
+  const structBox = document.getElementById("structuredBox");
+  const choiceBox = document.getElementById("choicesBox");
 
-    const type = document.getElementById("id_qtype").value;
-
-    const structBox = document.getElementById("structuredBox");
-    const choiceBox = document.getElementById("choicesBox");
-
-    if(type === "STRUCT"){
-        structBox.style.display = "block";
-        choiceBox.style.display = "none";
-    }else{
-        structBox.style.display = "none";
-        choiceBox.style.display = "block";
-    }
+  if(type === "STRUCT"){
+    structBox.style.display = "block";
+    choiceBox.style.display = "none";
+  }else{
+    structBox.style.display = "none";
+    choiceBox.style.display = "block";
+  }
 }
-
 document.addEventListener("DOMContentLoaded", function(){
-    toggleBoxes();
-    document
-        .getElementById("id_qtype")
-        .addEventListener("change", toggleBoxes);
+  toggleBoxes();
+  document.getElementById("id_qtype").addEventListener("change", toggleBoxes);
 });
-
 </script>
 
 {% endblock %}

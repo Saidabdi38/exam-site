@@ -16,18 +16,38 @@
 <strong>{{ q.order }}. {{ q.text }}</strong>
 ({{ q.get_qtype_display }})
 
-<ul>
-{% for c in q.choices.all %}
-<li>
-{{ c.text }}
-{% if c.is_correct %} ✅{% endif %}
-</li>
-{% endfor %}
-</ul>
+{% if q.qtype == "STRUCT" %}
+
+    <div style="margin-top:8px; padding:10px; border:1px solid #ddd; border-radius:10px;">
+        <strong>Expected Answer:</strong>
+        <div style="white-space: pre-line; margin-top:5px;">
+            {{ q.expected_answer }}
+        </div>
+
+        {% if q.marking_guide %}
+        <hr>
+        <strong>Marking Guide:</strong>
+        <div style="white-space: pre-line;">
+            {{ q.marking_guide }}
+        </div>
+        {% endif %}
+    </div>
+
+{% else %}
+
+    <ul>
+    {% for c in q.choices.all %}
+        <li>
+            {{ c.text }}
+            {% if c.is_correct %} ✅{% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+
+{% endif %}
 
 </div>
 {% empty %}
 <p>No questions yet.</p>
 {% endfor %}
-
 {% endblock %}

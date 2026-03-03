@@ -588,6 +588,7 @@ def quiz_manage(request, course_id, lesson_id):
     )
 
 @staff_member_required
+@transaction.atomic
 def quiz_question_add(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
@@ -597,45 +598,45 @@ def quiz_question_add(request, course_id, lesson_id):
         return redirect("courses:lesson_quiz_create", course_id=course.id, lesson_id=lesson.id)
 
     quiz = lesson.quiz
-
     mode = "Add"
 
     if request.method == "POST":
         form = LessonQuizQuestionForm(request.POST)
-        question = None
 
-        # We must create question first, then bind formset to it
+        # ✅ IMPORTANT: formset must exist even if form invalid (template expects it)
+        formset = ChoiceFormSet(request.POST)
+
         if form.is_valid():
-
             question = form.save(commit=False)
             question.quiz = quiz
 
-            if question.qtype == "STRUCT":
+            # ✅ auto order if missing/blank/0
+            if not question.order:
+                question.order = quiz.questions.count() + 1
 
-                a = form.cleaned_data.get("correct_part_a","")
-                b = form.cleaned_data.get("correct_part_b","")
-                c = form.cleaned_data.get("correct_part_c","")
+            # ✅ STRUCT: build expected_answer from parts if you are using those fields in the form
+            if question.qtype == LessonQuizQuestion.TYPE_STRUCT:
+                a = form.cleaned_data.get("correct_part_a", "")
+                b = form.cleaned_data.get("correct_part_b", "")
+                c = form.cleaned_data.get("correct_part_c", "")
+                question.expected_answer = f"A) {a}\nB) {b}\nC) {c}"
 
-                question.expected_answer = f"""
-                A) {a}
-                B) {b}
-                C) {c}
-                """
-                question.save()
-                
-            # If STRUCT: no choices needed
+            # ✅ SAVE QUESTION FOR ALL TYPES
+            question.save()
+
+            # ✅ STRUCT: no choices needed
             if question.qtype == LessonQuizQuestion.TYPE_STRUCT:
                 messages.success(request, "Structured question added.")
                 return redirect("courses:quiz_manage", course_id=course.id, lesson_id=lesson.id)
 
-            # MCQ/TF: save choices via formset
+            # ✅ MCQ/TF: bind formset to SAVED question
             formset = ChoiceFormSet(request.POST, instance=question)
+
             if formset.is_valid():
                 formset.save()
 
-                # For TF, enforce exactly True/False if you want:
+                # ✅ Optional TF normalization
                 if question.qtype == LessonQuizQuestion.TYPE_TF:
-                    # optional strict TF normalization (recommended)
                     LessonQuizChoice.objects.filter(question=question).delete()
                     correct = request.POST.get("tf_correct", "true")
                     LessonQuizChoice.objects.create(question=question, text="True",  is_correct=(correct == "true"))
@@ -644,33 +645,26 @@ def quiz_question_add(request, course_id, lesson_id):
                 messages.success(request, "Question added.")
                 return redirect("courses:quiz_manage", course_id=course.id, lesson_id=lesson.id)
 
-            # If formset invalid, show errors and keep question (or delete it)
+            # if choices invalid, delete question to avoid orphan
             question.delete()
+            messages.error(request, "Choices are not valid. Please fix them.")
+
         else:
-            formset = ChoiceFormSet(request.POST)
+            messages.error(request, "Form is not valid. Please check errors below.")
 
         return render(request, "courses/question_form.html", {
-            "course": course,
-            "lesson": lesson,
-            "quiz": quiz,
-            "mode": mode,
-            "form": form,
-            "formset": formset,
+            "course": course, "lesson": lesson, "quiz": quiz,
+            "mode": mode, "form": form, "formset": formset
         })
 
     # GET
-    form = LessonQuizQuestionForm()
+    form = LessonQuizQuestionForm(initial={"order": quiz.questions.count() + 1})
     formset = ChoiceFormSet()
-
     return render(request, "courses/question_form.html", {
-        "course": course,
-        "lesson": lesson,
-        "quiz": quiz,
-        "mode": mode,
-        "form": form,
-        "formset": formset,
+        "course": course, "lesson": lesson, "quiz": quiz,
+        "mode": mode, "form": form, "formset": formset
     })
-
+    
 @login_required
 def lesson_quiz_result(request, course_id, lesson_id, attempt_id):
     course = get_object_or_404(Course, id=course_id)
