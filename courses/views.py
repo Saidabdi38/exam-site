@@ -477,36 +477,61 @@ def lesson_quiz(request, course_id, lesson_id):
 
     quiz = lesson.quiz
 
-    # ✅ Only take enabled quiz (optional but recommended)
+    # ✅ Only take enabled quiz
     if hasattr(quiz, "enabled") and not quiz.enabled:
         messages.warning(request, "This quiz is disabled.")
         return redirect("courses:lesson_detail", course_id=course.id, lesson_id=lesson.id)
 
-    questions = list(quiz.questions.prefetch_related("choices"))
+    # ✅ keep order
+    questions = list(quiz.questions.prefetch_related("choices").order_by("order", "id"))
 
     if request.method == "POST":
         attempt = LessonQuizAttempt.objects.create(user=request.user, quiz=quiz)
 
         correct = 0
-        max_score = len(questions)
+
+        # ✅ Only auto-grade MCQ/TF (STRUCT is manual later)
+        auto_questions = [q for q in questions if getattr(q, "qtype", "") != "STRUCT"]
+        max_score = len(auto_questions)
 
         for q in questions:
-            # STRUCT
-            if hasattr(q, "qtype") and q.qtype == "STRUCT":
-                txt = (request.POST.get(f"q_{q.id}_text") or "").strip()
-                LessonQuizAnswer.objects.create(attempt=attempt, question=q, text_answer=txt)
+
+            # =========================
+            # ✅ STRUCT: save 3 parts
+            # =========================
+            if getattr(q, "qtype", "") == "STRUCT":
+                a = (request.POST.get(f"q_{q.id}_a") or "").strip()
+                b = (request.POST.get(f"q_{q.id}_b") or "").strip()
+                c = (request.POST.get(f"q_{q.id}_c") or "").strip()
+
+                combined = f"A) {a}\nB) {b}\nC) {c}"
+
+                LessonQuizAnswer.objects.create(
+                    attempt=attempt,
+                    question=q,
+                    text_answer=combined,
+                )
                 continue
 
-            # MCQ / TF
+            # =========================
+            # ✅ MCQ / TF
+            # =========================
             cid = request.POST.get(f"q_{q.id}")
+
             if not cid:
-                LessonQuizAnswer.objects.create(attempt=attempt, question=q, selected_choice=None)
+                LessonQuizAnswer.objects.create(
+                    attempt=attempt,
+                    question=q,
+                    selected_choice=None
+                )
                 continue
 
             choice = get_object_or_404(LessonQuizChoice, id=cid, question=q)
 
             LessonQuizAnswer.objects.create(
-                attempt=attempt, question=q, selected_choice=choice
+                attempt=attempt,
+                question=q,
+                selected_choice=choice
             )
 
             if choice.is_correct:
@@ -514,11 +539,16 @@ def lesson_quiz(request, course_id, lesson_id):
 
         attempt.score = correct
         attempt.max_score = max_score
-        attempt.passed = correct >= (max_score * quiz.pass_percent / 100)
+
+        # ✅ avoid division by zero if quiz has only STRUCT questions
+        if max_score == 0:
+            attempt.passed = True
+        else:
+            attempt.passed = correct >= (max_score * quiz.pass_percent / 100)
+
         attempt.submitted_at = timezone.now()
         attempt.save()
 
-        # ✅ go to result page
         return redirect(
             "courses:lesson_quiz_result",
             course_id=course.id,
@@ -531,7 +561,7 @@ def lesson_quiz(request, course_id, lesson_id):
         "courses/lesson_quiz.html",
         {"course": course, "lesson": lesson, "questions": questions},
     )
-    
+        
 @staff_member_required
 def lesson_quiz_create(request, course_id, lesson_id):
 

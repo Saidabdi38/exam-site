@@ -9,19 +9,48 @@
     {% csrf_token %}
 
     {% for q in questions %}
-  <p><strong>{{ forloop.counter }}. ({{ q.get_qtype_display }}) ({{ q.get_level_display }}) {{ q.text }}</strong></p>
+      <p>
+        <strong>
+          {{ forloop.counter }}.
+          ({{ q.get_qtype_display }})
+          ({{ q.get_level_display }})
+          {{ q.text }}
+        </strong>
+      </p>
 
-    {% if q.qtype == "STRUCT" %}
-      <textarea name="q_{{ q.id }}_text" rows="4" style="width:100%;"></textarea>
+      {% if q.qtype == "STRUCT" %}
+        <div style="margin:10px 0;">
 
-    {% else %}
-      {% for c in q.choices.all %}
-        <label style="display:block;">
-          <input type="radio" name="q_{{ q.id }}" value="{{ c.id }}"> {{ c.text }}
-        </label>
-      {% endfor %}
-    {% endif %}
+          <label><b>Part A</b></label>
+          <input type="text"
+                 name="q_{{ q.id }}_a"
+                 class="form-control"
+                 placeholder="Part A">
+
+          <label style="margin-top:10px;"><b>Part B</b></label>
+          <input type="text"
+                 name="q_{{ q.id }}_b"
+                 class="form-control"
+                 placeholder="Part B">
+
+          <label style="margin-top:10px;"><b>Part C</b></label>
+          <input type="text"
+                 name="q_{{ q.id }}_c"
+                 class="form-control"
+                 placeholder="Part C">
+
+        </div>
+      {% else %}
+        {% for c in q.choices.all %}
+          <label style="display:block;">
+            <input type="radio" name="q_{{ q.id }}" value="{{ c.id }}"> {{ c.text }}
+          </label>
+        {% endfor %}
+      {% endif %}
+
+      <hr>
     {% endfor %}
+
     <button class="btn btn-primary">
       Submit Quiz
     </button>
