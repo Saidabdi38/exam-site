@@ -464,7 +464,7 @@ def lesson_detail(request, course_id, lesson_id):
     raw = (lesson.content or "").strip()
 
     # Split by numbered headings at the start of a line: "1. ", "2. ", "10. "
-    parts = re.split(r'(?m)(?=^\s*\d+\.\s+)', raw)
+    parts = re.split(r'(?m)(?=^\s*\d+(?:\.\d+)*\s+)', raw)
     parts = [p.strip() for p in parts if p.strip()]
 
     # if nothing matched, keep whole content as one page
