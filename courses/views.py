@@ -9,6 +9,8 @@ from django.contrib.auth import get_user_model
 from collections import OrderedDict
 from django.utils import timezone
 from .forms import LessonQuizQuestionForm, ChoiceFormSet
+from django.core.paginator import Paginator
+from django.utils.safestring import mark_safe
 import re
 
 from .models import (
@@ -450,6 +452,7 @@ def lesson_detail(request, course_id, lesson_id):
         messages.error(request, "This lesson is not available yet.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
+    # ✅ POST: mark completed / go quiz
     if request.method == "POST":
         LessonCompletion.objects.get_or_create(user=request.user, lesson=lesson)
         if hasattr(lesson, "quiz") and lesson.quiz:
@@ -457,8 +460,37 @@ def lesson_detail(request, course_id, lesson_id):
         messages.success(request, "Lesson completed")
         return redirect("courses:course_dashboard", course_id=course.id)
 
-    return render(request, "courses/lesson_detail.html", {"course": course, "lesson": lesson})
+    # ✅ PAGINATION (split lesson.content into pages)
+    raw = (lesson.content or "").strip()
 
+    # Split by blank lines (paragraphs). You can change this rule if you want.
+    parts = [p.strip() for p in re.split(r"\n\s*\n", raw) if p.strip()]
+
+    # If content is short, still keep at least 1 page
+    if not parts:
+        parts = [""]
+
+    # Combine paragraphs into "page chunks" (example: 6 paragraphs per page)
+    per_page_paragraphs = 6
+    pages = [
+        "\n\n".join(parts[i:i + per_page_paragraphs])
+        for i in range(0, len(parts), per_page_paragraphs)
+    ]
+
+    paginator = Paginator(pages, 1)  # 1 chunk per page
+    page_number = request.GET.get("page") or 1
+    page_obj = paginator.get_page(page_number)
+
+    # put the current page text into a variable for template
+    page_text = page_obj.object_list[0] if page_obj.object_list else ""
+
+    return render(request, "courses/lesson_detail.html", {
+        "course": course,
+        "lesson": lesson,
+        "page_obj": page_obj,
+        "page_text": page_text,
+    })
+    
 @login_required
 @transaction.atomic
 def lesson_quiz(request, course_id, lesson_id):

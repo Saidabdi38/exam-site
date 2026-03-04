@@ -50,6 +50,18 @@ class CourseAccess(models.Model):
     class Meta:
         unique_together = ("course", "user")
 
+class LessonSection(models.Model):
+    lesson = models.ForeignKey("Lesson", on_delete=models.CASCADE, related_name="sections")
+    title = models.CharField(max_length=200, blank=True, default="")
+    content = models.TextField()
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order", "id"]
+
+    def _str_(self):
+        return f"{self.lesson.title} - {self.order}"
+
 class Lesson(models.Model):
     course = models.ForeignKey(
         "Course",
