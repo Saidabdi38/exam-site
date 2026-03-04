@@ -1,24 +1,45 @@
-{% for sec in page_obj.object_list %}
-  {% if sec.title %}<h3>{{ sec.title }}</h3>{% endif %}
-  <div class="lesson-content">
-    {{ sec.content|linebreaks }}
-  </div>
-{% endfor %}
+{% extends "base.html" %}
+{% block content %}
 
-<div style="display:flex; gap:10px; justify-content:space-between; margin-top:15px;">
-  {% if page_obj.has_previous %}
-    <a class="btn btn-secondary" href="?page={{ page_obj.previous_page_number }}">⬅ Prev</a>
-  {% else %}
-    <span></span>
-  {% endif %}
+<h2>{{ lesson.title }}</h2>
 
-  <div style="align-self:center;">
-    Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+<div class="lesson-body" style="max-width:900px;margin:auto;padding:15px;">
+
+  <!-- Lesson Text -->
+  <div class="lesson-content" style="line-height:1.7;font-size:16px;">
+    {{ page_text|linebreaks }}
   </div>
 
-  {% if page_obj.has_next %}
-    <a class="btn btn-secondary" href="?page={{ page_obj.next_page_number }}">Next ➡</a>
-  {% else %}
-    <span></span>
-  {% endif %}
+  <!-- Pagination -->
+  <div style="display:flex; gap:10px; justify-content:space-between; margin-top:20px; align-items:center;">
+
+    {% if page_obj.has_previous %}
+      <a class="btn btn-secondary" href="?page={{ page_obj.previous_page_number }}">
+        ⬅ Prev
+      </a>
+    {% else %}
+      <span></span>
+    {% endif %}
+
+    <div>
+      Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+    </div>
+
+    {% if page_obj.has_next %}
+      <a class="btn btn-secondary" href="?page={{ page_obj.next_page_number }}">
+        Next ➡
+      </a>
+    {% else %}
+      <span></span>
+    {% endif %}
+
+  </div>
+
 </div>
+
+<form method="post" style="margin-top:20px;">
+  {% csrf_token %}
+  <button class="btn btn-primary">✅ Mark Lesson Completed</button>
+</form>
+
+{% endblock %}

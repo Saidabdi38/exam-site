@@ -447,12 +447,12 @@ def lesson_detail(request, course_id, lesson_id):
 
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course, is_published=True)
 
-    # ✅ lesson-level gate (content lock)
+    # lesson-level gate (content lock)
     if not request.user.is_staff and not lesson.allow_students_view:
         messages.error(request, "This lesson is not available yet.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
-    # ✅ POST: mark completed / go quiz
+    # POST: mark completed / go quiz
     if request.method == "POST":
         LessonCompletion.objects.get_or_create(user=request.user, lesson=lesson)
         if hasattr(lesson, "quiz") and lesson.quiz:
@@ -460,28 +460,23 @@ def lesson_detail(request, course_id, lesson_id):
         messages.success(request, "Lesson completed")
         return redirect("courses:course_dashboard", course_id=course.id)
 
-    # ✅ PAGINATION (split lesson.content into pages)
+    # ✅ PAGINATION (split lesson.content into pages by numbered headings)
     raw = (lesson.content or "").strip()
 
-    # Split by blank lines (paragraphs). You can change this rule if you want.
-    parts = [p.strip() for p in re.split(r"\n\s*\n", raw) if p.strip()]
+    # Split by numbered headings at the start of a line: "1. ", "2. ", "10. "
+    parts = re.split(r'(?m)(?=^\s*\d+\.\s+)', raw)
+    parts = [p.strip() for p in parts if p.strip()]
 
-    # If content is short, still keep at least 1 page
+    # if nothing matched, keep whole content as one page
     if not parts:
-        parts = [""]
+        parts = [raw]
 
-    # Combine paragraphs into "page chunks" (example: 6 paragraphs per page)
-    per_page_paragraphs = 6
-    pages = [
-        "\n\n".join(parts[i:i + per_page_paragraphs])
-        for i in range(0, len(parts), per_page_paragraphs)
-    ]
-
-    paginator = Paginator(pages, 1)  # 1 chunk per page
+    # ✅ 1 section per page
+    paginator = Paginator(parts, 1)
     page_number = request.GET.get("page") or 1
     page_obj = paginator.get_page(page_number)
 
-    # put the current page text into a variable for template
+    # ✅ show current page text
     page_text = page_obj.object_list[0] if page_obj.object_list else ""
 
     return render(request, "courses/lesson_detail.html", {
