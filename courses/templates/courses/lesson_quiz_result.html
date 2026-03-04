@@ -34,18 +34,33 @@
       </p>
 
       {% if r.qtype == "STRUCT" %}
+
         <p style="margin:0;"><strong>Your answer:</strong></p>
-        <div style="white-space:pre-wrap;background:#f9fafb;padding:10px;border-radius:8px;">
-          {{ r.text_answer|default:"(No answer)" }}
+        <div style="background:#f9fafb;padding:10px;border-radius:8px;">
+          <div>
+            A) {{ r.student_parts.A|default:"(blank)" }}
+            {% if r.a_ok %} ✅{% else %} ❌{% endif %}
+          </div>
+          <div>
+            B) {{ r.student_parts.B|default:"(blank)" }}
+            {% if r.b_ok %} ✅{% else %} ❌{% endif %}
+          </div>
+          <div>
+            C) {{ r.student_parts.C|default:"(blank)" }}
+            {% if r.c_ok %} ✅{% else %} ❌{% endif %}
+          </div>
         </div>
 
-        {# Optional: show expected answer #}
-        {% if r.expected_answer %}
-          <p style="margin:10px 0 0;"><strong>Expected:</strong></p>
-          <div style="white-space:pre-wrap;background:#f3f4f6;padding:10px;border-radius:8px;">
-            {{ r.expected_answer }}
-          </div>
-        {% endif %}
+        <p style="margin:10px 0 0;"><strong>Expected:</strong></p>
+        <div style="background:#f3f4f6;padding:10px;border-radius:8px;">
+          <div>A) {{ r.expected_parts.A|default:"(not set)" }}</div>
+          <div>B) {{ r.expected_parts.B|default:"(not set)" }}</div>
+          <div>C) {{ r.expected_parts.C|default:"(not set)" }}</div>
+        </div>
+
+        <p style="margin:8px 0 0;">
+          {% if r.is_correct %}✅ Fully Correct{% else %}❌ Not Fully Correct{% endif %}
+        </p>
 
       {% else %}
         <p style="margin:0;">

@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from collections import OrderedDict
 from django.utils import timezone
 from .forms import LessonQuizQuestionForm, ChoiceFormSet
+import re
 
 from .models import (
     Course, CourseAccess, Lesson, LessonCompletion, LessonQuiz, LessonQuizQuestion,
@@ -694,13 +695,37 @@ def quiz_question_add(request, course_id, lesson_id):
         "course": course, "lesson": lesson, "quiz": quiz,
         "mode": mode, "form": form, "formset": formset
     })
-    
+
+def _parse_struct_parts(txt: str):
+    """
+    Convert text like:
+      A) Rent
+      B) Cash
+      C) 400
+    into:
+      {'A': 'Rent', 'B': 'Cash', 'C': '400'}
+    Works also with A: / A- etc.
+    """
+    txt = (txt or "").strip()
+    parts = {"A": "", "B": "", "C": ""}
+
+    for key in ["A", "B", "C"]:
+        m = re.search(rf"{key}\s*[\)\:\-]\s*(.*)", txt, flags=re.IGNORECASE)
+        if m:
+            parts[key] = (m.group(1) or "").strip()
+
+    return parts
+
+
+def _norm(s: str) -> str:
+    return (s or "").strip().lower()
+
+
 @login_required
 def lesson_quiz_result(request, course_id, lesson_id, attempt_id):
     course = get_object_or_404(Course, id=course_id)
     lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
 
-    # attempt must belong to this user (students) OR staff can view
     attempt = get_object_or_404(
         LessonQuizAttempt,
         id=attempt_id,
@@ -713,7 +738,6 @@ def lesson_quiz_result(request, course_id, lesson_id, attempt_id):
 
     quiz = attempt.quiz
 
-    # pull answers + question + choices
     answers = (
         attempt.answers
         .select_related("question", "selected_choice")
@@ -721,13 +745,42 @@ def lesson_quiz_result(request, course_id, lesson_id, attempt_id):
         .order_by("question__order", "question_id")
     )
 
-    # For showing correct choice per question
     def get_correct_choice(q):
         return q.choices.filter(is_correct=True).first()
 
     result_rows = []
     for a in answers:
         q = a.question
+
+        # ✅ STRUCT: compare A/B/C
+        if getattr(q, "qtype", "") == "STRUCT":
+            student_parts = _parse_struct_parts(getattr(a, "text_answer", ""))
+            expected_parts = _parse_struct_parts(getattr(q, "expected_answer", ""))
+
+            a_ok = _norm(student_parts["A"]) == _norm(expected_parts["A"])
+            b_ok = _norm(student_parts["B"]) == _norm(expected_parts["B"])
+            c_ok = _norm(student_parts["C"]) == _norm(expected_parts["C"])
+
+            result_rows.append({
+                "question": q,
+                "qtype": "STRUCT",
+
+                "student_parts": student_parts,
+                "expected_parts": expected_parts,
+
+                "a_ok": a_ok,
+                "b_ok": b_ok,
+                "c_ok": c_ok,
+
+                "is_correct": (a_ok and b_ok and c_ok),
+
+                # keep original text too (optional)
+                "text_answer": getattr(a, "text_answer", ""),
+                "expected_answer": getattr(q, "expected_answer", ""),
+            })
+            continue
+
+        # ✅ MCQ/TF
         correct_choice = get_correct_choice(q)
 
         result_rows.append({
@@ -735,9 +788,9 @@ def lesson_quiz_result(request, course_id, lesson_id, attempt_id):
             "qtype": getattr(q, "qtype", "MCQ"),
             "selected": a.selected_choice,
             "correct_choice": correct_choice,
-            "is_correct": (a.selected_choice_id == (correct_choice.id if correct_choice else None)),
-            "text_answer": getattr(a, "text_answer", ""),
-            "expected_answer": getattr(q, "expected_answer", ""),
+            "is_correct": (
+                a.selected_choice_id == (correct_choice.id if correct_choice else None)
+            ),
         })
 
     return render(request, "courses/lesson_quiz_result.html", {
@@ -747,7 +800,7 @@ def lesson_quiz_result(request, course_id, lesson_id, attempt_id):
         "attempt": attempt,
         "rows": result_rows,
     })
-    
+
 # ===============================
 # TEACHER COURSE MANAGEMENT
 # ===============================
