@@ -40,6 +40,8 @@ INSTALLED_APPS = [
 
     "exams.apps.ExamsConfig",
     "courses.apps.CoursesConfig",
+    "ckeditor",
+    "ckeditor_uploader",
 ]
 
 MIDDLEWARE = [
@@ -141,8 +143,25 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # If you serve uploaded media later:
-# MEDIA_URL = "/media/"
-# MEDIA_ROOT = BASE_DIR / "media"
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_CONFIGS = {
+    "default": {
+        "toolbar": [
+            ["Styles", "Format"],
+            ["Bold", "Italic", "Underline", "Strike"],
+            ["NumberedList", "BulletedList"],
+            ["Link", "Unlink"],
+            ["Image", "Table"],
+            ["Undo", "Redo"],
+            ["Source"],
+        ],
+        "extraPlugins": ",".join([
+            "uploadimage",
+        ]),
+    }
+}
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

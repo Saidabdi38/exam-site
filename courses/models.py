@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from ckeditor_uploader.fields import RichTextUploadingField
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -78,7 +79,7 @@ class Lesson(models.Model):
     )
 
     title = models.CharField(max_length=200)
-    content = models.TextField(blank=True)
+    content = RichTextUploadingField(blank=True)
     order = models.PositiveIntegerField(default=1)
 
     is_published = models.BooleanField(default=True)

@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>{{ lesson.title }}</h2>
+<div style="max-width:900px;margin:auto;padding:15px;">
 
-<div class="lesson-body" style="max-width:900px;margin:auto;padding:15px;">
+  <!-- Lesson Title -->
+  <h2 style="margin-bottom:20px;">{{ lesson.title }}</h2>
 
-  <!-- Lesson Text -->
-  <div class="lesson-content" style="line-height:1.7;font-size:16px;">
-    {{ page_text|linebreaks }}
+  <!-- Lesson Content -->
+  <div class="lesson-content" style="line-height:1.8;font-size:16px;">
+    {{ page_text|safe }}
   </div>
 
   <!-- Pagination -->
-  <div style="display:flex; gap:10px; justify-content:space-between; margin-top:20px; align-items:center;">
+  <div style="display:flex; gap:10px; justify-content:space-between; margin-top:25px; align-items:center;">
 
     {% if page_obj.has_previous %}
       <a class="btn btn-secondary" href="?page={{ page_obj.previous_page_number }}">
@@ -21,7 +22,7 @@
       <span></span>
     {% endif %}
 
-    <div>
+    <div style="font-weight:500;">
       Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
     </div>
 
@@ -35,11 +36,14 @@
 
   </div>
 
-</div>
+  <!-- Complete Lesson -->
+  <form method="post" style="margin-top:30px;">
+    {% csrf_token %}
+    <button class="btn btn-primary">
+      ✅ Mark Lesson Completed
+    </button>
+  </form>
 
-<form method="post" style="margin-top:20px;">
-  {% csrf_token %}
-  <button class="btn btn-primary">✅ Mark Lesson Completed</button>
-</form>
+</div>
 
 {% endblock %}

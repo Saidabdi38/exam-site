@@ -18,6 +18,7 @@ from .models import (
     LessonQuizAttempt, LessonQuizAnswer, LessonQuizChoice, Chapter
 )
 
+from .forms import LessonForm
 from exams.models import Subject
 from .utils import course_progress, get_next_lesson
 
@@ -330,32 +331,26 @@ def lesson_create(request, course_id):
         messages.error(request, "You are not allowed to add lessons.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
-    chapters = course.chapters.all().order_by("order", "id")
-
     if request.method == "POST":
-        title = (request.POST.get("title") or "").strip()
-        content = (request.POST.get("content") or "").strip()
-        chapter_id = request.POST.get("chapter") or None
+        form = LessonForm(request.POST)
 
-        if not title:
-            messages.error(request, "Lesson title is required.")
-            return render(request, "courses/lesson_form.html", {"course": course, "chapters": chapters})
+        if form.is_valid():
+            lesson = form.save(commit=False)
+            lesson.course = course
+            lesson.order = course.lessons.count() + 1
+            lesson.save()
 
-        Lesson.objects.create(
-            course=course,
-            chapter_id=chapter_id,         # ✅ NEW
-            title=title,
-            content=content,
-            order=course.lessons.count() + 1,
-            is_published=True,
-            allow_students_view=True,
-        )
+            messages.success(request, "Lesson added successfully.")
+            return redirect("courses:course_dashboard", course_id=course.id)
 
-        messages.success(request, "Lesson added successfully.")
-        return redirect("courses:course_dashboard", course_id=course.id)
+    else:
+        form = LessonForm()
 
-    return render(request, "courses/lesson_form.html", {"course": course, "chapters": chapters})
-        
+    return render(request, "courses/lesson_form.html", {
+        "course": course,
+        "form": form
+    })
+            
 @staff_member_required
 def lesson_delete(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)

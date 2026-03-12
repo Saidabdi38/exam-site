@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import LessonQuizQuestion, LessonQuizChoice
+from .models import Lesson, LessonQuizQuestion, LessonQuizChoice
 
 
 class LessonQuizQuestionForm(forms.ModelForm):
@@ -101,3 +101,15 @@ ChoiceFormSet = inlineformset_factory(
         ),
     }
 )
+
+class LessonForm(forms.ModelForm):
+
+    class Meta:
+        model = Lesson
+        fields = [
+            "chapter",
+            "title",
+            "content",
+            "is_published",
+            "allow_students_view",
+        ]
