@@ -261,36 +261,34 @@ def course_dashboard(request, course_id):
 def chapter_create(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # Only teachers/admins
     if not request.user.is_staff:
         messages.error(request, "You are not allowed to add chapters.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
     if request.method == "POST":
         title = (request.POST.get("title") or "").strip()
-        order_val = request.POST.get("order") or ""
+        order_val = (request.POST.get("order") or "").strip()
 
         if not title:
             messages.error(request, "Chapter title is required.")
             return render(request, "courses/chapter_form.html", {"course": course})
 
-        order = 1
-        if order_val.strip():
+        if order_val:
             try:
                 order = int(order_val)
             except ValueError:
                 order = 1
         else:
-            # auto next order
             last = course.chapters.order_by("-order", "-id").first()
             order = (last.order + 1) if last else 1
 
-        Chapter.objects.create(course=course, title=title, order=order)
+        course.chapters.create(title=title, order=order)
+
         messages.success(request, "Chapter added successfully.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
     return render(request, "courses/chapter_form.html", {"course": course})
-
+    
 @login_required
 def chapter_edit(request, course_id, chapter_id):
     # staff only
@@ -331,26 +329,37 @@ def lesson_create(request, course_id):
         messages.error(request, "You are not allowed to add lessons.")
         return redirect("courses:course_dashboard", course_id=course.id)
 
+    chapters = Chapter.objects.filter(course=course).order_by("order", "id")
+
     if request.method == "POST":
-        form = LessonForm(request.POST)
+        form = LessonForm(request.POST, request.FILES)
 
         if form.is_valid():
             lesson = form.save(commit=False)
             lesson.course = course
             lesson.order = course.lessons.count() + 1
-            lesson.save()
 
+            chapter_id = request.POST.get("chapter")
+            if chapter_id:
+                lesson.chapter = Chapter.objects.filter(id=chapter_id, course=course).first()
+            else:
+                lesson.chapter = None
+
+            lesson.is_published = "is_published" in request.POST
+            lesson.allow_students_view = "allow_students_view" in request.POST
+
+            lesson.save()
             messages.success(request, "Lesson added successfully.")
             return redirect("courses:course_dashboard", course_id=course.id)
-
     else:
         form = LessonForm()
 
     return render(request, "courses/lesson_form.html", {
         "course": course,
-        "form": form
+        "form": form,
+        "chapters": chapters,
     })
-            
+                        
 @staff_member_required
 def lesson_delete(request, course_id, lesson_id):
     course = get_object_or_404(Course, id=course_id)

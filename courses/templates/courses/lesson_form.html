@@ -9,30 +9,25 @@
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
-    <!-- CHAPTER -->
     <label><strong>Chapter</strong></label>
     <select name="chapter" class="form-control">
       <option value="">-- No Chapter --</option>
       {% for ch in chapters %}
         <option value="{{ ch.id }}">
-          {{ ch.order }}. {{ ch.title }}
+          {{ ch.title }}
         </option>
       {% endfor %}
     </select>
-
     <br>
 
     <!-- TITLE -->
-    <label><strong>Lesson Title</strong></label>
-    <input type="text"
-           name="title"
-           required
-           class="form-control">
+    <label for="{{ form.title.id_for_label }}"><strong>Lesson Title</strong></label>
+    {{ form.title }}
 
     <br>
 
     <!-- CONTENT -->
-    <label><strong>Content</strong></label>
+    <label for="{{ form.content.id_for_label }}"><strong>Content</strong></label>
     <div class="editor-wrap">
       {{ form.media }}
       {{ form.content }}
@@ -42,13 +37,13 @@
 
     <!-- PUBLISH -->
     <label style="display:flex;gap:8px;align-items:center;">
-      <input type="checkbox" name="is_published" checked>
+      {{ form.is_published }}
       Published
     </label>
 
     <!-- STUDENT VISIBILITY -->
     <label style="display:flex;gap:8px;align-items:center;margin-top:6px;">
-      <input type="checkbox" name="allow_students_view" checked>
+      {{ form.allow_students_view }}
       Allow students to view this lesson
     </label>
 
@@ -65,25 +60,32 @@
 </div>
 
 <style>
+/* normal django fields */
+select,
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+/* checkboxes should stay small */
+input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  border: 0;
+}
+
+/* ckeditor full width */
 .editor-wrap {
   width: 100%;
 }
 
-.editor-wrap .django-ckeditor-widget {
-  display: block !important;
-  width: 100% !important;
-}
-
-.editor-wrap .cke {
-  display: block !important;
-  width: 100% !important;
-}
-
-.editor-wrap .cke_chrome {
-  width: 100% !important;
-  box-sizing: border-box;
-}
-
+.editor-wrap .django-ckeditor-widget,
+.editor-wrap .cke,
+.editor-wrap .cke_chrome,
 .editor-wrap .cke_inner,
 .editor-wrap .cke_top,
 .editor-wrap .cke_contents,
@@ -92,13 +94,14 @@
   box-sizing: border-box;
 }
 
-.editor-wrap textarea {
-  width: 100% !important;
-  box-sizing: border-box;
-}
-
 .editor-wrap .cke_contents {
   min-height: 320px;
+}
+
+/* spacing */
+label {
+  display: block;
+  margin-bottom: 6px;
 }
 </style>
 
