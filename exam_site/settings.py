@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
 
     "exams.apps.ExamsConfig",
-    "courses.apps.CoursesConfig",
     "ckeditor",
     "ckeditor_uploader",
 ]

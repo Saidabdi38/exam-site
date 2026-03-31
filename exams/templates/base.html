@@ -33,12 +33,6 @@
          Dashboard
       </a>
 
-      <!-- ✅ COURSES -->
-      <a class="navlink"
-         href="{% url 'courses:course_list' %}">
-         Courses
-      </a>
-
       <!-- ✅ TEACHER AREA -->
       {% if user.is_staff %}
         <a class="navlink"
@@ -60,9 +54,6 @@
     {% else %}
 
       <a class="navlink" href="{% url 'home' %}">Home</a>
-      <a class="navlink" href="{% url 'courses:course_prices' %}">
-        Courses
-      </a>
       <a class="navlink" href="{% url 'exam_prices' %}">
         Assessments
       </a>
@@ -119,7 +110,6 @@
   {% if user.is_authenticated %}
 
     <a href="{% url 'student_dashboard' %}">Dashboard</a>
-    <a href="{% url 'courses:course_list' %}">Courses</a>
 
     {% if user.is_staff %}
       <a href="{% url 'teacher_dashboard' %}">Teacher</a>
@@ -138,7 +128,6 @@
   {% else %}
 
     <a href="{% url 'home' %}">Home</a>
-    <a href="{% url 'courses:course_prices' %}">Courses</a>
     <a href="{% url 'exam_prices' %}">Assessments</a>
     <a href="{% url 'login' %}">Login</a>
     <a class="btn btn-primary"
@@ -184,7 +173,6 @@
     <div>
       <h4>Quick Links</h4>
       <a href="{% url 'home' %}">Home</a>
-      <a href="{% url 'courses:course_list' %}">Courses</a>
       <a href="{% url 'exam_prices' %}">Assessments</a>
     </div>
 
