@@ -5,43 +5,50 @@
 <div class="container">
 
   <h1>📚 Assessment Details</h1>
-  <p>Choose an assessment and start learning.</p>
+  <p>Choose an assessment and begin your evaluation.</p>
 
-  <!-- ===================== EXAMS SECTION ===================== -->
-  <h2>🧪 Exams</h2>
-  <p>Choose an exam and start evaluating your skills.</p>
+  <h2>🧪 Exams by Subject</h2>
+  <p>Choose an exam and evaluate your skills.</p>
 
-  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:20px;">
+  {% for subject in subjects %}
+    {% with exams=subject.exam_set.all %}
+      {% if exams %}
+        <div style="margin-top:30px;">
+          <h3 style="margin-bottom:15px;">{{ subject.name }}</h3>
 
-    {% for exam in exams %}
-      <div class="card">
-        <h3>{{ exam.title }}</h3>
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:20px;">
+            {% for exam in exams %}
+              <div class="card">
+                <h3>{{ exam.title }}</h3>
 
-        <p>{{ exam.description|truncatewords:20 }}</p>
+                <p>{{ exam.description|truncatewords:20 }}</p>
 
-        <h2 style="margin:10px 0; color:var(--primary);">
-          Price: ${{ exam.price }}
-        </h2>
+                <h2 style="margin:10px 0; color:var(--primary);">
+                  Price: ${{ exam.price }}
+                </h2>
 
-        {% if user.is_authenticated %}
-          <a href="{% url 'start_exam' exam.id %}" class="btn btn-primary">
-            Start Exam
-          </a>
-        {% else %}
-          <a href="{% url 'login' %}?next={% url 'start_exam' exam.id %}" class="btn btn-primary">
-            Login
-          </a>
+                {% if user.is_authenticated %}
+                  <a href="{% url 'start_exam' exam.id %}" class="btn btn-primary">
+                    Start Exam
+                  </a>
+                {% else %}
+                  <a href="{% url 'login' %}?next={% url 'start_exam' exam.id %}" class="btn btn-primary">
+                    Login
+                  </a>
 
-          <a href="{% url 'signup' %}?next={% url 'start_exam' exam.id %}" class="btn btn-secondary" style="margin-left:6px;">
-            Sign Up
-          </a>
-        {% endif %}
-      </div>
-    {% empty %}
-      <p>No exams available.</p>
-    {% endfor %}
-
-  </div>
+                  <a href="{% url 'signup' %}?next={% url 'start_exam' exam.id %}" class="btn btn-secondary" style="margin-left:6px;">
+                    Sign Up
+                  </a>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% endwith %}
+  {% empty %}
+    <p>No subjects available.</p>
+  {% endfor %}
 
 </div>
 {% endblock %}

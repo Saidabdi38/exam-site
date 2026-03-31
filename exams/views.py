@@ -8,6 +8,7 @@ from django.http import Http404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from random import sample
+from django.db.models import Prefetch
 from .models import Subject, BankQuestion, AttemptQuestion, Question, Answer, BankChoice, Attempt, Exam, ExamResitPermission
 
 # -----------------------------
@@ -528,14 +529,17 @@ def student_exams(request):
     return render(request, "student/dashboard.html", {"rows": rows, "recent_results": recent_results})
 
 def exam_prices(request):
-
-    # Published Exams
-    exams = Exam.objects.filter(is_published=True)
+    subjects = Subject.objects.prefetch_related(
+        Prefetch(
+            "exam_set",
+            queryset=Exam.objects.filter(is_published=True, subject__isnull=False)
+        )
+    )
 
     return render(
         request,
         "public/exam_prices.html",
         {
-            "exams": exams,
+            "subjects": subjects,
         },
     )
