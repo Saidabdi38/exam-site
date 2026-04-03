@@ -11,7 +11,7 @@
 
 {% for q in questions %}
 <div style="border:1px solid #ddd; padding:10px; margin:10px 0;">
-    <strong>{{ forloop.counter }}.</strong>
+    <strong>{{ forloop.counter0|add:1 }}.</strong>
         (2 pts) - {{ q.text }}
     <br>
     <a href="{% url 'teacher_bank_question_edit' subject.id q.id %}">Edit</a>
