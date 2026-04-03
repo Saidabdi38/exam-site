@@ -125,7 +125,7 @@ class Question(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="questions")
     text = models.TextField()
     qtype = models.CharField(max_length=10, choices=TYPES, default=MCQ)
-    points = models.PositiveIntegerField(default=1)
+    points = models.PositiveIntegerField(default=2)
 
     # ⭐ NEW FIELDS FOR STRUCTURED
     correct_part_a = models.CharField(max_length=150, blank=True, null=True)
