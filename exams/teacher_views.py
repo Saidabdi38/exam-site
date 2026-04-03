@@ -92,7 +92,7 @@ def subject_list(request):
 @teacher_required
 def bank_question_list(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
-    questions = BankQuestion.objects.filter(subject=subject).order_by("-id")
+    questions = BankQuestion.objects.filter(subject=subject).order_by("id")
     return render(request, "teacher/bank_question_list.html", {
         "subject": subject,
         "questions": questions,
