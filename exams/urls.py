@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     # Home & auth flow
     path("", views.home, name="home"),
+    path("about/", views.about, name="about"),
     path("after-login/", views.after_login, name="after_login"),
     path("signup/", views.signup, name="signup"),
 

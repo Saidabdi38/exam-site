@@ -63,6 +63,9 @@ def home(request):
     subjects = Subject.objects.all().order_by("name")
     return render(request, "home.html", {"subjects": subjects})
 
+def about(request):
+    return render(request, "about.html")
+
 
 def exam_list(request):
     exams = Exam.objects.filter(is_published=True).order_by("-created_at")

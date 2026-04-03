@@ -4,80 +4,49 @@
 
 <!-- ================= HERO ================= -->
 <section class="hero">
-  <h1>Skill Assessments for Workplace Competence</h1>
+  <h1>Tijaabinta Kartida Xirfadeed ee Ku Saleysan Shaqo</h1>
 
   <p>
-    Xirfadyaal provides structured assessments for accounting and finance-related roles.
-    Our goal is to measure real workplace skills in a clear,
-    fair, and digital way.
+    Xirfadyaal waxay bixisaa qiimeyn iyo imtixaano habaysan oo loogu talagalay
+    xirfadaha shaqada gaar ahaan dhinacyada xisaabaadka iyo maaliyadda.
+    Ujeedadayadu waa in aan cabbirno xirfadaha dhabta ah si cad,
+    caddaalad ah, oo dijitaal ah.
   </p>
 
-  <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;">
-    {% if user.is_authenticated %}
+  {% if user.is_authenticated %}
+    <div style="margin-top:15px;">
       <a class="btn btn-primary" href="{% url 'student_dashboard' %}">
-        Go to Dashboard
+        Dashboard
       </a>
-    {% else %}
-      <a class="btn btn-primary" href="{% url 'exam_prices' %}">
-        View Assessments
-      </a>
-    {% endif %}
-  </div>
+    </div>
+  {% endif %}
 </section>
 
 <div class="divider"></div>
 
-<!-- ================= VISION ================= -->
+<!-- ================= INTRO ================= -->
 <section class="about">
 
-  <h2>Vision</h2>
+  <h2>Ku Saabsan Xirfadyaal</h2>
   <p>
-    To measure real workplace skills through digital assessments
-    based on professional competence.
+    Xirfadyaal waa madal lagu qiimeeyo xirfadaha shaqsiyaadka iyadoo la adeegsanayo
+    imtixaano dijitaal ah oo habaysan. Waxaan diiradda saarnaa cabbiridda kartida dhabta ah
+    si loo ogaado heerka aqoonta iyo diyaar-garowga shaqo.
   </p>
-
-  <h2>Mission</h2>
-  <p>
-    To provide practical examinations and assessments
-    that verify professional skill levels.
-  </p>
-
-  <h2>Goals</h2>
-  <ul class="feature-list">
-    <li>Provide fair and measurable professional assessments</li>
-    <li>Identify each candidate’s level of workplace readiness</li>
-    <li>Track participant results and performance</li>
-    <li>Deliver a transparent and reliable assessment process</li>
-  </ul>
-
-  <h2>Values</h2>
-  <ul class="feature-list">
-    <li><strong>Integrity</strong> – Fair assessment</li>
-    <li><strong>Quality</strong> – Practical examinations</li>
-    <li><strong>Transparency</strong> – Clear results</li>
-    <li><strong>Reliability</strong> – Trusted assessment process</li>
-    <li><strong>Growth</strong> – Supporting professional development</li>
-  </ul>
 
 </section>
 
 <div class="divider"></div>
 
-<!-- ================= ASSESSMENTS ================= -->
+<!-- ================= SKILLS ================= -->
 <section class="skills">
 
-  <h2>Skill Assessments</h2>
+  <h2>Imtixaanada Kartida</h2>
 
   <p>
-    Take professional examinations to measure
-    your knowledge, skills, and job readiness.
+    Qaado imtixaano xirfadeed si loo cabbiro aqoontaada,
+    kartidaada, iyo heerkaaga shaqo.
   </p>
-
-  <div style="margin-top:15px;">
-    <a class="btn btn-primary" href="{% url 'exam_prices' %}">
-      View Assessments
-    </a>
-  </div>
 
 </section>
 
@@ -86,47 +55,28 @@
 <!-- ================= HOW IT WORKS ================= -->
 <section class="how">
 
-  <h2>How It Works</h2>
+  <h2>Sida Ay U Shaqeyso</h2>
 
   <div class="steps">
 
     <div class="step">
       <div class="step-num">1</div>
-      <h3>Choose an Assessment</h3>
-      <p>Select the professional assessment that matches your target role or level.</p>
+      <h3>Dooro Imtixaan</h3>
+      <p>Dooro imtixaanka kugu habboon xirfadda aad rabto.</p>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
-      <h3>Register</h3>
-      <p>Complete registration to gain access to the assessment.</p>
+      <h3>Isdiiwaangeli</h3>
+      <p>Diiwaangeli si aad u hesho gelitaanka imtixaanka.</p>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
-      <h3>Take the Exam</h3>
-      <p>Complete the assessment to evaluate your professional competence.</p>
+      <h3>Qaado Imtixaanka</h3>
+      <p>Dhamee imtixaanka si loo qiimeeyo kartidaada xirfadeed.</p>
     </div>
 
-  </div>
-
-</section>
-
-<div class="divider"></div>
-
-<!-- ================= CTA ================= -->
-<section class="cta">
-
-  <h2>Start Your Professional Assessment</h2>
-
-  <p>
-    Register → Take Exam → Get Results → Know Your Level.
-  </p>
-
-  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-    <a class="btn btn-secondary" href="{% url 'exam_prices' %}">
-      Take an Exam
-    </a>
   </div>
 
 </section>
