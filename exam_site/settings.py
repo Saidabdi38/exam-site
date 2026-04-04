@@ -13,7 +13,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 # DEBUG = True
 
-# Hosts (comma-separated in env)
+# Hosts (comma-separated in env)g
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
     "xirfadyaal.com,www.xirfadyaal.com,127.0.0.1,localhost"

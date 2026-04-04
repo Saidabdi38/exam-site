@@ -15,6 +15,35 @@
     <strong>{{ forloop.counter0|add:1 }}.</strong>
     (2 pts) - {{ q.text }}
 
+    {% if q.qtype == "MCQ" or q.qtype == "TF" %}
+      <div style="margin-top:10px; padding-left:20px;">
+        <strong>Choices:</strong>
+        <ul style="margin-top:8px;">
+          {% for choice in q.choices.all %}
+            <li>
+              {{ choice.text }}
+              {% if choice.is_correct %}
+                <strong>(Correct)</strong>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li>No choices added yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if q.qtype == "STRUCT" %}
+      <div style="margin-top:10px; padding-left:20px;">
+        <strong>Correct Answers:</strong>
+        <ul style="margin-top:8px;">
+          <li>Part A: {{ q.correct_part_a|default:"-" }}</li>
+          <li>Part B: {{ q.correct_part_b|default:"-" }}</li>
+          <li>Part C: {{ q.correct_part_c|default:"-" }}</li>
+        </ul>
+      </div>
+    {% endif %}
+
     {% if q.qtype == "SEQ" %}
       <div style="margin-top:10px; padding-left:20px;">
         <strong>Sequence Items:</strong>
