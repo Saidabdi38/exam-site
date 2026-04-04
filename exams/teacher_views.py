@@ -1,29 +1,30 @@
-# exams/teacher_views.py (FULL UPDATED: CRUD + attempts + resits)
-
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.forms import ModelForm, inlineformset_factory
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Count, Q
-from django.db import models
 from django import forms
 
-from .models import Subject, BankQuestion, BankChoice, Answer, Attempt, Choice, Exam, ExamResitPermission, Question
+from .models import (
+    Subject,
+    BankQuestion,
+    BankChoice,
+    Answer,
+    Attempt,
+    Choice,
+    Exam,
+    ExamResitPermission,
+    Question,
+    SequencingItem,
+)
 
 # ---------- Permission ----------
 def is_teacher(user):
-    # simplest teacher rule: staff OR superuser
     return user.is_authenticated and (user.is_staff or user.is_superuser)
 
+
 def teacher_required(view_func):
-    """
-    Wrapper that:
-    - requires login
-    - requires teacher test
-    - returns 403 if not allowed
-    """
     @login_required
     def _wrapped(request, *args, **kwargs):
         if not is_teacher(request.user):
@@ -31,6 +32,8 @@ def teacher_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped
 
+
+# ---------- Subject Views ----------
 @login_required
 @user_passes_test(is_teacher)
 def subject_create(request):
@@ -50,6 +53,7 @@ def subject_create(request):
         return redirect("teacher_subject_list")
 
     return render(request, "teacher/subject_create.html")
+
 
 @teacher_required
 def subject_edit(request, subject_id):
@@ -71,6 +75,7 @@ def subject_edit(request, subject_id):
 
     return render(request, "teacher/subject_edit.html", {"subject": subject})
 
+
 @teacher_required
 def subject_delete(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
@@ -83,139 +88,31 @@ def subject_delete(request, subject_id):
         "object": subject,
         "type": "Subject",
     })
-    
+
+
 @teacher_required
 def subject_list(request):
     subjects = Subject.objects.order_by("name")
     return render(request, "teacher/subject_list.html", {"subjects": subjects})
 
-@teacher_required
-def bank_question_list(request, subject_id):
-    subject = get_object_or_404(Subject, id=subject_id)
-    questions = BankQuestion.objects.filter(subject=subject).order_by("id")
-    return render(request, "teacher/bank_question_list.html", {
-        "subject": subject,
-        "questions": questions,
-    })
 
-@teacher_required
-def bank_question_create(request, subject_id):
-    subject = get_object_or_404(Subject, id=subject_id)
-
-    q = BankQuestion(subject=subject)
-    form = BankQuestionForm(request.POST or None, instance=q)
-    formset = BankChoiceFormSet(request.POST or None, instance=q)
-
-    if request.method == "POST" and form.is_valid():
-
-        q = form.save(commit=False)
-        q.subject = subject
-        q.save()
-
-        # ==========================
-        # MCQ / TF (choices needed)
-        # ==========================
-        if q.qtype != "STRUCT":
-
-            if formset.is_valid():
-                formset.instance = q
-                formset.save()
-
-                # keep ONLY one correct choice
-                correct = q.choices.filter(is_correct=True).order_by("-id")
-                if correct.count() > 1:
-                    keep_id = correct.first().id
-                    q.choices.exclude(id=keep_id).update(is_correct=False)
-
-            else:
-                return render(request, "teacher/bank_question_form.html", {
-                    "form": form,
-                    "formset": formset,
-                    "subject": subject,
-                    "mode": "Create",
-                })
-
-        # ==========================
-        # STRUCT (no choices)
-        # ==========================
-        else:
-            q.choices.all().delete()
-
-        return redirect("teacher_bank_question_list", subject_id=subject.id)
-
-    return render(request, "teacher/bank_question_form.html", {
-        "form": form,
-        "formset": formset,
-        "subject": subject,
-        "mode": "Create",
-    })
-    
-@teacher_required
-def bank_question_edit(request, subject_id, pk):
-    subject = get_object_or_404(Subject, id=subject_id)
-    q = get_object_or_404(BankQuestion, id=pk, subject=subject)
-
-    form = BankQuestionForm(request.POST or None, instance=q)
-    formset = BankChoiceFormSet(request.POST or None, instance=q)
-
-    if request.method == "POST" and form.is_valid():
-        q = form.save()
-
-        if q.qtype != BankQuestion.STRUCT:
-            if formset.is_valid():
-                formset.save()
-
-                correct = q.choices.filter(is_correct=True).order_by("-id")
-                if correct.count() > 1:
-                    keep_id = correct.first().id
-                    q.choices.exclude(id=keep_id).update(is_correct=False)
-            else:
-                return render(request, "teacher/bank_question_form.html", {
-                    "form": form,
-                    "formset": formset,
-                    "subject": subject,
-                    "mode": "Edit",
-                })
-        else:
-            # STRUCT → remove choices
-            q.choices.all().delete()
-
-        return redirect("teacher_bank_question_list", subject_id=subject.id)
-
-    return render(request, "teacher/bank_question_form.html", {
-        "form": form,
-        "formset": formset,
-        "subject": subject,
-        "mode": "Edit",
-    })
-
-@teacher_required
-def bank_question_delete(request, subject_id, pk):
-    subject = get_object_or_404(Subject, id=subject_id)
-    q = get_object_or_404(BankQuestion, id=pk, subject=subject)
-
-    if request.method == "POST":
-        q.delete()
-        return redirect("teacher_bank_question_list", subject_id=subject.id)
-
-    return render(request, "teacher/confirm_delete.html", {"object": q})
-
+# ---------- Helpers ----------
 User = get_user_model()
 
 
 def _get_owned_exam_or_404(request, exam_id: int) -> Exam:
-    """Teachers can only manage their own exams (superuser can manage all)."""
     if request.user.is_superuser:
         return get_object_or_404(Exam, id=exam_id)
     return get_object_or_404(Exam, id=exam_id, created_by=request.user)
+
 
 # ---------- Forms ----------
 class ExamForm(ModelForm):
     class Meta:
         model = Exam
         fields = [
-            "title","description","subject","use_question_bank","question_count",
-            "duration_minutes","is_published","price",
+            "title", "description", "subject", "use_question_bank", "question_count",
+            "duration_minutes", "is_published", "price",
         ]
 
     def clean(self):
@@ -224,21 +121,33 @@ class ExamForm(ModelForm):
             raise forms.ValidationError("Please select a subject when using Question Bank.")
         return cleaned
 
+
 class QuestionForm(ModelForm):
     class Meta:
         model = Question
         fields = ["text", "qtype", "points", "correct_part_a", "correct_part_b", "correct_part_c"]
 
-# ---------- Bank Forms ----------
+
 class BankQuestionForm(ModelForm):
     class Meta:
         model = BankQuestion
         fields = ["text", "qtype", "correct_part_a", "correct_part_b", "correct_part_c"]
 
+
+# ---------- Formsets ----------
 BankChoiceFormSet = inlineformset_factory(
     BankQuestion,
     BankChoice,
     fields=("text", "is_correct"),
+    extra=4,
+    can_delete=True,
+)
+
+BankSequencingFormSet = inlineformset_factory(
+    BankQuestion,
+    SequencingItem,
+    fk_name="bank_question",
+    fields=("text", "correct_order"),
     extra=4,
     can_delete=True,
 )
@@ -251,20 +160,173 @@ ChoiceFormSet = inlineformset_factory(
     can_delete=True,
 )
 
+SequencingFormSet = inlineformset_factory(
+    Question,
+    SequencingItem,
+    fk_name="question",
+    fields=("text", "correct_order"),
+    extra=4,
+    can_delete=True,
+)
 
-# ---------- Teacher views ----------
+
+# ---------- Bank Question Views ----------
+@teacher_required
+def bank_question_list(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+    questions = BankQuestion.objects.filter(subject=subject).order_by("id")
+    return render(request, "teacher/bank_question_list.html", {
+        "subject": subject,
+        "questions": questions,
+    })
+
+
+@teacher_required
+def bank_question_create(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    q = BankQuestion(subject=subject)
+    form = BankQuestionForm(request.POST or None, instance=q)
+    formset = BankChoiceFormSet(request.POST or None, instance=q, prefix="choices")
+    seq_formset = BankSequencingFormSet(request.POST or None, instance=q, prefix="seq")
+
+    if request.method == "POST" and form.is_valid():
+        q = form.save(commit=False)
+        q.subject = subject
+        q.save()
+
+        if q.qtype == BankQuestion.STRUCT:
+            q.choices.all().delete()
+            q.sequence_items.all().delete()
+
+        elif q.qtype == BankQuestion.SEQ:
+            q.choices.all().delete()
+
+            if seq_formset.is_valid():
+                seq_formset.instance = q
+                seq_formset.save()
+            else:
+                return render(request, "teacher/bank_question_form.html", {
+                    "form": form,
+                    "formset": formset,
+                    "seq_formset": seq_formset,
+                    "subject": subject,
+                    "mode": "Create",
+                })
+
+        else:
+            q.sequence_items.all().delete()
+
+            if formset.is_valid():
+                formset.instance = q
+                formset.save()
+
+                correct = q.choices.filter(is_correct=True).order_by("-id")
+                if correct.count() > 1:
+                    keep_id = correct.first().id
+                    q.choices.exclude(id=keep_id).update(is_correct=False)
+            else:
+                return render(request, "teacher/bank_question_form.html", {
+                    "form": form,
+                    "formset": formset,
+                    "seq_formset": seq_formset,
+                    "subject": subject,
+                    "mode": "Create",
+                })
+
+        return redirect("teacher_bank_question_list", subject_id=subject.id)
+
+    return render(request, "teacher/bank_question_form.html", {
+        "form": form,
+        "formset": formset,
+        "seq_formset": seq_formset,
+        "subject": subject,
+        "mode": "Create",
+    })
+
+
+@teacher_required
+def bank_question_edit(request, subject_id, pk):
+    subject = get_object_or_404(Subject, id=subject_id)
+    q = get_object_or_404(BankQuestion, id=pk, subject=subject)
+
+    form = BankQuestionForm(request.POST or None, instance=q)
+    formset = BankChoiceFormSet(request.POST or None, instance=q, prefix="choices")
+    seq_formset = BankSequencingFormSet(request.POST or None, instance=q, prefix="seq")
+
+    if request.method == "POST" and form.is_valid():
+        q = form.save()
+
+        if q.qtype == BankQuestion.STRUCT:
+            q.choices.all().delete()
+            q.sequence_items.all().delete()
+
+        elif q.qtype == BankQuestion.SEQ:
+            q.choices.all().delete()
+
+            if seq_formset.is_valid():
+                seq_formset.save()
+            else:
+                return render(request, "teacher/bank_question_form.html", {
+                    "form": form,
+                    "formset": formset,
+                    "seq_formset": seq_formset,
+                    "subject": subject,
+                    "mode": "Edit",
+                })
+
+        else:
+            q.sequence_items.all().delete()
+
+            if formset.is_valid():
+                formset.save()
+
+                correct = q.choices.filter(is_correct=True).order_by("-id")
+                if correct.count() > 1:
+                    keep_id = correct.first().id
+                    q.choices.exclude(id=keep_id).update(is_correct=False)
+            else:
+                return render(request, "teacher/bank_question_form.html", {
+                    "form": form,
+                    "formset": formset,
+                    "seq_formset": seq_formset,
+                    "subject": subject,
+                    "mode": "Edit",
+                })
+
+        return redirect("teacher_bank_question_list", subject_id=subject.id)
+
+    return render(request, "teacher/bank_question_form.html", {
+        "form": form,
+        "formset": formset,
+        "seq_formset": seq_formset,
+        "subject": subject,
+        "mode": "Edit",
+    })
+
+
+@teacher_required
+def bank_question_delete(request, subject_id, pk):
+    subject = get_object_or_404(Subject, id=subject_id)
+    q = get_object_or_404(BankQuestion, id=pk, subject=subject)
+
+    if request.method == "POST":
+        q.delete()
+        return redirect("teacher_bank_question_list", subject_id=subject.id)
+
+    return render(request, "teacher/confirm_delete.html", {"object": q})
+
+
+# ---------- Teacher Dashboard / Exam Views ----------
 @teacher_required
 def teacher_dashboard(request):
-
-    # ✅ Admin sees ALL exams
     if request.user.is_superuser:
         exams = Exam.objects.order_by("-created_at")
-
-    # ✅ Teacher sees ONLY their exams
     else:
         exams = Exam.objects.filter(created_by=request.user).order_by("-created_at")
 
     return render(request, "teacher/dashboard.html", {"exams": exams})
+
 
 @teacher_required
 def exam_create(request):
@@ -272,14 +334,12 @@ def exam_create(request):
 
     if request.method == "POST" and form.is_valid():
         exam = form.save(commit=False)
-
-        # 🔴 THIS LINE IS REQUIRED
         exam.created_by = request.user
-
         exam.save()
         return redirect("teacher_dashboard")
 
     return render(request, "teacher/exam_form.html", {"form": form, "mode": "Create"})
+
 
 @teacher_required
 def exam_edit(request, exam_id: int):
@@ -311,12 +371,18 @@ def exam_detail(request, exam_id: int):
 def question_create(request, exam_id: int):
     exam = _get_owned_exam_or_404(request, exam_id)
     form = QuestionForm(request.POST or None)
+
     if request.method == "POST" and form.is_valid():
         q = form.save(commit=False)
         q.exam = exam
         q.save()
         return redirect("teacher_question_edit", exam_id=exam.id, question_id=q.id)
-    return render(request, "teacher/question_form.html", {"form": form, "exam": exam, "mode": "Create"})
+
+    return render(request, "teacher/question_form.html", {
+        "form": form,
+        "exam": exam,
+        "mode": "Create",
+    })
 
 
 @teacher_required
@@ -325,12 +391,33 @@ def question_edit(request, exam_id: int, question_id: int):
     q = get_object_or_404(Question, id=question_id, exam=exam)
 
     form = QuestionForm(request.POST or None, instance=q)
-    formset = ChoiceFormSet(request.POST or None, instance=q)
+    formset = ChoiceFormSet(request.POST or None, instance=q, prefix="choices")
+    seq_formset = SequencingFormSet(request.POST or None, instance=q, prefix="seq")
 
     if request.method == "POST" and form.is_valid():
         q = form.save()
 
-        if q.qtype != Question.STRUCT:
+        if q.qtype == Question.STRUCT:
+            q.choices.all().delete()
+            q.sequence_items.all().delete()
+
+        elif q.qtype == Question.SEQ:
+            q.choices.all().delete()
+
+            if seq_formset.is_valid():
+                seq_formset.save()
+            else:
+                return render(request, "teacher/question_edit.html", {
+                    "form": form,
+                    "formset": formset,
+                    "seq_formset": seq_formset,
+                    "exam": exam,
+                    "question": q,
+                })
+
+        else:
+            q.sequence_items.all().delete()
+
             if formset.is_valid():
                 formset.save()
 
@@ -342,20 +429,20 @@ def question_edit(request, exam_id: int, question_id: int):
                 return render(request, "teacher/question_edit.html", {
                     "form": form,
                     "formset": formset,
+                    "seq_formset": seq_formset,
                     "exam": exam,
                     "question": q,
                 })
-        else:
-            # STRUCT: remove choices (optional but clean)
-            q.choices.all().delete()
 
         return redirect("teacher_exam_detail", exam_id=exam.id)
 
-    return render(
-        request,
-        "teacher/question_edit.html",
-        {"form": form, "formset": formset, "exam": exam, "question": q},
-    )
+    return render(request, "teacher/question_edit.html", {
+        "form": form,
+        "formset": formset,
+        "seq_formset": seq_formset,
+        "exam": exam,
+        "question": q,
+    })
 
 
 @teacher_required
@@ -368,9 +455,9 @@ def question_delete(request, exam_id: int, question_id: int):
     return render(request, "teacher/confirm_delete.html", {"object": q, "type": "Question"})
 
 
+# ---------- Attempts / Results ----------
 @teacher_required
 def exam_attempts(request, exam_id: int):
-    """List student attempts for an exam (owner-only, superuser can view all)."""
     exam = _get_owned_exam_or_404(request, exam_id)
     attempts = (
         Attempt.objects.filter(exam=exam)
@@ -378,6 +465,7 @@ def exam_attempts(request, exam_id: int):
         .order_by("-submitted_at", "-started_at")
     )
     return render(request, "teacher/attempts_list.html", {"exam": exam, "attempts": attempts})
+
 
 @teacher_required
 def attempt_detail(request, exam_id: int, attempt_id: int):
@@ -398,34 +486,19 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
     rows = []
 
     for a in answers:
-        # -----------------------------
-        # Decide question source
-        # -----------------------------
         if a.bank_question:
             qobj = a.bank_question
             qtext = qobj.text
             qtype = qobj.qtype
-
-            # correct MCQ/TF choice (bank)
             correct_choice = qobj.choices.filter(is_correct=True).first()
-
-            # student's selected choice (bank)
             selected_choice = a.selected_bank_choice
-
         else:
             qobj = a.question
             qtext = qobj.text if qobj else ""
             qtype = qobj.qtype if qobj else None
-
-            # correct MCQ/TF choice (exam)
             correct_choice = qobj.choices.filter(is_correct=True).first() if qobj else None
-
-            # student's selected choice (exam)
             selected_choice = a.selected_choice
 
-        # -----------------------------
-        # Build row output
-        # -----------------------------
         row = {
             "question_text": qtext,
             "qtype": qtype,
@@ -434,26 +507,18 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
             "is_correct": False,
         }
 
-        # -----------------------------
-        # MCQ / TF grading
-        # -----------------------------
         if qtype in ("MCQ", "TF"):
-            row["selected"] = selected_choice  # Choice object (or None)
-            row["correct"] = correct_choice    # Choice object (or None)
+            row["selected"] = selected_choice
+            row["correct"] = correct_choice
 
             if selected_choice and correct_choice and selected_choice.id == correct_choice.id:
                 row["is_correct"] = True
 
-        # -----------------------------
-        # STRUCT grading (Part A/B/C)
-        # -----------------------------
         elif qtype == "STRUCT":
-            # Student answers saved on Answer model
             student_a = (a.structured_part_a or "").strip()
             student_b = (a.structured_part_b or "").strip()
             student_c = (a.structured_part_c or "").strip()
 
-            # Correct answers saved on Question/BankQuestion
             correct_a = (getattr(qobj, "correct_part_a", "") or "").strip()
             correct_b = (getattr(qobj, "correct_part_b", "") or "").strip()
             correct_c = (getattr(qobj, "correct_part_c", "") or "").strip()
@@ -469,14 +534,20 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
                 "part_c": correct_c,
             }
 
-            # TVET-style correctness: all parts must match
             row["is_correct"] = (
                 student_a.lower() == correct_a.lower()
                 and student_b.lower() == correct_b.lower()
                 and student_c.lower() == correct_c.lower()
             )
 
-        # Unknown type safety
+        elif qtype == "SEQ":
+            submitted = a.sequencing_answer or []
+            correct_items = list(qobj.sequence_items.all().order_by("correct_order"))
+
+            row["selected"] = submitted
+            row["correct"] = [item.text for item in correct_items]
+            row["is_correct"] = False
+
         else:
             row["selected"] = selected_choice
             row["correct"] = correct_choice
@@ -489,10 +560,11 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
         "attempt": attempt,
         "rows": rows,
     })
-    
+
+
+# ---------- Resits ----------
 @teacher_required
 def manage_resits(request, exam_id: int):
-    """Page where teachers can give extra attempts (resits) to students."""
     exam = _get_owned_exam_or_404(request, exam_id)
     students = User.objects.order_by("username")
 
@@ -510,10 +582,10 @@ def manage_resits(request, exam_id: int):
 
     return render(request, "teacher/manage_resits.html", {"exam": exam, "rows": rows})
 
+
 @teacher_required
 @transaction.atomic
 def teacher_set_resit(request, exam_id: int, user_id: int):
-    """Set extra attempts for a student (resits)"""
     exam = _get_owned_exam_or_404(request, exam_id)
     student = get_object_or_404(User, id=user_id)
 
@@ -530,6 +602,7 @@ def teacher_set_resit(request, exam_id: int, user_id: int):
 
     return redirect("teacher_manage_resits", exam_id=exam.id)
 
+
 @login_required
 @user_passes_test(is_teacher)
 def teacher_add_attempt(request, exam_id, user_id):
@@ -542,9 +615,10 @@ def teacher_add_attempt(request, exam_id, user_id):
 
     return redirect("teacher_manage_resits", exam_id=exam.id)
 
+
+# ---------- View Permissions ----------
 @teacher_required
 def manage_view_permissions(request, exam_id: int):
-    """Page where teachers can allow students to view exam results."""
     exam = _get_owned_exam_or_404(request, exam_id)
     students = User.objects.order_by("username")
 
@@ -561,10 +635,10 @@ def manage_view_permissions(request, exam_id: int):
 
     return render(request, "teacher/manage_view_permissions.html", {"exam": exam, "rows": rows})
 
+
 @teacher_required
 @transaction.atomic
 def set_view_permission(request, exam_id: int, user_id: int):
-    """Set can_view permission for a student."""
     exam = _get_owned_exam_or_404(request, exam_id)
     student = get_object_or_404(User, id=user_id)
 

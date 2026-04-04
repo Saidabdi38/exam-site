@@ -6,7 +6,7 @@
 <form method="post" id="bankQForm">
   {% csrf_token %}
 
-  <!-- ✅ QUESTION SECTION -->
+  <!-- QUESTION SECTION -->
   <fieldset style="border:1px solid #ddd; padding:12px; border-radius:10px;">
     <legend><strong>Question</strong></legend>
 
@@ -22,7 +22,7 @@
       {% if form.qtype.errors %}<div style="color:red">{{ form.qtype.errors }}</div>{% endif %}
     </div>
 
-    <!-- ✅ STRUCTURED FIELDS -->
+    <!-- STRUCTURED FIELDS -->
     <div id="structuredBox"
          style="display:none; border:1px solid #eee; padding:10px; border-radius:10px; margin-top:12px;">
       <p><strong>Structured Answers</strong></p>
@@ -44,7 +44,7 @@
     </div>
   </fieldset>
 
-  <!-- ✅ CHOICES SECTION -->
+  <!-- CHOICES SECTION -->
   <fieldset id="choicesBox"
             style="border:1px solid #ddd; padding:12px; border-radius:10px; margin-top:14px;">
     <legend><strong>Choices (tick ONE correct)</strong></legend>
@@ -54,6 +54,23 @@
       <div style="border:1px solid #eee; padding:10px; margin:10px 0; border-radius:10px;">
         {{ f.text.label_tag }} {{ f.text }} <br><br>
         {{ f.is_correct }} {{ f.is_correct.label_tag }} <br>
+        {{ f.DELETE }} {{ f.DELETE.label_tag }}
+      </div>
+    {% endfor %}
+  </fieldset>
+
+  <!-- SEQUENCING SECTION -->
+  <fieldset id="sequencingBox"
+            style="display:none; border:1px solid #ddd; padding:12px; border-radius:10px; margin-top:14px;">
+    <legend><strong>Sequencing Items</strong></legend>
+
+    <p>Add the steps in the correct order.</p>
+
+    {{ seq_formset.management_form }}
+    {% for f in seq_formset %}
+      <div style="border:1px solid #eee; padding:10px; margin:10px 0; border-radius:10px;">
+        {{ f.text.label_tag }} {{ f.text }} <br><br>
+        {{ f.correct_order.label_tag }} {{ f.correct_order }} <br>
         {{ f.DELETE }} {{ f.DELETE.label_tag }}
       </div>
     {% endfor %}
@@ -69,7 +86,6 @@
   function setDisabledInside(el, disabled){
     if(!el) return;
     el.querySelectorAll("input, select, textarea, button").forEach(i => {
-      // don't disable the main Save button (it's outside choicesBox anyway)
       i.disabled = disabled;
     });
   }
@@ -80,14 +96,23 @@
 
     const structuredBox = document.getElementById("structuredBox");
     const choicesBox = document.getElementById("choicesBox");
+    const sequencingBox = document.getElementById("sequencingBox");
 
-    const isStruct = (qtypeEl.value === "STRUCT");
+    const isStruct = qtypeEl.value === "STRUCT";
+    const isSeq = qtypeEl.value === "SEQ";
 
     if(structuredBox) structuredBox.style.display = isStruct ? "block" : "none";
-    if(choicesBox) choicesBox.style.display = isStruct ? "none" : "block";
+    if(choicesBox) choicesBox.style.display = (!isStruct && !isSeq) ? "block" : "none";
+    if(sequencingBox) sequencingBox.style.display = isSeq ? "block" : "none";
 
-    // ✅ Prevent accidental choice submission when STRUCT
-    setDisabledInside(choicesBox, isStruct);
+    setDisabledInside(choicesBox, isStruct || isSeq);
+    setDisabledInside(sequencingBox, !isSeq);
+
+    if(structuredBox){
+      structuredBox.querySelectorAll("input, textarea, select").forEach(i => {
+        i.disabled = !isStruct;
+      });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", () => {

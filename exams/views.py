@@ -260,17 +260,15 @@ def take_exam_q(request, attempt_id, qno):
     if not can_view_exam(request.user, exam):
         return redirect("student_dashboard")
 
-    # auto-submit when time finished
     if attempt.submitted_at is None:
         elapsed = (timezone.now() - attempt.started_at).total_seconds()
         if elapsed >= attempt.duration_seconds:
             return redirect("submit_exam", attempt_id=attempt.id)
 
-    # Questions frozen for THIS attempt (ordered)
     aqs = list(
         AttemptQuestion.objects.filter(attempt=attempt)
         .select_related("bank_question")
-        .prefetch_related("bank_question__choices")
+        .prefetch_related("bank_question_choices", "bank_question_sequence_items")
         .order_by("order")
     )
 
@@ -284,25 +282,40 @@ def take_exam_q(request, attempt_id, qno):
     aq = aqs[qno - 1]
     question = aq.bank_question
     choices = list(question.choices.all())
+    sequence_items = list(question.sequence_items.all().order_by("correct_order"))
 
-    # ✅ Answer record for this attempt + this bank question
     ans, _ = Answer.objects.get_or_create(
         attempt=attempt,
         bank_question=question,
-        defaults={"question": None},  # keep old field empty
+        defaults={"question": None},
     )
 
-    # Save answer
     if request.method == "POST" and attempt.submitted_at is None:
-        choice_id = request.POST.get("answer", "").strip()
+        # MCQ / TF
+        if question.qtype in ["MCQ", "TF"]:
+            choice_id = request.POST.get("answer", "").strip()
 
-        if choice_id:
-            ans.selected_bank_choice = BankChoice.objects.filter(
-                id=choice_id,
-                question=question
-            ).first()
-        else:
-            ans.selected_bank_choice = None
+            if choice_id:
+                ans.selected_bank_choice = BankChoice.objects.filter(
+                    id=choice_id,
+                    question=question
+                ).first()
+            else:
+                ans.selected_bank_choice = None
+
+        # STRUCT
+        elif question.qtype == "STRUCT":
+            ans.structured_part_a = request.POST.get("part_a", "").strip()
+            ans.structured_part_b = request.POST.get("part_b", "").strip()
+            ans.structured_part_c = request.POST.get("part_c", "").strip()
+
+        # SEQ
+        elif question.qtype == "SEQ":
+            seq_value = request.POST.get("sequence_answer", "").strip()
+            if seq_value:
+                ans.sequencing_answer = seq_value.split(",")
+            else:
+                ans.sequencing_answer = []
 
         ans.save()
 
@@ -318,15 +331,32 @@ def take_exam_q(request, attempt_id, qno):
 
     time_left = attempt.time_left_seconds()
 
-    # progress bar: which questions answered
-    answered_bq_ids = set(
-        Answer.objects.filter(attempt=attempt, selected_bank_choice__isnull=False)
-        .values_list("bank_question_id", flat=True)
-    )
+    answered_bq_ids = set()
+
+    for a in Answer.objects.filter(attempt=attempt):
+        if a.bank_question_id is None:
+            continue
+
+        is_answered = False
+
+        if a.selected_bank_choice_id:
+            is_answered = True
+        elif a.bank_question and a.bank_question.qtype == "STRUCT":
+            if a.structured_part_a or a.structured_part_b or a.structured_part_c:
+                is_answered = True
+        elif a.bank_question and a.bank_question.qtype == "SEQ":
+            if a.sequencing_answer:
+                is_answered = True
+
+        if is_answered:
+            answered_bq_ids.add(a.bank_question_id)
 
     progress = []
     for i, one_aq in enumerate(aqs, start=1):
-        progress.append({"no": i, "answered": (one_aq.bank_question_id in answered_bq_ids)})
+        progress.append({
+            "no": i,
+            "answered": (one_aq.bank_question_id in answered_bq_ids)
+        })
 
     return render(
         request,
@@ -336,17 +366,18 @@ def take_exam_q(request, attempt_id, qno):
             "exam": exam,
             "question": question,
             "choices": choices,
+            "sequence_items": sequence_items,
             "qno": qno,
             "total": total,
-            # ✅ use selected_bank_choice now
             "selected_choice_id": ans.selected_bank_choice_id,
+            "saved_sequence": ",".join(ans.sequencing_answer or []),
             "has_prev": qno > 1,
             "has_next": qno < total,
             "time_left": time_left,
             "progress": progress,
         },
     )
-
+    
 @login_required
 @transaction.atomic
 def autosave_answer(request, attempt_id, qno):

@@ -10,9 +10,24 @@
 <hr>
 
 {% for q in questions %}
-<div style="border:1px solid #ddd; padding:10px; margin:10px 0;">
+<div style="border:1px solid #ddd; padding:10px; margin:10px 0; border-radius:10px;">
+
     <strong>{{ forloop.counter0|add:1 }}.</strong>
-        (2 pts) - {{ q.text }}
+    (2 pts) - {{ q.text }}
+
+    {% if q.qtype == "SEQ" %}
+      <div style="margin-top:10px; padding-left:20px;">
+        <strong>Sequence Items:</strong>
+        <ol style="margin-top:8px;">
+          {% for item in q.sequence_items.all %}
+            <li>{{ item.text }}</li>
+          {% empty %}
+            <li>No sequence items added yet.</li>
+          {% endfor %}
+        </ol>
+      </div>
+    {% endif %}
+
     <br>
     <a href="{% url 'teacher_bank_question_edit' subject.id q.id %}">Edit</a>
     |

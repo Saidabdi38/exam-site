@@ -42,11 +42,13 @@ class BankQuestion(models.Model):
     MCQ = "MCQ"
     TF = "TF"
     STRUCT = "STRUCT"
+    SEQ = "SEQ"
 
     TYPES = [
         (MCQ, "Multiple Choice"),
         (TF, "True/False"),
         (STRUCT, "Structured Question"),
+        (SEQ, "Sequencing"),
     ]
 
     subject = models.ForeignKey(
@@ -67,7 +69,7 @@ class BankQuestion(models.Model):
     correct_part_b = models.CharField(max_length=150, blank=True, null=True)
     correct_part_c = models.CharField(max_length=150, blank=True, null=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.subject.name} - Q{self.id}"
 
 class BankChoice(models.Model):
@@ -115,11 +117,13 @@ class Question(models.Model):
     MCQ = "MCQ"
     TF = "TF"
     STRUCT = "STRUCT"
+    SEQ = "SEQ"
 
     TYPES = [
         (MCQ, "Multiple Choice"),
         (TF, "True/False"),
         (STRUCT, "Structured Question"),
+        (SEQ, "Sequencing"),
     ]
 
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="questions")
@@ -143,6 +147,31 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.text
+
+class SequencingItem(models.Model):
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name="sequence_items",
+        null=True,
+        blank=True,
+    )
+    bank_question = models.ForeignKey(
+        BankQuestion,
+        on_delete=models.CASCADE,
+        related_name="sequence_items",
+        null=True,
+        blank=True,
+    )
+    text = models.CharField(max_length=255)
+    correct_order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["correct_order"]
+
+    def _str_(self):
+        owner = self.question or self.bank_question
+        return f"{owner} - {self.correct_order}. {self.text}"
 
 class ExamResitPermission(models.Model):
     """
@@ -255,6 +284,29 @@ class Attempt(models.Model):
                 ):
                     total += 1
 
+            # ===== SEQUENCING =====
+            elif q.qtype == "SEQ":
+                max_score += q.points
+
+                submitted = answer.sequencing_answer or []
+                correct_items = list(q.sequence_items.all().order_by("correct_order"))
+
+                total_items = len(correct_items)
+                if total_items > 0:
+                    mark_per_item = q.points / total_items
+                    seq_score = 0
+
+                    for idx, item in enumerate(correct_items):
+                        if idx < len(submitted):
+                            try:
+                                submitted_id = int(submitted[idx])
+                            except (TypeError, ValueError):
+                                continue
+                            if item.id == submitted_id:
+                                seq_score += mark_per_item
+
+                    total += seq_score
+                    
         self.score = total
         self.max_score = max_score
 
@@ -302,6 +354,8 @@ class Answer(models.Model):
     structured_part_a = models.CharField(max_length=150, blank=True, null=True)
     structured_part_b = models.CharField(max_length=150, blank=True, null=True)
     structured_part_c = models.CharField(max_length=150, blank=True, null=True)
+
+    sequencing_answer = models.JSONField(null=True, blank=True)
 
     class Meta:
         constraints = [
