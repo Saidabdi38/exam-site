@@ -1,4 +1,14 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
+[20:39, 04/04/2026] Siciid Cabdi: Question,Option A,Option B,Option C,Option D,Answer
+What is the Home Page in QuickBooks used for?,Printing reports,Showing workflow tasks,Editing employees,Deleting data,B
+What is the Chart of Accounts?,List of customers,List of accounts,List of employees,List of reports,B
+Which account type is used for bank accounts?,Expense,Asset,Liability,Income,B
+Which menu is used to create a new company file?,Edit,File,Reports,Lists,B
+What is a Vendor in QuickBooks?,Customer,Supplier,Employee,Owner,B
+Which form is used to bill a customer?,Bill,Invoice,Check,Journal,B
+What happens when you create an invoice?,Cash increases,Accounts Receivable increases,Expense increases,Bank decreases,B
+Which form is used to receive payment?,Invoice,Bill,Receive Payment,Expense,C
+Sales …
+[21:04, 04/04/2026] Siciid Cabdi: from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from django.db.models import Max
@@ -15,46 +25,107 @@ from .models import Subject, BankQuestion, AttemptQuestion, Question, Answer, Ba
 # Helpers
 # -----------------------------
 def is_teacher(user):
-    return user.is_authenticated and (user.is_staff or user.groups.filter(name__in=["Teacher", "Teachers"]).exists())
+    return user.is_authenticated and (user.is_staff or user.gr…
+[21:09, 04/04/2026] Siciid Cabdi: from random import sample
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.forms import UserCreationForm
+from django.db import transaction
+from django.db.models import Max
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from .models import (
+    Subject,
+    BankQuestion,
+    AttemptQuestion,
+    Answer,
+    BankChoice,
+    Attempt,
+    Exam,
+    ExamResitPermission,
+)
+
+
+# -----------------------------
+# Helpers
+# -----------------------------
+def is_teacher(user):
+    return user.is_authenticated and (
+        user.is_staff or user.groups.filter(name__in=["Teacher", "Teachers"]).exists()
+    )
+
 
 def get_permission(user, exam):
     return ExamResitPermission.objects.filter(user=user, exam=exam).first()
+
 
 def can_view_exam(user, exam):
     perm = get_permission(user, exam)
     return bool(perm and perm.can_view)
 
+
 def get_allowed_attempts(user, exam):
     """
-    Total allowed attempts ONLY if teacher allowed view
+    Total allowed attempts ONLY if teacher allowed view.
     """
     perm = get_permission(user, exam)
     if not perm or not perm.can_view:
         return 0
     return perm.allowed_attempts
 
+
 def get_next_attempt_no(user, exam):
     """
     Next attempt_no = max(attempt_no) + 1
     """
-    max_no = Attempt.objects.filter(user=user, exam=exam).aggregate(m=Max("attempt_no"))["m"] or 0
+    max_no = (
+        Attempt.objects.filter(user=user, exam=exam).aggregate(m=Max("attempt_no"))["m"] or 0
+    )
     return max_no + 1
 
+
 def get_resume_qno(attempt):
-    aqs = list(attempt.attempt_questions.select_related("bank_question").all())
+    aqs = list(
+        attempt.attempt_questions.select_related("bank_question").order_by("order")
+    )
     total = len(aqs)
     if total == 0:
         return 1
 
-    answered_ids = set(
-        attempt.answers.filter(selected_choice__isnull=False).values_list("attempt_question_id", flat=True)
-    )
+    answered_bq_ids = set()
+
+    for a in attempt.answers.select_related("bank_question", "selected_bank_choice").all():
+        if a.bank_question_id is None:
+            continue
+
+        is_answered = False
+
+        if a.selected_bank_choice_id:
+            is_answered = True
+        elif a.bank_question and a.bank_question.qtype == "STRUCT":
+            if a.structured_part_a or a.structured_part_b or a.structured_part_c:
+                is_answered = True
+        elif a.bank_question and a.bank_question.qtype == "SEQ":
+            if a.sequencing_answer:
+                is_answered = True
+
+        if is_answered:
+            answered_bq_ids.add(a.bank_question_id)
 
     for i, aq in enumerate(aqs, start=1):
-        if aq.id not in answered_ids:
+        if aq.bank_question_id not in answered_bq_ids:
             return i
 
     return total
+
+
+def _lines(text):
+    if not text:
+        return []
+    return [i.strip() for i in text.splitlines() if i.strip()]
+
 
 # -----------------------------
 # Public pages
@@ -63,6 +134,7 @@ def home(request):
     subjects = Subject.objects.all().order_by("name")
     return render(request, "home.html", {"subjects": subjects})
 
+
 def about(request):
     return render(request, "about.html")
 
@@ -70,6 +142,24 @@ def about(request):
 def exam_list(request):
     exams = Exam.objects.filter(is_published=True).order_by("-created_at")
     return render(request, "exams/exam_list.html", {"exams": exams})
+
+
+def subject_detail(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    ctx = {
+        "subject": subject,
+        "learning_objectives": _lines(subject.learning_objectives),
+        "topics_covered": _lines(subject.topics_covered),
+        "prerequisites": _lines(subject.prerequisites),
+        "study_materials": _lines(subject.study_materials),
+    }
+    return render(request, "exams/subject_detail.html", ctx)
+
+
+def exam_prices(request):
+    exams = Exam.objects.all()
+    return render(request, "public/exam_prices.html", {"exams": exams})
 
 
 # -----------------------------
@@ -107,6 +197,9 @@ def teacher_dashboard(request):
     return render(request, "teacher/dashboard.html", {"exams": exams})
 
 
+# -----------------------------
+# Student dashboard
+# -----------------------------
 @login_required
 def student_dashboard(request):
     user = request.user
@@ -114,10 +207,13 @@ def student_dashboard(request):
     exams = Exam.objects.filter(
         is_published=True,
         resit_permissions__user=user,
-        resit_permissions__can_view=True
+        resit_permissions__can_view=True,
     ).distinct().order_by("-created_at")
 
-    attempts = Attempt.objects.filter(user=user).select_related("exam").order_by("-attempt_no", "-started_at")
+    attempts = Attempt.objects.filter(user=user).select_related("exam").order_by(
+        "-attempt_no", "-started_at"
+    )
+
     latest_by_exam_id = {}
     for a in attempts:
         if a.exam_id not in latest_by_exam_id:
@@ -132,7 +228,6 @@ def student_dashboard(request):
         used = Attempt.objects.filter(user=user, exam=exam).count()
         remaining = max(0, allowed - used)
 
-        # ✅ default action structure
         action = {"label": "", "url_name": "", "arg": None, "args": None}
 
         if latest is None:
@@ -147,19 +242,23 @@ def student_dashboard(request):
         else:
             status = f"Submitted ({latest.score}/{latest.max_score})"
             if remaining > 0:
-                action.update({"label": f"Re-sit ({remaining} left)", "url_name": "start_exam", "arg": exam.id})
+                action.update(
+                    {"label": f"Re-sit ({remaining} left)", "url_name": "start_exam", "arg": exam.id}
+                )
             else:
                 action.update({"label": "View Result", "url_name": "exam_result", "arg": latest.id})
 
-        rows.append({
-            "exam": exam,
-            "attempt": latest,
-            "status": status,
-            "action": action,
-            "allowed_attempts": allowed,
-            "used_attempts": used,
-            "remaining_attempts": remaining,
-        })
+        rows.append(
+            {
+                "exam": exam,
+                "attempt": latest,
+                "status": status,
+                "action": action,
+                "allowed_attempts": allowed,
+                "used_attempts": used,
+                "remaining_attempts": remaining,
+            }
+        )
 
     recent_results = attempts.filter(submitted_at__isnull=False).order_by("-submitted_at")[:10]
 
@@ -169,25 +268,49 @@ def student_dashboard(request):
         {"rows": rows, "recent_results": recent_results},
     )
 
-def _lines(text):
-    if not text:
-        return []
-    return [i.strip() for i in text.splitlines() if i.strip()]
 
-def subject_detail(request, subject_id):
-    subject = get_object_or_404(Subject, id=subject_id)
+@login_required
+def student_exams(request):
+    user = request.user
 
-    ctx = {
-        "subject": subject,
-        "learning_objectives": _lines(subject.learning_objectives),
-        "topics_covered": _lines(subject.topics_covered),
-        "prerequisites": _lines(subject.prerequisites),
-        "study_materials": _lines(subject.study_materials),
-    }
-    return render(request, "exams/subject_detail.html", ctx)
-    
+    exams = Exam.objects.filter(
+        examresitpermission__user=user,
+        examresitpermission__can_view=True,
+    ).distinct().order_by("-created_at")
+
+    rows = []
+    for exam in exams:
+        attempt = Attempt.objects.filter(user=user, exam=exam).order_by("-attempt_no").first()
+
+        if attempt:
+            status = "Submitted" if attempt.is_submitted else "In Progress"
+            action = (
+                {"url_name": "take_exam_q", "label": "Continue Exam", "args": [attempt.id, get_resume_qno(attempt)]}
+                if not attempt.is_submitted
+                else {"url_name": "exam_result", "label": "View Result", "arg": attempt.id}
+            )
+        else:
+            status = "Not Started"
+            action = {"url_name": "start_exam", "label": "Start Exam", "arg": exam.id}
+
+        rows.append(
+            {
+                "exam": exam,
+                "attempt": attempt,
+                "status": status,
+                "action": action,
+            }
+        )
+
+    recent_results = Attempt.objects.filter(
+        user=user, submitted_at__isnull=False
+    ).order_by("-submitted_at")[:5]
+
+    return render(request, "student/dashboard.html", {"rows": rows, "recent_results": recent_results})
+
+
 # -----------------------------
-# Exam flow (resit-aware)
+# Exam flow
 # -----------------------------
 @login_required
 @transaction.atomic
@@ -197,7 +320,11 @@ def start_exam(request, exam_id):
     if not can_view_exam(request.user, exam):
         return redirect("student_dashboard")
 
-    unfinished = Attempt.objects.filter(user=request.user, exam=exam, submitted_at__isnull=True).first()
+    unfinished = Attempt.objects.filter(
+        user=request.user,
+        exam=exam,
+        submitted_at__isnull=True,
+    ).first()
     if unfinished:
         qno = get_resume_qno(unfinished)
         return redirect("take_exam_q", attempt_id=unfinished.id, qno=qno)
@@ -207,7 +334,6 @@ def start_exam(request, exam_id):
     if used >= allowed:
         return redirect("student_dashboard")
 
-    # ✅ Create attempt
     attempt_no = get_next_attempt_no(request.user, exam)
     attempt = Attempt.objects.create(
         user=request.user,
@@ -220,11 +346,13 @@ def start_exam(request, exam_id):
         raise Http404("Exam is not configured to use question bank / subject missing.")
 
     bank_qs = list(
-        BankQuestion.objects.filter(subject_id=exam.subject_id).prefetch_related("choices")
+        BankQuestion.objects.filter(subject_id=exam.subject_id).prefetch_related("choices", "sequence_items")
     )
 
     if len(bank_qs) < exam.question_count:
-        raise Http404(f"Not enough questions in bank. Need {exam.question_count}, have {len(bank_qs)}")
+        raise Http404(
+            f"Not enough questions in bank. Need {exam.question_count}, have {len(bank_qs)}"
+        )
 
     selected = sample(bank_qs, exam.question_count)
 
@@ -241,14 +369,13 @@ def start_exam(request, exam_id):
 
     return redirect("take_exam_q", attempt_id=attempt.id, qno=1)
 
+
 @login_required
 @transaction.atomic
 def take_exam(request, attempt_id):
-    """
-    Keep this URL, but redirect student to the first question page.
-    """
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
-    return redirect("take_exam_q", attempt_id=attempt.id, qno=1)
+    qno = get_resume_qno(attempt)
+    return redirect("take_exam_q", attempt_id=attempt.id, qno=qno)
 
 
 @login_required
@@ -287,35 +414,27 @@ def take_exam_q(request, attempt_id, qno):
     ans, _ = Answer.objects.get_or_create(
         attempt=attempt,
         bank_question=question,
-        defaults={"question": None},
     )
 
     if request.method == "POST" and attempt.submitted_at is None:
-        # MCQ / TF
         if question.qtype in ["MCQ", "TF"]:
             choice_id = request.POST.get("answer", "").strip()
-
             if choice_id:
                 ans.selected_bank_choice = BankChoice.objects.filter(
                     id=choice_id,
-                    question=question
+                    question=question,
                 ).first()
             else:
                 ans.selected_bank_choice = None
 
-        # STRUCT
         elif question.qtype == "STRUCT":
             ans.structured_part_a = request.POST.get("part_a", "").strip()
             ans.structured_part_b = request.POST.get("part_b", "").strip()
             ans.structured_part_c = request.POST.get("part_c", "").strip()
 
-        # SEQ
         elif question.qtype == "SEQ":
             seq_value = request.POST.get("sequence_answer", "").strip()
-            if seq_value:
-                ans.sequencing_answer = seq_value.split(",")
-            else:
-                ans.sequencing_answer = []
+            ans.sequencing_answer = seq_value.split(",") if seq_value else []
 
         ans.save()
 
@@ -332,8 +451,7 @@ def take_exam_q(request, attempt_id, qno):
     time_left = attempt.time_left_seconds()
 
     answered_bq_ids = set()
-
-    for a in Answer.objects.filter(attempt=attempt):
+    for a in Answer.objects.filter(attempt=attempt).select_related("bank_question", "selected_bank_choice"):
         if a.bank_question_id is None:
             continue
 
@@ -353,10 +471,12 @@ def take_exam_q(request, attempt_id, qno):
 
     progress = []
     for i, one_aq in enumerate(aqs, start=1):
-        progress.append({
-            "no": i,
-            "answered": (one_aq.bank_question_id in answered_bq_ids)
-        })
+        progress.append(
+            {
+                "no": i,
+                "answered": one_aq.bank_question_id in answered_bq_ids,
+            }
+        )
 
     return render(
         request,
@@ -377,13 +497,13 @@ def take_exam_q(request, attempt_id, qno):
             "progress": progress,
         },
     )
-    
+
+
 @login_required
 @transaction.atomic
 def autosave_answer(request, attempt_id, qno):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
 
-    # ✅ don't allow autosave after submit
     if attempt.submitted_at is not None:
         return JsonResponse({"ok": False, "error": "submitted"}, status=400)
 
@@ -403,32 +523,37 @@ def autosave_answer(request, attempt_id, qno):
     ans, _ = Answer.objects.get_or_create(
         attempt=attempt,
         bank_question=bq,
-        defaults={"question": None},
     )
 
     if request.method == "POST":
-        choice_id = request.POST.get("answer", "").strip()
+        if bq.qtype in ["MCQ", "TF"]:
+            choice_id = request.POST.get("answer", "").strip()
+            if choice_id:
+                ans.selected_bank_choice = BankChoice.objects.filter(
+                    id=choice_id,
+                    question=bq,
+                ).first()
+            else:
+                ans.selected_bank_choice = None
 
-        if choice_id:
-            ans.selected_bank_choice = BankChoice.objects.filter(
-                id=choice_id, question=bq
-            ).first()
-        else:
-            ans.selected_bank_choice = None
+        elif bq.qtype == "STRUCT":
+            ans.structured_part_a = request.POST.get("part_a", "").strip()
+            ans.structured_part_b = request.POST.get("part_b", "").strip()
+            ans.structured_part_c = request.POST.get("part_c", "").strip()
+
+        elif bq.qtype == "SEQ":
+            seq_value = request.POST.get("sequence_answer", "").strip()
+            ans.sequencing_answer = seq_value.split(",") if seq_value else []
 
         ans.save()
 
     return JsonResponse({"ok": True})
-    
+
+
 @login_required
 @transaction.atomic
 def submit_exam(request, attempt_id):
-
-    attempt = get_object_or_404(
-        Attempt,
-        id=attempt_id,
-        user=request.user
-    )
+    attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
 
     if not can_view_exam(request.user, attempt.exam):
         return redirect("student_dashboard")
@@ -437,84 +562,74 @@ def submit_exam(request, attempt_id):
         return redirect("exam_result", attempt_id=attempt.id)
 
     answers = attempt.answers.select_related(
+        "bank_question",
         "selected_bank_choice",
-        "question"
     ).all()
 
     score = 0
     max_score = 0
 
     for ans in answers:
-
-        q = ans.question
+        q = ans.bank_question
         if not q:
             continue
 
-        # =====================
-        # MCQ + TRUE/FALSE
-        # =====================
         if q.qtype in ["MCQ", "TF"]:
-
             max_score += 2
-
-            if (
-                ans.selected_bank_choice
-                and ans.selected_bank_choice.is_correct
-            ):
+            if ans.selected_bank_choice and ans.selected_bank_choice.is_correct:
                 score += 2
 
-        # =====================
-        # STRUCTURED QUESTIONS
-        # =====================
         elif q.qtype == "STRUCT":
-
             max_score += 3
 
             if (
                 ans.structured_part_a
                 and q.correct_part_a
-                and ans.structured_part_a.strip().lower()
-                == q.correct_part_a.strip().lower()
+                and ans.structured_part_a.strip().lower() == q.correct_part_a.strip().lower()
             ):
                 score += 1
 
             if (
                 ans.structured_part_b
                 and q.correct_part_b
-                and ans.structured_part_b.strip().lower()
-                == q.correct_part_b.strip().lower()
+                and ans.structured_part_b.strip().lower() == q.correct_part_b.strip().lower()
             ):
                 score += 1
 
             if (
                 ans.structured_part_c
                 and q.correct_part_c
-                and ans.structured_part_c.strip().lower()
-                == q.correct_part_c.strip().lower()
+                and ans.structured_part_c.strip().lower() == q.correct_part_c.strip().lower()
             ):
                 score += 1
+
+        elif q.qtype == "SEQ":
+            seq_items = list(q.sequence_items.all().order_by("correct_order"))
+            correct_ids = [str(item.id) for item in seq_items]
+            student_ids = [str(x) for x in (ans.sequencing_answer or [])]
+
+            max_score += 2
+            if student_ids == correct_ids:
+                score += 2
 
     attempt.score = score
     attempt.max_score = max_score
     attempt.submitted_at = timezone.now()
-
     attempt.save()
 
     return redirect("exam_result", attempt_id=attempt.id)
+
 
 @login_required
 def exam_result(request, attempt_id):
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
 
-    percentage = (
-        (attempt.score / attempt.max_score) * 100
-        if attempt.max_score > 0 else 0
-    )
-
+    percentage = (attempt.score / attempt.max_score) * 100 if attempt.max_score > 0 else 0
     result = "PASS" if percentage >= 50 else "FAIL"
 
     answers = attempt.answers.select_related(
-        "question", "selected_choice"
+        "bank_question",
+        "selected_bank_choice",
     ).all()
 
     return render(
@@ -527,41 +642,3 @@ def exam_result(request, attempt_id):
             "result": result,
         },
     )
-
-@login_required
-def student_exams(request):
-    user = request.user
-
-    # Get exams the student is allowed to see
-    exams = Exam.objects.filter(
-        examresitpermission__user=user,
-        examresitpermission__can_view=True
-    ).distinct().order_by('-created_at')
-
-    rows = []
-    for exam in exams:
-        # Check if the student has already attempted this exam
-        attempt = Attempt.objects.filter(user=user, exam=exam).order_by('-attempt_no').first()
-
-        if attempt:
-            status = "Submitted" if attempt.is_submitted else "In Progress"
-            action = {"url_name": "take_exam", "label": "Continue Exam", "arg": exam.id} if not attempt.is_submitted else {"url_name": "view_exam_result", "label": "View Result", "arg": attempt.id}
-        else:
-            status = "Not Started"
-            action = {"url_name": "take_exam", "label": "Start Exam", "arg": exam.id}
-
-        rows.append({
-            "exam": exam,
-            "attempt": attempt,
-            "status": status,
-            "action": action,
-        })
-
-    # Optional: recent results
-    recent_results = Attempt.objects.filter(user=user, submitted_at__isnull=False).order_by('-submitted_at')[:5]
-
-    return render(request, "student/dashboard.html", {"rows": rows, "recent_results": recent_results})
-
-def exam_prices(request):
-    exams = Exam.objects.all()
-    return render(request, "public/exam_prices.html", {"exams": exams})
