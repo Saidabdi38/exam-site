@@ -26,6 +26,7 @@ urlpatterns = [
     path("bank/<int:subject_id>/new/", tv.bank_question_create, name="teacher_bank_question_create"),
     path("bank/<int:subject_id>/<int:pk>/edit/", tv.bank_question_edit, name="teacher_bank_question_edit"),
     path("bank/<int:subject_id>/<int:pk>/delete/", tv.bank_question_delete, name="teacher_bank_question_delete"),
+    path("teacher/bank/<int:subject_id>/upload/", tv.bank_question_upload, name="teacher_bank_question_upload"),
 
     # Attempts
     path("exams/<int:exam_id>/attempts/", tv.exam_attempts, name="teacher_exam_attempts"),

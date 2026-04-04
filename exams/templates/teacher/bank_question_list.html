@@ -7,6 +7,10 @@
     + Add Question
 </a>
 
+<a href="{% url 'teacher_bank_question_upload' subject.id %}" style="margin-left:15px;">
+    Upload Excel/CSV
+</a>
+
 <hr>
 
 {% for q in questions %}

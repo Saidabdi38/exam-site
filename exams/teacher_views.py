@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django import forms
+import csv
+import io
 
 from .models import (
     Subject,
@@ -180,6 +182,90 @@ def bank_question_list(request, subject_id):
         "questions": questions,
     })
 
+@teacher_required
+@transaction.atomic
+def bank_question_upload(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    if request.method == "POST":
+        file = request.FILES.get("file")
+
+        if not file:
+            return render(request, "teacher/bank_question_upload.html", {
+                "subject": subject,
+                "error": "Please choose a file.",
+            })
+
+        filename = file.name.lower()
+
+        if filename.endswith(".csv"):
+            data = file.read().decode("utf-8")
+            reader = csv.DictReader(io.StringIO(data))
+
+            for row in reader:
+                qtype = (row.get("qtype") or "MCQ").strip().upper()
+                text = (row.get("question") or "").strip()
+
+                if not text:
+                    continue
+
+                q = BankQuestion.objects.create(
+                    subject=subject,
+                    text=text,
+                    qtype=qtype,
+                    correct_part_a=(row.get("correct_part_a") or "").strip() or None,
+                    correct_part_b=(row.get("correct_part_b") or "").strip() or None,
+                    correct_part_c=(row.get("correct_part_c") or "").strip() or None,
+                )
+
+                if qtype in ["MCQ", "TF"]:
+                    correct_answer = (row.get("correct_answer") or "").strip().upper()
+
+                    choices_map = {
+                        "A": (row.get("A") or "").strip(),
+                        "B": (row.get("B") or "").strip(),
+                        "C": (row.get("C") or "").strip(),
+                        "D": (row.get("D") or "").strip(),
+                    }
+
+                    for letter, choice_text in choices_map.items():
+                        if choice_text:
+                            BankChoice.objects.create(
+                                question=q,
+                                text=choice_text,
+                                is_correct=(letter == correct_answer),
+                            )
+
+                elif qtype == "SEQ":
+                    items = [
+                        (row.get("item1") or "").strip(),
+                        (row.get("item2") or "").strip(),
+                        (row.get("item3") or "").strip(),
+                        (row.get("item4") or "").strip(),
+                        (row.get("item5") or "").strip(),
+                        (row.get("item6") or "").strip(),
+                    ]
+
+                    order_no = 1
+                    for item_text in items:
+                        if item_text:
+                            SequencingItem.objects.create(
+                                bank_question=q,
+                                text=item_text,
+                                correct_order=order_no,
+                            )
+                            order_no += 1
+
+            return redirect("teacher_bank_question_list", subject_id=subject.id)
+
+        return render(request, "teacher/bank_question_upload.html", {
+            "subject": subject,
+            "error": "Only CSV file is supported for now.",
+        })
+
+    return render(request, "teacher/bank_question_upload.html", {
+        "subject": subject,
+    })
 
 @teacher_required
 def bank_question_create(request, subject_id):

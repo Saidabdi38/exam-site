@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Upload Questions - {{ subject.name }}</h2>
+
+{% if error %}
+  <p style="color:red;">{{ error }}</p>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <div style="margin:15px 0;">
+    <label><strong>Select CSV file</strong></label><br>
+    <input type="file" name="file" accept=".csv" required>
+  </div>
+
+  <button type="submit">Upload</button>
+</form>
+
+<hr>
+
+<h3>CSV Format</h3>
+<p>Use columns like these:</p>
+
+<pre style="background:#f7f7f7; padding:12px; border-radius:8px; overflow:auto;">
+qtype,question,A,B,C,D,correct_answer,correct_part_a,correct_part_b,correct_part_c,item1,item2,item3,item4,item5,item6
+MCQ,What is debit?,Increase asset,Decrease asset,Increase liability,None,A,,,,,,
+TF,Accounting is systematic.,True,False,,,A,,,,,,
+STRUCT,Write journal entry for cash sale,,,,,,Cash,Sales,Amount,,,,
+SEQ,Arrange accounting cycle,,,,,,,,,Journalize transactions,Post to ledger,Prepare trial balance,Prepare financial statements,,
+</pre>
+
+<a href="{% url 'teacher_bank_question_list' subject.id %}">Back to Question Bank</a>
+
+{% endblock %}
