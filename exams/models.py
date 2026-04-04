@@ -16,8 +16,9 @@ class TeacherProfile(models.Model):
     display_name = models.CharField(max_length=120, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.display_name or getattr(self.user, "username", str(self.user))
+
 
 class Subject(models.Model):
     name = models.CharField(max_length=200)
@@ -35,8 +36,9 @@ class Subject(models.Model):
     prerequisites = models.TextField(blank=True, help_text="One per line")
     study_materials = models.TextField(blank=True, help_text="One per line")
 
-    def __str__(self):
+    def _str_(self):
         return self.name
+
 
 class BankQuestion(models.Model):
     MCQ = "MCQ"
@@ -54,41 +56,42 @@ class BankQuestion(models.Model):
     subject = models.ForeignKey(
         Subject,
         on_delete=models.CASCADE,
-        related_name="bank_questions"
+        related_name="bank_questions",
     )
 
     text = models.TextField()
     qtype = models.CharField(
         max_length=10,
         choices=TYPES,
-        default=MCQ
+        default=MCQ,
     )
 
-    # ⭐ structured answers
+    # Optional score per question
+    points = models.PositiveIntegerField(default=2)
+
+    # Structured correct answers
     correct_part_a = models.CharField(max_length=150, blank=True, null=True)
     correct_part_b = models.CharField(max_length=150, blank=True, null=True)
     correct_part_c = models.CharField(max_length=150, blank=True, null=True)
 
-    def __str__(self):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def _str_(self):
         return f"{self.subject.name} - Q{self.id}"
 
+
 class BankChoice(models.Model):
-    question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE, related_name="choices")
+    question = models.ForeignKey(
+        BankQuestion,
+        on_delete=models.CASCADE,
+        related_name="choices",
+    )
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
-    def __str__(self):
+    def _str_(self):
         return self.text
 
-class AttemptQuestion(models.Model):
-    attempt = models.ForeignKey("Attempt", on_delete=models.CASCADE, related_name="attempt_questions")
-    bank_question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE)
-
-    order = models.PositiveIntegerField(default=1)
-
-    class Meta:
-        unique_together = ("attempt", "bank_question")
-        ordering = ["order"]
 
 class Exam(models.Model):
     created_by = models.ForeignKey(
@@ -105,15 +108,25 @@ class Exam(models.Model):
     duration_minutes = models.PositiveIntegerField(default=30)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    subject = models.ForeignKey(Subject, null=True, blank=True, on_delete=models.SET_NULL)
+
+    subject = models.ForeignKey(
+        Subject,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     use_question_bank = models.BooleanField(default=True)
     question_count = models.PositiveIntegerField(default=50)
 
-    def __str__(self):
+    def _str_(self):
         return self.title
 
 
 class Question(models.Model):
+    """
+    Old direct exam question model.
+    Keep it only if you still use legacy exams.
+    """
     MCQ = "MCQ"
     TF = "TF"
     STRUCT = "STRUCT"
@@ -126,27 +139,39 @@ class Question(models.Model):
         (SEQ, "Sequencing"),
     ]
 
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="questions")
+    exam = models.ForeignKey(
+        Exam,
+        on_delete=models.CASCADE,
+        related_name="questions",
+    )
     text = models.TextField()
     qtype = models.CharField(max_length=10, choices=TYPES, default=MCQ)
     points = models.PositiveIntegerField(default=2)
 
-    # ⭐ NEW FIELDS FOR STRUCTURED
     correct_part_a = models.CharField(max_length=150, blank=True, null=True)
     correct_part_b = models.CharField(max_length=150, blank=True, null=True)
     correct_part_c = models.CharField(max_length=150, blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.exam.title} - Q{self.id}"
 
 
 class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices")
+    """
+    Old direct exam choice model.
+    Keep it only if you still use legacy exams.
+    """
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name="choices",
+    )
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
-    def __str__(self):
+    def _str_(self):
         return self.text
+
 
 class SequencingItem(models.Model):
     question = models.ForeignKey(
@@ -173,17 +198,26 @@ class SequencingItem(models.Model):
         owner = self.question or self.bank_question
         return f"{owner} - {self.correct_order}. {self.text}"
 
+
 class ExamResitPermission(models.Model):
     """
     Teacher-controlled resit and visibility.
     extra_attempts = 0  -> total allowed attempts = 1
     can_view = True     -> student can see the exam
     """
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="resit_permissions")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="resit_permissions")
+    exam = models.ForeignKey(
+        Exam,
+        on_delete=models.CASCADE,
+        related_name="resit_permissions",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="resit_permissions",
+    )
 
     extra_attempts = models.PositiveIntegerField(default=0)
-    can_view = models.BooleanField(default=True)  # ✅ new field
+    can_view = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -194,7 +228,7 @@ class ExamResitPermission(models.Model):
     def allowed_attempts(self):
         return 1 + self.extra_attempts
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.user} - {self.exam} (allowed={self.allowed_attempts}, visible={self.can_view})"
 
 
@@ -202,12 +236,12 @@ class Attempt(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="attempts"
+        related_name="attempts",
     )
     exam = models.ForeignKey(
         Exam,
         on_delete=models.CASCADE,
-        related_name="attempts"
+        related_name="attempts",
     )
 
     attempt_no = models.PositiveIntegerField(default=1)
@@ -223,9 +257,6 @@ class Attempt(models.Model):
     class Meta:
         ordering = ["-started_at"]
 
-    # ==============================
-    # TIMER
-    # ==============================
     def time_left_seconds(self):
         if self.submitted_at:
             return 0
@@ -234,85 +265,80 @@ class Attempt(models.Model):
         remaining = self.duration_seconds - int(elapsed)
         return max(0, remaining)
 
-    # ==============================
-    # UPDATED SCORE CALCULATION
-    # ==============================
     def calculate_score(self):
+        """
+        Main scoring logic for bank-question system.
+        """
         total = 0
         max_score = 0
 
-        for answer in self.answers.select_related("selected_choice", "question"):
+        answers = self.answers.select_related(
+            "bank_question",
+            "selected_bank_choice",
+        ).all()
 
-            q = answer.question
+        for answer in answers:
+            q = answer.bank_question
             if not q:
                 continue
 
-            # ===== MCQ & TRUE/FALSE =====
+            # MCQ / TF
             if q.qtype in ["MCQ", "TF"]:
-                max_score += 2
+                q_points = q.points or 2
+                max_score += q_points
 
-                if answer.selected_choice and answer.selected_choice.is_correct:
-                    total += 2
+                if answer.selected_bank_choice and answer.selected_bank_choice.is_correct:
+                    total += q_points
 
-            # ===== STRUCTURED QUESTIONS =====
+            # STRUCT
             elif q.qtype == "STRUCT":
+                # Default 3 marks, one per part
+                q_points = q.points or 3
+                max_score += q_points
 
-                # each part = 1 mark
-                max_score += 3
+                part_score = 0
 
                 if (
                     answer.structured_part_a
                     and q.correct_part_a
-                    and answer.structured_part_a.strip().lower()
-                    == q.correct_part_a.strip().lower()
+                    and answer.structured_part_a.strip().lower() == q.correct_part_a.strip().lower()
                 ):
-                    total += 1
+                    part_score += 1
 
                 if (
                     answer.structured_part_b
                     and q.correct_part_b
-                    and answer.structured_part_b.strip().lower()
-                    == q.correct_part_b.strip().lower()
+                    and answer.structured_part_b.strip().lower() == q.correct_part_b.strip().lower()
                 ):
-                    total += 1
+                    part_score += 1
 
                 if (
                     answer.structured_part_c
                     and q.correct_part_c
-                    and answer.structured_part_c.strip().lower()
-                    == q.correct_part_c.strip().lower()
+                    and answer.structured_part_c.strip().lower() == q.correct_part_c.strip().lower()
                 ):
-                    total += 1
+                    part_score += 1
 
-            # ===== SEQUENCING =====
+                total += part_score
+
+            # SEQ
             elif q.qtype == "SEQ":
-                max_score += q.points
+                q_points = q.points or 2
+                max_score += q_points
 
                 submitted = answer.sequencing_answer or []
                 correct_items = list(q.sequence_items.all().order_by("correct_order"))
 
-                total_items = len(correct_items)
-                if total_items > 0:
-                    mark_per_item = q.points / total_items
-                    seq_score = 0
+                if correct_items:
+                    correct_ids = [str(item.id) for item in correct_items]
+                    submitted_ids = [str(x) for x in submitted]
 
-                    for idx, item in enumerate(correct_items):
-                        if idx < len(submitted):
-                            try:
-                                submitted_id = int(submitted[idx])
-                            except (TypeError, ValueError):
-                                continue
-                            if item.id == submitted_id:
-                                seq_score += mark_per_item
+                    if submitted_ids == correct_ids:
+                        total += q_points
 
-                    total += seq_score
-                    
-        self.score = total
-        self.max_score = max_score
+        self.score = int(total)
+        self.max_score = int(max_score)
 
-    # ==============================
-    # RESULTS
-    # ==============================
     @property
     def percentage(self):
         if self.max_score == 0:
@@ -327,34 +353,78 @@ class Attempt(models.Model):
     def is_submitted(self):
         return self.submitted_at is not None
 
-    # ==============================
-    # SAVE
-    # ==============================
     def save(self, *args, **kwargs):
         if self.submitted_at:
             self.calculate_score()
         super().save(*args, **kwargs)
-        
+
+    def _str_(self):
+        return f"{self.user} - {self.exam} - Attempt {self.attempt_no}"
+
+
+class AttemptQuestion(models.Model):
+    attempt = models.ForeignKey(
+        Attempt,
+        on_delete=models.CASCADE,
+        related_name="attempt_questions",
+    )
+    bank_question = models.ForeignKey(
+        BankQuestion,
+        on_delete=models.CASCADE,
+    )
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ("attempt", "bank_question")
+        ordering = ["order"]
+
+    def _str_(self):
+        return f"Attempt {self.attempt_id} - Q{self.order}"
+
+
 class Answer(models.Model):
-    attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name="answers")
+    attempt = models.ForeignKey(
+        Attempt,
+        on_delete=models.CASCADE,
+        related_name="answers",
+    )
 
-    # one of these used
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
-    bank_question = models.ForeignKey(BankQuestion, on_delete=models.CASCADE, null=True, blank=True)
+    # Old exam system
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    selected_choice = models.ForeignKey(
+        Choice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
-    # old exam selection (keep for backward compatibility)
-    selected_choice = models.ForeignKey(Choice, on_delete=models.SET_NULL, null=True, blank=True)
-
-    # ✅ NEW: bank selection
-    selected_bank_choice = models.ForeignKey(BankChoice, on_delete=models.SET_NULL, null=True, blank=True)
+    # Bank-question system
+    bank_question = models.ForeignKey(
+        BankQuestion,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    selected_bank_choice = models.ForeignKey(
+        BankChoice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # ⭐ structured answers from student
+    # Structured answers
     structured_part_a = models.CharField(max_length=150, blank=True, null=True)
     structured_part_b = models.CharField(max_length=150, blank=True, null=True)
     structured_part_c = models.CharField(max_length=150, blank=True, null=True)
 
+    # Sequencing
     sequencing_answer = models.JSONField(null=True, blank=True)
 
     class Meta:
@@ -371,4 +441,9 @@ class Answer(models.Model):
             ),
         ]
 
-
+    def _str_(self):
+        if self.bank_question_id:
+            return f"Attempt {self.attempt_id} - BankQuestion {self.bank_question_id}"
+        if self.question_id:
+            return f"Attempt {self.attempt_id} - Question {self.question_id}"
+        return f"Attempt {self.attempt_id} - Answer"

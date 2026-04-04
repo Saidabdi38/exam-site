@@ -1,3 +1,5 @@
+from random import sample
+
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
@@ -10,6 +12,7 @@ from .models import (
     Subject,
     BankQuestion,
     AttemptQuestion,
+    Question,
     Answer,
     BankChoice,
     Attempt,
@@ -38,7 +41,7 @@ def can_view_exam(user, exam):
 
 def get_allowed_attempts(user, exam):
     """
-    Total allowed attempts ONLY if teacher allowed view.
+    Total allowed attempts ONLY if teacher allowed view
     """
     perm = get_permission(user, exam)
     if not perm or not perm.can_view:
@@ -50,9 +53,7 @@ def get_next_attempt_no(user, exam):
     """
     Next attempt_no = max(attempt_no) + 1
     """
-    max_no = (
-        Attempt.objects.filter(user=user, exam=exam).aggregate(m=Max("attempt_no"))["m"] or 0
-    )
+    max_no = Attempt.objects.filter(user=user, exam=exam).aggregate(m=Max("attempt_no"))["m"] or 0
     return max_no + 1
 
 
@@ -212,9 +213,7 @@ def student_dashboard(request):
         else:
             status = f"Submitted ({latest.score}/{latest.max_score})"
             if remaining > 0:
-                action.update(
-                    {"label": f"Re-sit ({remaining} left)", "url_name": "start_exam", "arg": exam.id}
-                )
+                action.update({"label": f"Re-sit ({remaining} left)", "url_name": "start_exam", "arg": exam.id})
             else:
                 action.update({"label": "View Result", "url_name": "exam_result", "arg": latest.id})
 
@@ -244,8 +243,8 @@ def student_exams(request):
     user = request.user
 
     exams = Exam.objects.filter(
-        examresitpermission__user=user,
-        examresitpermission__can_view=True,
+        resit_permissions__user=user,
+        resit_permissions__can_view=True,
     ).distinct().order_by("-created_at")
 
     rows = []
@@ -254,11 +253,18 @@ def student_exams(request):
 
         if attempt:
             status = "Submitted" if attempt.is_submitted else "In Progress"
-            action = (
-                {"url_name": "take_exam_q", "label": "Continue Exam", "args": [attempt.id, get_resume_qno(attempt)]}
-                if not attempt.is_submitted
-                else {"url_name": "exam_result", "label": "View Result", "arg": attempt.id}
-            )
+            if not attempt.is_submitted:
+                action = {
+                    "url_name": "take_exam_q",
+                    "label": "Continue Exam",
+                    "args": [attempt.id, get_resume_qno(attempt)],
+                }
+            else:
+                action = {
+                    "url_name": "exam_result",
+                    "label": "View Result",
+                    "arg": attempt.id,
+                }
         else:
             status = "Not Started"
             action = {"url_name": "start_exam", "label": "Start Exam", "arg": exam.id}
@@ -273,14 +279,19 @@ def student_exams(request):
         )
 
     recent_results = Attempt.objects.filter(
-        user=user, submitted_at__isnull=False
+        user=user,
+        submitted_at__isnull=False,
     ).order_by("-submitted_at")[:5]
 
-    return render(request, "student/dashboard.html", {"rows": rows, "recent_results": recent_results})
+    return render(
+        request,
+        "student/dashboard.html",
+        {"rows": rows, "recent_results": recent_results},
+    )
 
 
 # -----------------------------
-# Exam flow
+# Exam flow (bank-question system)
 # -----------------------------
 @login_required
 @transaction.atomic
@@ -295,6 +306,7 @@ def start_exam(request, exam_id):
         exam=exam,
         submitted_at__isnull=True,
     ).first()
+
     if unfinished:
         qno = get_resume_qno(unfinished)
         return redirect("take_exam_q", attempt_id=unfinished.id, qno=qno)
@@ -316,7 +328,9 @@ def start_exam(request, exam_id):
         raise Http404("Exam is not configured to use question bank / subject missing.")
 
     bank_qs = list(
-        BankQuestion.objects.filter(subject_id=exam.subject_id).prefetch_related("choices", "sequence_items")
+        BankQuestion.objects.filter(subject_id=exam.subject_id).prefetch_related(
+            "choices", "sequence_items"
+        )
     )
 
     if len(bank_qs) < exam.question_count:
@@ -343,6 +357,9 @@ def start_exam(request, exam_id):
 @login_required
 @transaction.atomic
 def take_exam(request, attempt_id):
+    """
+    Keep this URL, but redirect student to the current question page.
+    """
     attempt = get_object_or_404(Attempt, id=attempt_id, user=request.user)
     qno = get_resume_qno(attempt)
     return redirect("take_exam_q", attempt_id=attempt.id, qno=qno)
@@ -421,7 +438,9 @@ def take_exam_q(request, attempt_id, qno):
     time_left = attempt.time_left_seconds()
 
     answered_bq_ids = set()
-    for a in Answer.objects.filter(attempt=attempt).select_related("bank_question", "selected_bank_choice"):
+    for a in Answer.objects.filter(attempt=attempt).select_related(
+        "bank_question", "selected_bank_choice"
+    ):
         if a.bank_question_id is None:
             continue
 
@@ -582,8 +601,8 @@ def submit_exam(request, attempt_id):
             if student_ids == correct_ids:
                 score += 2
 
-    attempt.score = score
-    attempt.max_score = max_score
+    attempt.score = int(score)
+    attempt.max_score = int(max_score)
     attempt.submitted_at = timezone.now()
     attempt.save()
 
