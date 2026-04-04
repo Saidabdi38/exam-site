@@ -1,33 +1,3 @@
-[20:39, 04/04/2026] Siciid Cabdi: Question,Option A,Option B,Option C,Option D,Answer
-What is the Home Page in QuickBooks used for?,Printing reports,Showing workflow tasks,Editing employees,Deleting data,B
-What is the Chart of Accounts?,List of customers,List of accounts,List of employees,List of reports,B
-Which account type is used for bank accounts?,Expense,Asset,Liability,Income,B
-Which menu is used to create a new company file?,Edit,File,Reports,Lists,B
-What is a Vendor in QuickBooks?,Customer,Supplier,Employee,Owner,B
-Which form is used to bill a customer?,Bill,Invoice,Check,Journal,B
-What happens when you create an invoice?,Cash increases,Accounts Receivable increases,Expense increases,Bank decreases,B
-Which form is used to receive payment?,Invoice,Bill,Receive Payment,Expense,C
-Sales …
-[21:04, 04/04/2026] Siciid Cabdi: from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.forms import UserCreationForm
-from django.db import transaction
-from django.db.models import Max
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
-from django.http import Http404
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from random import sample
-from django.db.models import Prefetch
-from .models import Subject, BankQuestion, AttemptQuestion, Question, Answer, BankChoice, Attempt, Exam, ExamResitPermission
-
-# -----------------------------
-# Helpers
-# -----------------------------
-def is_teacher(user):
-    return user.is_authenticated and (user.is_staff or user.gr…
-[21:09, 04/04/2026] Siciid Cabdi: from random import sample
-
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
