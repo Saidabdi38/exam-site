@@ -532,17 +532,5 @@ def student_exams(request):
     return render(request, "student/dashboard.html", {"rows": rows, "recent_results": recent_results})
 
 def exam_prices(request):
-    subjects = Subject.objects.prefetch_related(
-        Prefetch(
-            "exam_set",
-            queryset=Exam.objects.filter(is_published=True, subject__isnull=False)
-        )
-    )
-
-    return render(
-        request,
-        "public/exam_prices.html",
-        {
-            "subjects": subjects,
-        },
-    )
+    exams = Exam.objects.all()
+    return render(request, "public/exam_prices.html", {"exams": exams})
