@@ -321,21 +321,21 @@ class Attempt(models.Model):
 
                 total += part_score
 
-            # SEQ
             elif q.qtype == "SEQ":
-                q_points = q.points or 2
-                max_score += q_points
-
-                submitted = answer.sequencing_answer or []
                 correct_items = list(q.sequence_items.all().order_by("correct_order"))
+                correct_ids = [str(item.id) for item in correct_items]
+                submitted = [str(x) for x in (answer.sequencing_answer or [])]
 
-                if correct_items:
-                    correct_ids = [str(item.id) for item in correct_items]
-                    submitted_ids = [str(x) for x in submitted]
+                max_score += q.points
 
-                    if submitted_ids == correct_ids:
-                        total += q_points
+                if correct_ids:
+                    correct_positions = 0
+                    for i, correct_id in enumerate(correct_ids):
+                        if i < len(submitted) and submitted[i] == correct_id:
+                            correct_positions += 1
 
+                    earned = round((correct_positions / len(correct_ids)) * q.points)
+                    total += earned
         self.score = int(total)
         self.max_score = int(max_score)
 

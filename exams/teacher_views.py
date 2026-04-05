@@ -553,110 +553,26 @@ def exam_attempts(request, exam_id: int):
     return render(request, "teacher/attempts_list.html", {"exam": exam, "attempts": attempts})
 
 
-@teacher_required
-def attempt_detail(request, exam_id: int, attempt_id: int):
-    exam = _get_owned_exam_or_404(request, exam_id)
-    attempt = get_object_or_404(Attempt, id=attempt_id, exam=exam)
+elif qtype == "SEQ":
+    submitted = [str(x) for x in (a.sequencing_answer or [])]
+    correct_items = list(qobj.sequence_items.all().order_by("correct_order"))
 
-    answers = (
-        Answer.objects.filter(attempt=attempt)
-        .select_related(
-            "question",
-            "bank_question",
-            "selected_choice",
-            "selected_bank_choice",
-        )
-        .order_by("id")
-    )
+    correct_ids = [str(item.id) for item in correct_items]
+    id_to_text = {str(item.id): item.text for item in correct_items}
 
-    rows = []
+    selected_texts = [id_to_text.get(str(item_id), str(item_id)) for item_id in submitted]
+    correct_texts = [item.text for item in correct_items]
 
-    for a in answers:
-        if a.bank_question:
-            qobj = a.bank_question
-            qtext = qobj.text
-            qtype = qobj.qtype
-            correct_choice = qobj.choices.filter(is_correct=True).first()
-            selected_choice = a.selected_bank_choice
-        else:
-            qobj = a.question
-            qtext = qobj.text if qobj else ""
-            qtype = qobj.qtype if qobj else None
-            correct_choice = qobj.choices.filter(is_correct=True).first() if qobj else None
-            selected_choice = a.selected_choice
+    correct_positions = 0
+    for i, correct_id in enumerate(correct_ids):
+        if i < len(submitted) and submitted[i] == correct_id:
+            correct_positions += 1
 
-        row = {
-            "question_text": qtext,
-            "qtype": qtype,
-            "selected": None,
-            "correct": None,
-            "is_correct": False,
-        }
-
-        # MCQ / TF
-        if qtype in ("MCQ", "TF"):
-            row["selected"] = selected_choice
-            row["correct"] = correct_choice
-
-            if selected_choice and correct_choice and selected_choice.id == correct_choice.id:
-                row["is_correct"] = True
-
-        # STRUCT
-        elif qtype == "STRUCT":
-            student_a = (a.structured_part_a or "").strip()
-            student_b = (a.structured_part_b or "").strip()
-            student_c = (a.structured_part_c or "").strip()
-
-            correct_a = (getattr(qobj, "correct_part_a", "") or "").strip()
-            correct_b = (getattr(qobj, "correct_part_b", "") or "").strip()
-            correct_c = (getattr(qobj, "correct_part_c", "") or "").strip()
-
-            row["selected"] = {
-                "part_a": student_a,
-                "part_b": student_b,
-                "part_c": student_c,
-            }
-            row["correct"] = {
-                "part_a": correct_a,
-                "part_b": correct_b,
-                "part_c": correct_c,
-            }
-
-            row["is_correct"] = (
-                student_a.lower() == correct_a.lower()
-                and student_b.lower() == correct_b.lower()
-                and student_c.lower() == correct_c.lower()
-            )
-
-        # SEQ
-        elif qtype == "SEQ":
-            submitted = a.sequencing_answer or []
-            correct_items = list(qobj.sequence_items.all().order_by("correct_order"))
-
-            # correct order as ids and text
-            correct_ids = [str(item.id) for item in correct_items]
-            id_to_text = {str(item.id): item.text for item in correct_items}
-
-            # convert submitted ids to readable text
-            selected_texts = [id_to_text.get(str(item_id), str(item_id)) for item_id in submitted]
-            correct_texts = [item.text for item in correct_items]
-
-            row["selected"] = selected_texts
-            row["correct"] = correct_texts
-            row["is_correct"] = [str(x) for x in submitted] == correct_ids
-
-        else:
-            row["selected"] = selected_choice
-            row["correct"] = correct_choice
-            row["is_correct"] = False
-
-        rows.append(row)
-
-    return render(request, "teacher/attempt_detail.html", {
-        "exam": exam,
-        "attempt": attempt,
-        "rows": rows,
-    })
+    row["selected"] = selected_texts
+    row["correct"] = correct_texts
+    row["seq_correct_positions"] = correct_positions
+    row["seq_total_positions"] = len(correct_ids)
+    row["is_correct"] = correct_positions == len(correct_ids)
 
 
 # ---------- Resits ----------
