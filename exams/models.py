@@ -249,8 +249,8 @@ class Attempt(models.Model):
     submitted_at = models.DateTimeField(null=True, blank=True)
 
     duration_seconds = models.PositiveIntegerField(default=0)
-    score = models.IntegerField(default=0)
-    max_score = models.IntegerField(default=0)
+    score = models.FloatField(default=0)
+    max_score = models.FloatField(default=0)
 
     PASS_PERCENTAGE = 50
 
