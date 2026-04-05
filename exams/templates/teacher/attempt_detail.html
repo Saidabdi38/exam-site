@@ -34,11 +34,8 @@
     {{ r.question_text }}
   </p>
 
-  <!-- ========================= -->
   <!-- MCQ / TRUE FALSE -->
-  <!-- ========================= -->
   {% if r.qtype == "MCQ" or r.qtype == "TF" %}
-
     <p>
       <strong>Student answer:</strong>
       {{ r.selected.text|default:"(no answer)" }}
@@ -48,14 +45,10 @@
       <strong>Correct answer:</strong>
       {{ r.correct.text|default:"(not set)" }}
     </p>
-
   {% endif %}
 
-  <!-- ========================= -->
   <!-- STRUCTURED QUESTION -->
-  <!-- ========================= -->
   {% if r.qtype == "STRUCT" %}
-
     <p><strong>Student answer:</strong></p>
     <ul>
       <li><strong>Part A:</strong> {{ r.selected.part_a|default:"-" }}</li>
@@ -69,12 +62,30 @@
       <li><strong>Part B:</strong> {{ r.correct.part_b|default:"-" }}</li>
       <li><strong>Part C:</strong> {{ r.correct.part_c|default:"-" }}</li>
     </ul>
-
   {% endif %}
 
-  <!-- ========================= -->
+  <!-- SEQUENCING QUESTION -->
+  {% if r.qtype == "SEQ" %}
+    <p><strong>Student answer:</strong></p>
+    <ol>
+      {% for item in r.selected %}
+        <li>{{ item }}</li>
+      {% empty %}
+        <li>(no answer)</li>
+      {% endfor %}
+    </ol>
+
+    <p><strong>Correct answer:</strong></p>
+    <ol>
+      {% for item in r.correct %}
+        <li>{{ item }}</li>
+      {% empty %}
+        <li>(not set)</li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+
   <!-- RESULT -->
-  <!-- ========================= -->
   <p>
     <strong>Result:</strong>
     {% if r.is_correct %}
@@ -85,6 +96,8 @@
   </p>
 
 </div>
+{% empty %}
+<p>No answers found.</p>
 {% endfor %}
 
 {% endblock %}

@@ -593,6 +593,7 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
             "is_correct": False,
         }
 
+        # MCQ / TF
         if qtype in ("MCQ", "TF"):
             row["selected"] = selected_choice
             row["correct"] = correct_choice
@@ -600,6 +601,7 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
             if selected_choice and correct_choice and selected_choice.id == correct_choice.id:
                 row["is_correct"] = True
 
+        # STRUCT
         elif qtype == "STRUCT":
             student_a = (a.structured_part_a or "").strip()
             student_b = (a.structured_part_b or "").strip()
@@ -626,13 +628,22 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
                 and student_c.lower() == correct_c.lower()
             )
 
+        # SEQ
         elif qtype == "SEQ":
             submitted = a.sequencing_answer or []
             correct_items = list(qobj.sequence_items.all().order_by("correct_order"))
 
-            row["selected"] = submitted
-            row["correct"] = [item.text for item in correct_items]
-            row["is_correct"] = False
+            # correct order as ids and text
+            correct_ids = [str(item.id) for item in correct_items]
+            id_to_text = {str(item.id): item.text for item in correct_items}
+
+            # convert submitted ids to readable text
+            selected_texts = [id_to_text.get(str(item_id), str(item_id)) for item_id in submitted]
+            correct_texts = [item.text for item in correct_items]
+
+            row["selected"] = selected_texts
+            row["correct"] = correct_texts
+            row["is_correct"] = [str(x) for x in submitted] == correct_ids
 
         else:
             row["selected"] = selected_choice
