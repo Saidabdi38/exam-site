@@ -19,16 +19,17 @@
 
     {% if question.qtype == "MCQ" or question.qtype == "TF" %}
       {% for c in choices %}
-        <label style="display:block; margin:8px 0;">
+        <div class="option-item">
           <input
             type="radio"
+            id="choice_{{ question.id }}_{{ c.id }}"
             name="answer"
             value="{{ c.id }}"
             {% if selected_choice_id == c.id %}checked{% endif %}
             {% if attempt.is_submitted %}disabled{% endif %}
           >
-          {{ c.text }}
-        </label>
+          <label for="choice_{{ question.id }}_{{ c.id }}">{{ c.text }}</label>
+        </div>
       {% endfor %}
     {% endif %}
 
