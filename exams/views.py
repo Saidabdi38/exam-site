@@ -386,7 +386,7 @@ def take_exam_q(request, attempt_id, qno):
     aqs = list(
         AttemptQuestion.objects.filter(attempt=attempt)
         .select_related("bank_question")
-        .prefetch_related("bank_question_choices", "bank_question_sequence_items")
+        .prefetch_related("bank_question__choices", "bank_question__sequence_items")
         .order_by("order")
     )
 

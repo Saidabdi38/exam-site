@@ -9,7 +9,8 @@ urlpatterns = [
     # Exams
     path("exams/<int:exam_id>/", tv.exam_detail, name="teacher_exam_detail"),
     path("exam/create/", tv.exam_create, name="exam_create"),
-    path("exams/<int:exam_id>/attempts/", tv.teacher_add_attempt, name="teacher_exam_attempts"),
+    # path("exams/<int:exam_id>/attempts/", tv.teacher_add_attempt, name="teacher_exam_attempts"),
+    path('teacher/exams/<int:exam_id>/attempts/<int:user_id>/', tv.teacher_add_attempt),
     path("exams/<int:exam_id>/view-permissions/", tv.manage_view_permissions, name="teacher_manage_view_permissions"),
     path("exams/<int:exam_id>/resits/", tv.manage_resits, name="teacher_manage_resits"),
     path("exams/<int:exam_id>/edit/", tv.exam_edit, name="teacher_exam_edit"),
