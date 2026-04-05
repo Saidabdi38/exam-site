@@ -399,7 +399,7 @@ def take_exam_q(request, attempt_id, qno):
 
     aq = aqs[qno - 1]
     question = aq.bank_question
-    choices = list(question.choices.all())
+    choices = list(question.choices.all()) if question else []
     sequence_items = list(question.sequence_items.all().order_by("correct_order"))
 
     ans, _ = Answer.objects.get_or_create(
