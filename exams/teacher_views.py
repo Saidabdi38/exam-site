@@ -627,23 +627,28 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
             )
 
         elif qtype == "SEQ":
-            submitted = a.sequencing_answer or []
+            submitted = [str(x) for x in (a.sequencing_answer or [])]
             correct_items = list(qobj.sequence_items.all().order_by("correct_order"))
 
             correct_ids = [str(item.id) for item in correct_items]
             id_to_text = {str(item.id): item.text for item in correct_items}
 
-            selected_texts = [id_to_text.get(str(item_id), str(item_id)) for item_id in submitted]
-            correct_texts = [item.text for item in correct_items]
+            row["selected"] = [id_to_text.get(x, x) for x in submitted]
+            row["correct"] = [item.text for item in correct_items]
 
-            row["selected"] = selected_texts
-            row["correct"] = correct_texts
-            row["is_correct"] = [str(x) for x in submitted] == correct_ids
+            correct_positions = 0
+            for i, cid in enumerate(correct_ids):
+                if i < len(submitted) and submitted[i] == cid:
+                    correct_positions += 1
 
-        else:
-            row["selected"] = selected_choice
-            row["correct"] = correct_choice
-            row["is_correct"] = False
+            # partial marks
+            if correct_ids:
+                per_step = (qobj.points or 2) / len(correct_ids)
+                row["seq_score"] = round(correct_positions * per_step, 2)
+            else:
+                row["seq_score"] = 0
+
+            row["is_correct"] = correct_positions == len(correct_ids)
 
         rows.append(row)
 

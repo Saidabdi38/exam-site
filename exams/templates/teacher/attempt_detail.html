@@ -83,15 +83,29 @@
         <li>(not set)</li>
       {% endfor %}
     </ol>
+
+    <p>
+      <strong>Marks awarded:</strong> {{ r.seq_score|default:0 }}
+    </p>
   {% endif %}
 
   <!-- RESULT -->
   <p>
     <strong>Result:</strong>
-    {% if r.is_correct %}
-      <span style="color:green;">✅ Correct</span>
+    {% if r.qtype == "SEQ" %}
+      {% if r.is_correct %}
+        <span style="color:green;">✅ Correct</span>
+      {% elif r.seq_score and r.seq_score > 0 %}
+        <span style="color:orange;">🟡 Partial</span>
+      {% else %}
+        <span style="color:red;">❌ Wrong</span>
+      {% endif %}
     {% else %}
-      <span style="color:red;">❌ Wrong</span>
+      {% if r.is_correct %}
+        <span style="color:green;">✅ Correct</span>
+      {% else %}
+        <span style="color:red;">❌ Wrong</span>
+      {% endif %}
     {% endif %}
   </p>
 
