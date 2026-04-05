@@ -375,8 +375,8 @@ def take_exam_q(request, attempt_id, qno):
         return redirect("student_dashboard")
     
     if not attempt.started_at:
-    attempt.started_at = timezone.now()
-    attempt.save()
+        attempt.started_at = timezone.now()
+        attempt.save()
 
     if attempt.submitted_at is None:
         elapsed = (timezone.now() - attempt.started_at).total_seconds()
