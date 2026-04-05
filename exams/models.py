@@ -336,8 +336,8 @@ class Attempt(models.Model):
 
                     earned = round((correct_positions / len(correct_ids)) * q.points)
                     total += earned
-        self.score = int(total)
-        self.max_score = int(max_score)
+        self.score = round(total, 2)
+        self.max_score = round(max_score, 2)
 
     @property
     def percentage(self):
