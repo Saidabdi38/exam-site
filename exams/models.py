@@ -74,7 +74,7 @@ class BankQuestion(models.Model):
     correct_part_b = models.CharField(max_length=150, blank=True, null=True)
     correct_part_c = models.CharField(max_length=150, blank=True, null=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def _str_(self):
         return f"{self.subject.name} - Q{self.id}"
@@ -417,7 +417,7 @@ class Answer(models.Model):
         blank=True,
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     # Structured answers
     structured_part_a = models.CharField(max_length=150, blank=True, null=True)
