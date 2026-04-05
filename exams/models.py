@@ -326,7 +326,8 @@ class Attempt(models.Model):
                 correct_ids = [str(item.id) for item in correct_items]
                 submitted = [str(x) for x in (answer.sequencing_answer or [])]
 
-                max_score += q.points
+                q_points = float(q.points or 2)
+                max_score += q_points
 
                 if correct_ids:
                     correct_positions = 0
@@ -334,7 +335,7 @@ class Attempt(models.Model):
                         if i < len(submitted) and submitted[i] == correct_id:
                             correct_positions += 1
 
-                    earned = round((correct_positions / len(correct_ids)) * q.points)
+                    earned = (correct_positions / len(correct_ids)) * q_points
                     total += earned
         self.score = round(total, 2)
         self.max_score = round(max_score, 2)
