@@ -1,126 +1,315 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>{{ exam.title }}</h2>
+<style>
+  .exam-wrap {
+    max-width: 920px;
+    margin: 0 auto;
+  }
 
-<p>
-  Time left: <strong id="timer">{{ time_left }}</strong> seconds
-</p>
+  .exam-title {
+    margin-bottom: 10px;
+  }
 
-<p>
-  <strong>Question {{ qno }} of {{ total }}</strong>
-</p>
+  .exam-meta {
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
 
-<form method="post" id="examForm">
-  {% csrf_token %}
+  .exam-question-no {
+    margin-bottom: 16px;
+    font-size: 18px;
+    font-weight: 700;
+  }
 
-  <div style="border:1px solid #ddd; padding:14px; margin:12px 0; border-radius:10px;">
-    <p><strong>(2 pts)</strong> {{ question.text }}</p>
+  .exam-card {
+    border: 1px solid #ddd;
+    padding: 16px;
+    margin: 12px 0;
+    border-radius: 14px;
+    background: #fff;
+  }
 
-    {% if question.qtype == "MCQ" or question.qtype == "TF" %}
-      {% for c in choices %}
-        <div class="option-item">
+  .question-text {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .choices-wrap {
+    margin-top: 14px;
+  }
+
+  .choice-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    margin: 12px 0;
+    border: 1px solid #d9d9d9;
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+    box-sizing: border-box;
+    width: 100%;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .choice-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .choice-letter {
+    min-width: 28px;
+    font-weight: 700;
+  }
+
+  .choice-text {
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .struct-field {
+    margin: 12px 0;
+  }
+
+  .struct-field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  .seq-note {
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .seq-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+  }
+
+  .seq-item {
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f8f9fa;
+    cursor: move;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+  }
+
+  .action-row button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .progress-wrap {
+    margin-top: 20px;
+  }
+
+  .progress-circle {
+    display: inline-block;
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    text-align: center;
+    margin: 4px;
+    border-radius: 50%;
+    text-decoration: none;
+    color: #fff;
+  }
+
+  @media (max-width: 768px) {
+    .exam-meta,
+    .exam-question-no,
+    .question-text {
+      font-size: 16px;
+    }
+
+    .choice-option {
+      font-size: 16px;
+      padding: 12px 14px;
+    }
+
+    .choice-option input[type="radio"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    .choice-letter {
+      min-width: 24px;
+    }
+
+    .action-row button {
+      width: auto;
+    }
+  }
+</style>
+
+<div class="exam-wrap">
+  <h2 class="exam-title">{{ exam.title }}</h2>
+
+  <p class="exam-meta">
+    Time left: <strong id="timer">{{ time_left }}</strong>
+  </p>
+
+  <p class="exam-question-no">
+    Question {{ qno }} of {{ total }}
+  </p>
+
+  <form method="post" id="examForm">
+    {% csrf_token %}
+
+    <div class="exam-card">
+      <p class="question-text">
+        <strong>(2 pts)</strong> {{ question.text }}
+      </p>
+
+      {% if question.qtype == "MCQ" or question.qtype == "TF" %}
+        <div class="choices-wrap">
+          {% for c in choices %}
+            <label class="choice-option" for="choice_{{ question.id }}_{{ c.id }}">
+              <input
+                type="radio"
+                id="choice_{{ question.id }}_{{ c.id }}"
+                name="answer"
+                value="{{ c.id }}"
+                {% if selected_choice_id == c.id %}checked{% endif %}
+                {% if attempt.is_submitted %}disabled{% endif %}
+              >
+
+              <span class="choice-letter">
+                {% if forloop.counter == 1 %}A.
+                {% elif forloop.counter == 2 %}B.
+                {% elif forloop.counter == 3 %}C.
+                {% elif forloop.counter == 4 %}D.
+                {% else %}{{ forloop.counter }}.
+                {% endif %}
+              </span>
+
+              <span class="choice-text">{{ c.text }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if question.qtype == "STRUCT" %}
+        <div class="struct-field">
+          <label><strong>Part A</strong></label><br>
           <input
-            type="radio"
-            id="choice_{{ question.id }}_{{ c.id }}"
-            name="answer"
-            value="{{ c.id }}"
-            {% if selected_choice_id == c.id %}checked{% endif %}
+            type="text"
+            name="part_a"
+            value="{{ attempt.answers.last.structured_part_a|default:'' }}"
             {% if attempt.is_submitted %}disabled{% endif %}
           >
-          <label for="choice_{{ question.id }}_{{ c.id }}">{{ c.text }}</label>
         </div>
-      {% endfor %}
-    {% endif %}
 
-    {% if question.qtype == "STRUCT" %}
-      <div style="margin:10px 0;">
-        <label>Part A</label><br>
-        <input type="text" name="part_a" value="{{ attempt.answers.last.structured_part_a|default:'' }}" {% if attempt.is_submitted %}disabled{% endif %}>
-      </div>
-
-      <div style="margin:10px 0;">
-        <label>Part B</label><br>
-        <input type="text" name="part_b" value="{{ attempt.answers.last.structured_part_b|default:'' }}" {% if attempt.is_submitted %}disabled{% endif %}>
-      </div>
-
-      <div style="margin:10px 0;">
-        <label>Part C</label><br>
-        <input type="text" name="part_c" value="{{ attempt.answers.last.structured_part_c|default:'' }}" {% if attempt.is_submitted %}disabled{% endif %}>
-      </div>
-    {% endif %}
-
-    {% if question.qtype == "SEQ" %}
-      <p><strong>Drag and drop into the correct order:</strong></p>
-
-      <ul id="sequenceList" style="list-style:none; padding:0; margin-top:10px;">
-        {% for item in sequence_items %}
-          <li
-            class="seq-item"
-            draggable="true"
-            data-id="{{ item.id }}"
-            style="padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:8px; background:#f8f9fa; cursor:move;"
+        <div class="struct-field">
+          <label><strong>Part B</strong></label><br>
+          <input
+            type="text"
+            name="part_b"
+            value="{{ attempt.answers.last.structured_part_b|default:'' }}"
+            {% if attempt.is_submitted %}disabled{% endif %}
           >
-            ☰ {{ item.text }}
-          </li>
-        {% endfor %}
-      </ul>
+        </div>
 
-      <input type="hidden" name="sequence_answer" id="sequenceAnswer" value="{{ saved_sequence }}">
-    {% endif %}
+        <div class="struct-field">
+          <label><strong>Part C</strong></label><br>
+          <input
+            type="text"
+            name="part_c"
+            value="{{ attempt.answers.last.structured_part_c|default:'' }}"
+            {% if attempt.is_submitted %}disabled{% endif %}
+          >
+        </div>
+      {% endif %}
+
+      {% if question.qtype == "SEQ" %}
+        <p class="seq-note">Drag and drop into the correct order:</p>
+
+        <ul id="sequenceList" class="seq-list">
+          {% for item in sequence_items %}
+            <li class="seq-item" draggable="true" data-id="{{ item.id }}">
+              ☰ {{ item.text }}
+            </li>
+          {% endfor %}
+        </ul>
+
+        <input type="hidden" name="sequence_answer" id="sequenceAnswer" value="{{ saved_sequence }}">
+      {% endif %}
+    </div>
+
+    <div class="action-row">
+      {% if has_prev %}
+        <button type="submit" name="nav" value="prev">Previous</button>
+      {% endif %}
+
+      {% if has_next %}
+        <button type="submit" name="nav" value="next">Next</button>
+      {% endif %}
+
+      <button type="submit" name="nav" value="submit" onclick="return confirm('Submit exam now?')">
+        Submit
+      </button>
+    </div>
+  </form>
+
+  <div class="progress-wrap">
+    {% for p in progress %}
+      <a href="{% url 'take_exam_q' attempt.id p.no %}"
+         class="progress-circle"
+         style="background:{% if p.answered %}green{% else %}gray{% endif %};">
+        {{ p.no }}
+      </a>
+    {% endfor %}
   </div>
-
-  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
-    {% if has_prev %}
-      <button type="submit" name="nav" value="prev">Previous</button>
-    {% endif %}
-
-    {% if has_next %}
-      <button type="submit" name="nav" value="next">Next</button>
-    {% endif %}
-
-    <button type="submit" name="nav" value="submit" onclick="return confirm('Submit exam now?')">
-      Submit
-    </button>
-  </div>
-</form>
-
-<div style="margin-top:20px;">
-  {% for p in progress %}
-    <a href="{% url 'take_exam_q' attempt.id p.no %}"
-       style="
-         display:inline-block;
-         width:34px;
-         height:34px;
-         line-height:34px;
-         text-align:center;
-         margin:4px;
-         border-radius:50%;
-         text-decoration:none;
-         color:#fff;
-         background:{% if p.answered %}green{% else %}gray{% endif %};
-       ">
-      {{ p.no }}
-    </a>
-  {% endfor %}
 </div>
 
 <script>
 let seconds = Number(document.getElementById("timer").textContent);
 const timerEl = document.getElementById("timer");
 
+function formatTime(sec) {
+  const minutes = Math.floor(sec / 60);
+  const remainingSeconds = sec % 60;
+  return minutes + ":" + (remainingSeconds < 10 ? "0" : "") + remainingSeconds;
+}
+
+timerEl.textContent = formatTime(seconds);
+
 const interval = setInterval(() => {
   seconds -= 1;
+
   if (seconds <= 0) {
-    timerEl.textContent = "0";
+    timerEl.textContent = "0:00";
     clearInterval(interval);
     window.location.href = "{% url 'submit_exam' attempt.id %}";
     return;
   }
-  timerEl.textContent = String(seconds);
-}, 1000);
 
-// Sequencing drag and drop
+  timerEl.textContent = formatTime(seconds);
+}, 1000);
+</script>
+
+<script>
 document.addEventListener("DOMContentLoaded", function () {
   const list = document.getElementById("sequenceList");
   const hidden = document.getElementById("sequenceAnswer");
@@ -135,6 +324,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const items = list.querySelectorAll(".seq-item");
+
   items.forEach(item => {
     item.addEventListener("dragstart", function () {
       draggedItem = this;
