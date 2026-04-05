@@ -593,7 +593,6 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
             "is_correct": False,
         }
 
-        # MCQ / TF
         if qtype in ("MCQ", "TF"):
             row["selected"] = selected_choice
             row["correct"] = correct_choice
@@ -601,7 +600,6 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
             if selected_choice and correct_choice and selected_choice.id == correct_choice.id:
                 row["is_correct"] = True
 
-        # STRUCT
         elif qtype == "STRUCT":
             student_a = (a.structured_part_a or "").strip()
             student_b = (a.structured_part_b or "").strip()
@@ -629,7 +627,7 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
             )
 
         elif qtype == "SEQ":
-            submitted = [str(x) for x in (a.sequencing_answer or [])]
+            submitted = a.sequencing_answer or []
             correct_items = list(qobj.sequence_items.all().order_by("correct_order"))
 
             correct_ids = [str(item.id) for item in correct_items]
@@ -638,23 +636,22 @@ def attempt_detail(request, exam_id: int, attempt_id: int):
             selected_texts = [id_to_text.get(str(item_id), str(item_id)) for item_id in submitted]
             correct_texts = [item.text for item in correct_items]
 
-            correct_positions = 0
-            for i, correct_id in enumerate(correct_ids):
-                if i < len(submitted) and submitted[i] == correct_id:
-                    correct_positions += 1
-
             row["selected"] = selected_texts
             row["correct"] = correct_texts
-            row["seq_correct_positions"] = correct_positions
-            row["seq_total_positions"] = len(correct_ids)
-            row["is_correct"] = correct_positions == len(correct_ids)
+            row["is_correct"] = [str(x) for x in submitted] == correct_ids
+
+        else:
+            row["selected"] = selected_choice
+            row["correct"] = correct_choice
+            row["is_correct"] = False
+
+        rows.append(row)
 
     return render(request, "teacher/attempt_detail.html", {
         "exam": exam,
         "attempt": attempt,
         "rows": rows,
     })
-
 
 # ---------- Resits ----------
 @teacher_required
