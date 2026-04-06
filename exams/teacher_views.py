@@ -199,33 +199,51 @@ def bank_question_upload(request, subject_id):
         filename = file.name.lower()
 
         if filename.endswith(".csv"):
-            data = file.read().decode("utf-8")
+            try:
+                data = file.read().decode("utf-8-sig")
+            except UnicodeDecodeError:
+                data = file.read().decode("latin-1")
+
             reader = csv.DictReader(io.StringIO(data))
 
+            seq_questions = {}
+
             for row in reader:
-                qtype = (row.get("qtype") or "MCQ").strip().upper()
-                text = (row.get("question") or "").strip()
+                qtype = (row.get("qtype") or row.get("type") or "MCQ").strip().upper()
+                text = (
+                    row.get("question_text")
+                    or row.get("question")
+                    or ""
+                ).strip()
 
                 if not text:
                     continue
 
-                q = BankQuestion.objects.create(
-                    subject=subject,
-                    text=text,
-                    qtype=qtype,
-                    correct_part_a=(row.get("correct_part_a") or "").strip() or None,
-                    correct_part_b=(row.get("correct_part_b") or "").strip() or None,
-                    correct_part_c=(row.get("correct_part_c") or "").strip() or None,
-                )
+                points = row.get("points")
+                try:
+                    points = int(points) if points else 2
+                except ValueError:
+                    points = 2
 
-                if qtype in ["MCQ", "TF"]:
+                # MCQ
+                if qtype == "MCQ":
+                    q = BankQuestion.objects.create(
+                        subject=subject,
+                        text=text,
+                        qtype="MCQ",
+                        points=points,
+                        correct_part_a=(row.get("correct_part_a") or "").strip() or None,
+                        correct_part_b=(row.get("correct_part_b") or "").strip() or None,
+                        correct_part_c=(row.get("correct_part_c") or "").strip() or None,
+                    )
+
                     correct_answer = (row.get("correct_answer") or "").strip().upper()
 
                     choices_map = {
-                        "A": (row.get("A") or "").strip(),
-                        "B": (row.get("B") or "").strip(),
-                        "C": (row.get("C") or "").strip(),
-                        "D": (row.get("D") or "").strip(),
+                        "A": (row.get("option_a") or row.get("A") or "").strip(),
+                        "B": (row.get("option_b") or row.get("B") or "").strip(),
+                        "C": (row.get("option_c") or row.get("C") or "").strip(),
+                        "D": (row.get("option_d") or row.get("D") or "").strip(),
                     }
 
                     for letter, choice_text in choices_map.items():
@@ -236,25 +254,92 @@ def bank_question_upload(request, subject_id):
                                 is_correct=(letter == correct_answer),
                             )
 
-                elif qtype == "SEQ":
-                    items = [
-                        (row.get("item1") or "").strip(),
-                        (row.get("item2") or "").strip(),
-                        (row.get("item3") or "").strip(),
-                        (row.get("item4") or "").strip(),
-                        (row.get("item5") or "").strip(),
-                        (row.get("item6") or "").strip(),
-                    ]
+                # TRUE / FALSE
+                elif qtype == "TF":
+                    q = BankQuestion.objects.create(
+                        subject=subject,
+                        text=text,
+                        qtype="TF",
+                        points=points,
+                        correct_part_a=None,
+                        correct_part_b=None,
+                        correct_part_c=None,
+                    )
 
-                    order_no = 1
-                    for item_text in items:
-                        if item_text:
-                            SequencingItem.objects.create(
-                                bank_question=q,
-                                text=item_text,
-                                correct_order=order_no,
-                            )
-                            order_no += 1
+                    correct_answer = (row.get("correct_answer") or "").strip().upper()
+
+                    BankChoice.objects.create(
+                        question=q,
+                        text="True",
+                        is_correct=(correct_answer == "TRUE"),
+                    )
+                    BankChoice.objects.create(
+                        question=q,
+                        text="False",
+                        is_correct=(correct_answer == "FALSE"),
+                    )
+
+                # STRUCTURED
+                elif qtype == "STRUCT":
+                    BankQuestion.objects.create(
+                        subject=subject,
+                        text=text,
+                        qtype="STRUCT",
+                        points=points,
+                        correct_part_a=(row.get("correct_part_a") or "").strip() or None,
+                        correct_part_b=(row.get("correct_part_b") or "").strip() or None,
+                        correct_part_c=(row.get("correct_part_c") or "").strip() or None,
+                    )
+
+                # SEQUENCING
+                elif qtype == "SEQ":
+                    # New format:
+                    # question_text,qtype,item_text,correct_order
+                    item_text = (row.get("item_text") or "").strip()
+                    correct_order = (row.get("correct_order") or "").strip()
+
+                    if text not in seq_questions:
+                        seq_questions[text] = BankQuestion.objects.create(
+                            subject=subject,
+                            text=text,
+                            qtype="SEQ",
+                            points=points,
+                            correct_part_a=None,
+                            correct_part_b=None,
+                            correct_part_c=None,
+                        )
+
+                    q = seq_questions[text]
+
+                    if item_text and correct_order:
+                        SequencingItem.objects.create(
+                            bank_question=q,
+                            text=item_text,
+                            correct_order=int(correct_order),
+                        )
+
+                    # Old format support:
+                    elif any((row.get(f"item{i}") or "").strip() for i in range(1, 7)):
+                        items = [
+                            (row.get("item1") or "").strip(),
+                            (row.get("item2") or "").strip(),
+                            (row.get("item3") or "").strip(),
+                            (row.get("item4") or "").strip(),
+                            (row.get("item5") or "").strip(),
+                            (row.get("item6") or "").strip(),
+                        ]
+
+                        # avoid duplicates if already created by repeated rows
+                        if not q.sequence_items.exists():
+                            order_no = 1
+                            for item in items:
+                                if item:
+                                    SequencingItem.objects.create(
+                                        bank_question=q,
+                                        text=item,
+                                        correct_order=order_no,
+                                    )
+                                    order_no += 1
 
             return redirect("teacher_bank_question_list", subject_id=subject.id)
 
@@ -266,7 +351,7 @@ def bank_question_upload(request, subject_id):
     return render(request, "teacher/bank_question_upload.html", {
         "subject": subject,
     })
-
+    
 @teacher_required
 def bank_question_create(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
