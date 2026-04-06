@@ -216,7 +216,7 @@
           <input
             type="text"
             name="part_a"
-            value="{{ attempt.answers.last.structured_part_a|default:'' }}"
+            value="{{ current_answer.structured_part_a|default:'' }}"
             {% if attempt.is_submitted %}disabled{% endif %}
           >
         </div>
@@ -226,7 +226,7 @@
           <input
             type="text"
             name="part_b"
-            value="{{ attempt.answers.last.structured_part_b|default:'' }}"
+            value="{{ current_answer.structured_part_b|default:'' }}"
             {% if attempt.is_submitted %}disabled{% endif %}
           >
         </div>
@@ -236,7 +236,7 @@
           <input
             type="text"
             name="part_c"
-            value="{{ attempt.answers.last.structured_part_c|default:'' }}"
+            value="{{ current_answer.structured_part_c|default:'' }}"
             {% if attempt.is_submitted %}disabled{% endif %}
           >
         </div>
