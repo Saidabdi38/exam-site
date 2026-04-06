@@ -28,6 +28,7 @@ urlpatterns = [
     path("bank/<int:subject_id>/<int:pk>/edit/", tv.bank_question_edit, name="teacher_bank_question_edit"),
     path("bank/<int:subject_id>/<int:pk>/delete/", tv.bank_question_delete, name="teacher_bank_question_delete"),
     path("teacher/bank/<int:subject_id>/upload/", tv.bank_question_upload, name="teacher_bank_question_upload"),
+    path('teacher/bank/<int:subject_id>/export/', tv.export_bank_csv, name='export_bank_csv'),
 
     # Attempts
     path("exams/<int:exam_id>/attempts/", tv.exam_attempts, name="teacher_exam_attempts"),

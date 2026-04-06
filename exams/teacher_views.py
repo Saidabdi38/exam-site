@@ -7,6 +7,7 @@ from django.db import transaction
 from django import forms
 import csv
 import io
+from django.http import HttpResponse
 
 from .models import (
     Subject,
@@ -351,7 +352,68 @@ def bank_question_upload(request, subject_id):
     return render(request, "teacher/bank_question_upload.html", {
         "subject": subject,
     })
-    
+
+@login_required
+def export_bank_csv(request, subject_id):
+    subject = get_object_or_404(Subject, id=subject_id)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="question_bank_{subject.id}.csv"'
+
+    writer = csv.writer(response)
+
+    # HEADER
+    writer.writerow([
+        "question", "qtype",
+        "A", "B", "C", "D", "correct_answer",
+        "part_a", "part_b", "part_c",
+        "item1", "item2", "item3", "item4"
+    ])
+
+    questions = BankQuestion.objects.filter(subject=subject)
+
+    for q in questions:
+        row = [q.text, q.qtype]
+
+        if q.qtype in ["MCQ", "TF"]:
+            choices = list(q.choices.all())
+            choices_map = ["", "", "", ""]
+            correct_letter = ""
+
+            for i, c in enumerate(choices):
+                if i < 4:
+                    choices_map[i] = c.text
+                    if c.is_correct:
+                        correct_letter = ["A", "B", "C", "D"][i]
+
+            row += choices_map + [correct_letter]
+
+            row += ["", "", "", "", "", "", "", ""]
+
+        elif q.qtype == "STRUCT":
+            row += ["", "", "", "", ""]
+            row += [
+                q.correct_part_a or "",
+                q.correct_part_b or "",
+                q.correct_part_c or ""
+            ]
+            row += ["", "", "", ""]
+
+        elif q.qtype == "SEQ":
+            items = list(q.sequence_items.order_by("correct_order"))
+            item_texts = [item.text for item in items]
+
+            while len(item_texts) < 4:
+                item_texts.append("")
+
+            row += ["", "", "", "", ""]
+            row += ["", "", ""]
+            row += item_texts[:4]
+
+        writer.writerow(row)
+
+    return response
+
 @teacher_required
 def bank_question_create(request, subject_id):
     subject = get_object_or_404(Subject, id=subject_id)
