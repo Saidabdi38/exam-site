@@ -373,7 +373,7 @@ def take_exam_q(request, attempt_id, qno):
 
     if not can_view_exam(request.user, exam):
         return redirect("student_dashboard")
-    
+
     if not attempt.started_at:
         attempt.started_at = timezone.now()
         attempt.save()
@@ -400,15 +400,34 @@ def take_exam_q(request, attempt_id, qno):
     aq = aqs[qno - 1]
     question = aq.bank_question
     choices = list(question.choices.all()) if question else []
-    sequence_items = list(question.sequence_items.all().order_by("correct_order"))
 
     ans, _ = Answer.objects.get_or_create(
         attempt=attempt,
         bank_question=question,
     )
 
+    sequence_items = []
+    if question and question.qtype == "SEQ":
+        all_items = list(question.sequence_items.all())
+
+        saved_ids = [str(x) for x in (ans.sequencing_answer or [])]
+        if saved_ids:
+            item_map = {str(item.id): item for item in all_items}
+            ordered_saved = [item_map[item_id] for item_id in saved_ids if item_id in item_map]
+            remaining = [item for item in all_items if str(item.id) not in saved_ids]
+            sequence_items = ordered_saved + remaining
+        else:
+            import random
+            sequence_items = all_items[:]
+            random.shuffle(sequence_items)
+
     if request.method == "POST" and attempt.submitted_at is None:
         if question.qtype in ["MCQ", "TF"]:
+            ans.structured_part_a = ""
+            ans.structured_part_b = ""
+            ans.structured_part_c = ""
+            ans.sequencing_answer = []
+
             choice_id = request.POST.get("answer", "").strip()
             if choice_id:
                 ans.selected_bank_choice = BankChoice.objects.filter(
@@ -419,11 +438,19 @@ def take_exam_q(request, attempt_id, qno):
                 ans.selected_bank_choice = None
 
         elif question.qtype == "STRUCT":
+            ans.selected_bank_choice = None
+            ans.sequencing_answer = []
+
             ans.structured_part_a = request.POST.get("part_a", "").strip()
             ans.structured_part_b = request.POST.get("part_b", "").strip()
             ans.structured_part_c = request.POST.get("part_c", "").strip()
 
         elif question.qtype == "SEQ":
+            ans.selected_bank_choice = None
+            ans.structured_part_a = ""
+            ans.structured_part_b = ""
+            ans.structured_part_c = ""
+
             seq_value = request.POST.get("sequence_answer", "").strip()
             ans.sequencing_answer = seq_value.split(",") if seq_value else []
 
@@ -464,12 +491,10 @@ def take_exam_q(request, attempt_id, qno):
 
     progress = []
     for i, one_aq in enumerate(aqs, start=1):
-        progress.append(
-            {
-                "no": i,
-                "answered": one_aq.bank_question_id in answered_bq_ids,
-            }
-        )
+        progress.append({
+            "no": i,
+            "answered": one_aq.bank_question_id in answered_bq_ids,
+        })
 
     return render(
         request,
@@ -483,6 +508,7 @@ def take_exam_q(request, attempt_id, qno):
             "qno": qno,
             "total": total,
             "selected_choice_id": ans.selected_bank_choice_id,
+            "current_answer": ans,
             "saved_sequence": ",".join(ans.sequencing_answer or []),
             "has_prev": qno > 1,
             "has_next": qno < total,
@@ -490,8 +516,7 @@ def take_exam_q(request, attempt_id, qno):
             "progress": progress,
         },
     )
-
-
+    
 @login_required
 @transaction.atomic
 def autosave_answer(request, attempt_id, qno):
