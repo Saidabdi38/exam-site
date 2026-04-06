@@ -294,6 +294,15 @@ def student_exams(request):
 # Exam flow (bank-question system)
 # -----------------------------
 @login_required
+def exam_instructions(request, exam_id):
+    exam = get_object_or_404(Exam, id=exam_id)
+
+    return render(request, "exams/exam_instructions.html", {
+        "exam": exam,
+    })
+
+
+@login_required
 @transaction.atomic
 def start_exam(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id, is_published=True)

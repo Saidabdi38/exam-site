@@ -16,6 +16,7 @@ urlpatterns = [
     # Exams
     path("exams/", views.exam_list, name="exam_list"),
     path("exam/<int:exam_id>/start/", views.start_exam, name="start_exam"),
+    path("exam/<int:exam_id>/instructions/", views.exam_instructions, name="exam_instructions"),
     path("subjects/<int:subject_id>/", views.subject_detail, name="subject_detail"),
 
     # Attempts

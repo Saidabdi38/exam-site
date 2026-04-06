@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .instructions-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .instructions-card {
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    padding: 24px;
+    background: #fff;
+    margin-top: 20px;
+  }
+
+  .instructions-title {
+    margin-bottom: 12px;
+  }
+
+  .instructions-text {
+    margin-bottom: 18px;
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  .instructions-list {
+    margin: 0;
+    padding-left: 22px;
+    line-height: 1.8;
+  }
+
+  .instructions-list ul {
+    margin-top: 8px;
+    padding-left: 22px;
+  }
+
+  .start-row {
+    margin-top: 24px;
+  }
+
+  .start-btn {
+    display: inline-block;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 999px;
+    background: #0d6efd;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .agree-box {
+    margin-top: 20px;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .instructions-card {
+      padding: 18px;
+    }
+
+    .instructions-text,
+    .instructions-list,
+    .agree-box {
+      font-size: 15px;
+    }
+
+    .start-btn {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>
+
+<div class="instructions-wrap">
+  <div class="instructions-card">
+    <h2 class="instructions-title">{{ exam.title }}</h2>
+
+    <p class="instructions-text">
+      <strong>Tilmaamaha Imtixaanka:</strong>
+    </p>
+
+    <ul class="instructions-list">
+      <li><strong>MCQ:</strong> Dooro hal jawaab oo sax ah.</li>
+      <li><strong>Run / Been:</strong> Dooro jawaabta saxda ah ee ah Run ama Been.</li>
+      <li>
+        <strong>Su’aalaha Qoraalka (STRUCT):</strong>
+        <ul>
+          <li>Qaybta A = Debit</li>
+          <li>Qaybta B = Credit</li>
+          <li>Qaybta C = Amount</li>
+        </ul>
+      </li>
+      <li><strong>Sequencing:</strong> Jiid oo dhig tallaabooyinka sida saxda ah.</li>
+      <li>Isticmaal <strong>Next</strong> iyo <strong>Previous</strong> si aad ugu gudubto su’aalaha.</li>
+      <li>Jawaabahaaga waa la kaydinayaa markaad u gudubto su’aasha xigta.</li>
+      <li>Si fiican u eeg waqtiga kuu haray.</li>
+      <li>Markaad dhammayso, riix <strong>Submit</strong>.</li>
+    </ul>
+
+    <form method="post" action="{% url 'start_exam' exam.id %}">
+      {% csrf_token %}
+
+      <div class="agree-box">
+        <label>
+          <input type="checkbox" required>
+          Waan akhriyey, waanan fahmay tilmaamaha imtixaanka.
+        </label>
+      </div>
+
+      <div class="start-row">
+        <button type="submit" class="start-btn">
+          Continue
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
