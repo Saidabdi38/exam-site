@@ -42,14 +42,14 @@
 
   .example-box {
     margin-top: 18px;
-    padding: 12px;
+    padding: 14px;
     background: #f8f9fa;
     border-radius: 10px;
+    border-left: 4px solid #0d6efd;
   }
 
   .guide-image-wrap {
-    margin-top: 16px;
-    margin-bottom: 16px;
+    margin: 16px 0;
     text-align: center;
   }
 
@@ -109,98 +109,109 @@
 
       <li>
         Su’aalaha imtixaanku waxay ka kooban yihiin afar nooc:
-        <strong>Doorasho (MCQ)</strong>,
-        <strong>Run iyo Been (True and False)</strong>,
-        <strong>Su’aalaha Qoraalka (Structured Questions)</strong>,
+        <strong>MCQ</strong>,
+        <strong>True/False</strong>,
+        <strong>Structured Questions</strong>,
         iyo
-        <strong>Jiid oo Dhig (Sequencing)</strong>.
+        <strong>Sequencing</strong>.
       </li>
 
       <li>
-        <strong>Doorasho (MCQ):</strong>
+        <strong>MCQ:</strong>
         Dooro hal jawaab oo sax ah kadib markaad si fiican u akhrido su’aasha.
       </li>
 
       <li>
-        <strong>Run iyo Been:</strong>
-        Dooro jawaabta saxda ah (Run ama Been) adigoo fahmaya su’aasha.
+        <strong>True/False:</strong>
+        Dooro jawaabta saxda ah (Run ama Been).
       </li>
 
       <li>
-        <strong>Su’aalaha Qoraalka (Structured Questions):</strong>
-        <ol class="alpha-list">
-          <li>Part A → Debit (Ku qor magaca account-ka debit-ka ah.)</li>
-          <li>Part B → Credit (Ku qor magaca account-ka credit-ka ah.)</li>
-          <li>Part C → Amount (Ku qor tirada lacagta saxda ah.)</li>
-        </ol>
+        <strong>Structured Questions:</strong>
 
-        <p>Hubi in Debit iyo Credit ay isku dheellitiran yihiin.</p>
+        <ol class="alpha-list">
+          <li>Part A → Debit</li>
+          <li>Part B → Credit</li>
+          <li>Part C → Amount</li>
+        </ol>
 
         <div class="example-box">
           <strong>Tusaale:</strong><br><br>
-          <strong>Su’aal:</strong> Record depreciation of 2000<br><br>
+          Record depreciation of 2000<br><br>
 
-          <strong>Sida looga jawaabayo:</strong><br>
-          <strong>Part A:</strong> Debit Depreciation Expense<br>
-          Tani waa account-ka debit-ka ah, sababtoo ah depreciation waa kharash (expense).<br><br>
-
-          <strong>Part B:</strong> Credit Accumulated Depreciation<br>
-          Tani waa account-ka credit-ka ah, sababtoo ah accumulated depreciation waa dhinaca credit-ka ee depreciation-ka la uruuriyo.<br><br>
-
-          <strong>Part C:</strong> Amount 2000<br>
-          Halkan waxaad ku qoraysaa tirada saxda ah ee lacagta, taas oo ah 2000.
+          <strong>Part A (Debit):</strong> Depreciation Expense<br>
+          <strong>Part B (Credit):</strong> Accumulated Depreciation<br>
+          <strong>Part C (Amount):</strong> 2000
         </div>
       </li>
 
       <li>
-        <strong>Jiid oo Dhig (Sequencing):</strong>
+        <strong>Sequencing:</strong>
         Jiid tallaabooyinka si ay u noqdaan nidaamka saxda ah.
       </li>
 
       <li>
-        <strong>Qaybta Hoose (Wareegyada):</strong>
+        <strong>Wareegyada (Question Navigator):</strong>
+
         <ol class="alpha-list">
-          <li>Wareegyada (1, 2, 3...) waxay muujinayaan dhammaan su’aalaha.</li>
+
+          <li>Wareegyada (1,2,3...) = dhammaan su’aalaha</li>
 
           <li>
             Midabada:
             <ol class="roman-list">
-              <li>Cagaar = waa laga jawaabay</li>
-              <li>Cawl = lagama jawaabin</li>
-              <li>Buluug = su’aasha hadda laga jawaabayo</li>
+              <li>Cagaar → laga jawaabay</li>
+              <li>Cawl → lagama jawaabin</li>
+              <li>Buluug → su’aasha hadda</li>
             </ol>
           </li>
 
-          <li>Wareeg gaar ah = su’aasha aad hadda joogto.</li>
+          <li>Riix lambar si aad ugu booddo su’aal kasta</li>
 
-          <li>Riix lambar kasta si aad ugu booddo su’aal kasta.</li>
+          <li>Haddii aad shaki qabto → ka bood oo dib ugu noqo</li>
 
-          <li>
-            Talo:
-            Haddii aad shaki qabto → ka bood oo dib ugu noqo.
-          </li>
-
-          <li>
-            Navigation:
-            <ol class="roman-list">
-              <li>Previous → su’aal hore</li>
-              <li>Next → su’aal xigta</li>
-            </ol>
-          </li>
         </ol>
       </li>
 
-      <li>Jawaabaha waa la kaydinayaa markaad u gudubto su’aasha xigta.</li>
+       <!-- ✅ IMAGE HERE -->
+        <div class="guide-image-wrap">
+          <img src="{% static 'exams/images/sequence_guide.jpeg' %}" class="guide-image">
+        </div>
+      <!-- ✅ QODOB 7 (UPDATED WITH NAVIGATION + IMAGE) -->
 
-      <li>Si joogto ah ula soco waqtiga.</li>
+      <li>
+        Jawaabaha waa la kaydinayaa markaad u gudubto su’aasha xigta.
+
+        <li><strong>Navigation (Socodka Su’aalaha):</strong></li>
+
+        <ol class="alpha-list">
+
+          <li>
+            <strong>Previous:</strong>
+            Riix batoonka Previous si aad dib ugu noqoto su’aashii hore
+            una saxdo ama u eegto jawaabtaada.
+          </li>
+
+          <li>
+            <strong>Next:</strong>
+            Riix Next si aad ugu gudubto su’aasha xigta.
+            Jawaabtaadana si toos ah ayaa loo kaydinayaa.
+          </li>
+
+          <li>
+            <strong>Faa’iido:</strong>
+            Waxaad si fudud ugu kala socon kartaa dhammaan su’aalaha
+            adigoon lumin jawaabahaaga.
+          </li>
+
+        </ol>
+      </li>
+
+      <li>La soco waqtiga kuu haray.</li>
 
       <li>Markaad dhamayso → riix <strong>Submit</strong>.</li>
 
     </ol>
-
-    <div class="guide-image-wrap">
-      <img src="{% static 'exams/images/sequence_guide.jpeg' %}" alt="Sharaxa wareegyada" class="guide-image">
-    </div>
 
     <form method="post" action="{% url 'start_exam' exam.id %}">
       {% csrf_token %}
