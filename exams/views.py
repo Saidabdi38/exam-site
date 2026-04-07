@@ -203,19 +203,35 @@ def student_dashboard(request):
 
         if latest is None:
             status = "Not started"
-            action.update({"label": "Start", "url_name": "start_exam", "arg": exam.id})
+            action.update({
+                "label": "Start",
+                "url_name": "exam_instructions",
+                "arg": exam.id,
+            })
 
         elif not latest.is_submitted:
             status = f"In progress (time left: {latest.time_left_seconds()}s)"
             qno = get_resume_qno(latest)
-            action.update({"label": "Resume", "url_name": "take_exam_q", "args": [latest.id, qno]})
+            action.update({
+                "label": "Resume",
+                "url_name": "take_exam_q",
+                "args": [latest.id, qno],
+            })
 
         else:
             status = f"Submitted ({latest.score}/{latest.max_score})"
             if remaining > 0:
-                action.update({"label": f"Re-sit ({remaining} left)", "url_name": "start_exam", "arg": exam.id})
+                action.update({
+                    "label": f"Re-sit ({remaining} left)",
+                    "url_name": "exam_instructions",
+                    "arg": exam.id,
+                })
             else:
-                action.update({"label": "View Result", "url_name": "exam_result", "arg": latest.id})
+                action.update({
+                    "label": "View Result",
+                    "url_name": "exam_result",
+                    "arg": latest.id,
+                })
 
         rows.append(
             {
@@ -236,8 +252,7 @@ def student_dashboard(request):
         "students/dashboard.html",
         {"rows": rows, "recent_results": recent_results},
     )
-
-
+    
 @login_required
 def student_exams(request):
     user = request.user
