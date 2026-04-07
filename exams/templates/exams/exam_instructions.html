@@ -85,7 +85,6 @@
     font-size: 16px;
   }
 
-  /* ✅ checkbox + text hal line */
   .agree-box label {
     display: flex;
     align-items: center;
@@ -130,14 +129,14 @@
       <li>
         <strong>Su’aalaha Qoraalka (Structured Questions):</strong>
         <ol class="alpha-list">
-          <li>Part A → Debit (Ku qor magaca account-ka debit ka ah.)</li>
-          <li>Part B → Credit (Ku qor magaca account-ka credit ka ah.)</li>
+          <li>Part A → Debit (Ku qor magaca account-ka debit-ka ah.)</li>
+          <li>Part B → Credit (Ku qor magaca account-ka credit-ka ah.)</li>
           <li>Part C → Amount (Ku qor tirada lacagta saxda ah.)</li>
         </ol>
 
         <p>Hubi in Debit iyo Credit ay isku dheellitiran yihiin.</p>
 
-       <div class="example-box">
+        <div class="example-box">
           <strong>Tusaale:</strong><br><br>
           <strong>Su’aal:</strong> Record depreciation of 2000<br><br>
 
@@ -150,7 +149,7 @@
 
           <strong>Part C:</strong> Amount 2000<br>
           Halkan waxaad ku qoraysaa tirada saxda ah ee lacagta, taas oo ah 2000.
-      </div>
+        </div>
       </li>
 
       <li>
@@ -160,26 +159,25 @@
 
       <li>
         <strong>Qaybta Hoose (Wareegyada):</strong>
-
         <ol class="alpha-list">
-          <li>Wareegyada (1,2,3...) = dhammaan su’aalaha</li>
+          <li>Wareegyada (1, 2, 3...) waxay muujinayaan dhammaan su’aalaha.</li>
 
           <li>
             Midabada:
             <ol class="roman-list">
               <li>Cagaar = waa laga jawaabay</li>
               <li>Cawl = lagama jawaabin</li>
-              <li>Buluug = Su'aashadda hadda laga jawaabayo</li>
+              <li>Buluug = su’aasha hadda laga jawaabayo</li>
             </ol>
           </li>
 
-          <li>Wareeg gaar ah = su’aasha aad joogto</li>
+          <li>Wareeg gaar ah = su’aasha aad hadda joogto.</li>
 
-          <li>Riix lambar si aad ugu booddo su’aal kasta</li>
+          <li>Riix lambar kasta si aad ugu booddo su’aal kasta.</li>
 
           <li>
             Talo:
-            Haddii aad shaki qabto → ka bood oo dib ugu noqo
+            Haddii aad shaki qabto → ka bood oo dib ugu noqo.
           </li>
 
           <li>
@@ -189,11 +187,8 @@
               <li>Next → su’aal xigta</li>
             </ol>
           </li>
-
         </ol>
       </li>
-     
-
 
       <li>Jawaabaha waa la kaydinayaa markaad u gudubto su’aasha xigta.</li>
 
@@ -202,6 +197,10 @@
       <li>Markaad dhamayso → riix <strong>Submit</strong>.</li>
 
     </ol>
+
+    <div class="guide-image-wrap">
+      <img src="{% static 'exams/images/sequence_guide.jpeg' %}" alt="Sharaxa wareegyada" class="guide-image">
+    </div>
 
     <form method="post" action="{% url 'start_exam' exam.id %}">
       {% csrf_token %}
@@ -215,7 +214,7 @@
 
       <div class="start-row">
         <button type="submit" class="start-btn" id="startBtn" disabled>
-          Continue
+          Sii wad
         </button>
       </div>
     </form>
