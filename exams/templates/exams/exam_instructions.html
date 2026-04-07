@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
 
 <style>
@@ -27,13 +28,35 @@
 
   .instructions-list {
     margin: 0;
-    padding-left: 22px;
-    line-height: 1.8;
+    padding-left: 24px;
+    line-height: 1.9;
   }
 
-  .instructions-list ul {
-    margin-top: 8px;
-    padding-left: 22px;
+  .alpha-list {
+    list-style-type: lower-alpha;
+  }
+
+  .roman-list {
+    list-style-type: lower-roman;
+  }
+
+  .example-box {
+    margin-top: 18px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 10px;
+  }
+
+  .guide-image-wrap {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .guide-image {
+    max-width: 100%;
+    border-radius: 12px;
+    border: 1px solid #ddd;
   }
 
   .start-row {
@@ -48,8 +71,12 @@
     background: #0d6efd;
     color: #fff;
     font-weight: 700;
-    text-decoration: none;
     cursor: pointer;
+    opacity: 0.6;
+  }
+
+  .start-btn.enabled {
+    opacity: 1;
   }
 
   .agree-box {
@@ -58,21 +85,16 @@
     font-size: 16px;
   }
 
-  @media (max-width: 768px) {
-    .instructions-card {
-      padding: 18px;
-    }
+  /* ✅ checkbox + text hal line */
+  .agree-box label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-    .instructions-text,
-    .instructions-list,
-    .agree-box {
-      font-size: 15px;
-    }
-
-    .start-btn {
-      width: 100%;
-      text-align: center;
-    }
+  .agree-box input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
   }
 </style>
 
@@ -84,41 +106,136 @@
       <strong>Tilmaamaha Imtixaanka:</strong>
     </p>
 
-    <ul class="instructions-list">
-      <li><strong>MCQ:</strong> Dooro hal jawaab oo sax ah.</li>
-      <li><strong>Run / Been:</strong> Dooro jawaabta saxda ah ee ah Run ama Been.</li>
+    <ol class="instructions-list">
+
       <li>
-        <strong>Su’aalaha Qoraalka (STRUCT):</strong>
-        <ul>
-          <li>Qaybta A = Debit</li>
-          <li>Qaybta B = Credit</li>
-          <li>Qaybta C = Amount</li>
-        </ul>
+        Su’aalaha imtixaanku waxay ka kooban yihiin afar nooc:
+        <strong>Doorasho (MCQ)</strong>,
+        <strong>Run iyo Been (True and False)</strong>,
+        <strong>Su’aalaha Qoraalka (Structured Questions)</strong>,
+        iyo
+        <strong>Jiid oo Dhig (Sequencing)</strong>.
       </li>
-      <li><strong>Sequencing:</strong> Jiid oo dhig tallaabooyinka sida saxda ah.</li>
-      <li>Isticmaal <strong>Next</strong> iyo <strong>Previous</strong> si aad ugu gudubto su’aalaha.</li>
-      <li>Jawaabahaaga waa la kaydinayaa markaad u gudubto su’aasha xigta.</li>
-      <li>Si fiican u eeg waqtiga kuu haray.</li>
-      <li>Markaad dhammayso, riix <strong>Submit</strong>.</li>
-    </ul>
+
+      <li>
+        <strong>Doorasho (MCQ):</strong>
+        Dooro hal jawaab oo sax ah kadib markaad si fiican u akhrido su’aasha.
+      </li>
+
+      <li>
+        <strong>Run iyo Been:</strong>
+        Dooro jawaabta saxda ah (Run ama Been) adigoo fahmaya su’aasha.
+      </li>
+
+      <li>
+        <strong>Su’aalaha Qoraalka (Structured Questions):</strong>
+        <ol class="alpha-list">
+          <li>Part A → Debit (Ku qor magaca account-ka debit ka ah.)</li>
+          <li>Part B → Credit (Ku qor magaca account-ka credit ka ah.)</li>
+          <li>Part C → Amount (Ku qor tirada lacagta saxda ah.)</li>
+        </ol>
+
+        <p>Hubi in Debit iyo Credit ay isku dheellitiran yihiin.</p>
+
+       <div class="example-box">
+          <strong>Tusaale:</strong><br><br>
+          <strong>Su’aal:</strong> Record depreciation of 2000<br><br>
+
+          <strong>Sida looga jawaabayo:</strong><br>
+          <strong>Part A:</strong> Debit Depreciation Expense<br>
+          Tani waa account-ka debit-ka ah, sababtoo ah depreciation waa kharash (expense).<br><br>
+
+          <strong>Part B:</strong> Credit Accumulated Depreciation<br>
+          Tani waa account-ka credit-ka ah, sababtoo ah accumulated depreciation waa dhinaca credit-ka ee depreciation-ka la uruuriyo.<br><br>
+
+          <strong>Part C:</strong> Amount 2000<br>
+          Halkan waxaad ku qoraysaa tirada saxda ah ee lacagta, taas oo ah 2000.
+      </div>
+      </li>
+
+      <li>
+        <strong>Jiid oo Dhig (Sequencing):</strong>
+        Jiid tallaabooyinka si ay u noqdaan nidaamka saxda ah.
+      </li>
+
+      <li>
+        <strong>Qaybta Hoose (Wareegyada):</strong>
+
+        <ol class="alpha-list">
+          <li>Wareegyada (1,2,3...) = dhammaan su’aalaha</li>
+
+          <li>
+            Midabada:
+            <ol class="roman-list">
+              <li>Cagaar = waa laga jawaabay</li>
+              <li>Cawl = lagama jawaabin</li>
+              <li>Buluug = Su'aashadda hadda laga jawaabayo</li>
+            </ol>
+          </li>
+
+          <li>Wareeg gaar ah = su’aasha aad joogto</li>
+
+          <li>Riix lambar si aad ugu booddo su’aal kasta</li>
+
+          <li>
+            Talo:
+            Haddii aad shaki qabto → ka bood oo dib ugu noqo
+          </li>
+
+          <li>
+            Navigation:
+            <ol class="roman-list">
+              <li>Previous → su’aal hore</li>
+              <li>Next → su’aal xigta</li>
+            </ol>
+          </li>
+
+        </ol>
+      </li>
+     
+
+
+      <li>Jawaabaha waa la kaydinayaa markaad u gudubto su’aasha xigta.</li>
+
+      <li>Si joogto ah ula soco waqtiga.</li>
+
+      <li>Markaad dhamayso → riix <strong>Submit</strong>.</li>
+
+    </ol>
 
     <form method="post" action="{% url 'start_exam' exam.id %}">
       {% csrf_token %}
 
       <div class="agree-box">
         <label>
-          <input type="checkbox" required>
-          Waan akhriyey, waanan fahmay tilmaamaha imtixaanka.
+          <input type="checkbox" id="agreeCheck">
+          <span>Waan akhriyey, waanan fahmay tilmaamaha imtixaanka.</span>
         </label>
       </div>
 
       <div class="start-row">
-        <button type="submit" class="start-btn">
+        <button type="submit" class="start-btn" id="startBtn" disabled>
           Continue
         </button>
       </div>
     </form>
+
   </div>
 </div>
+
+<script>
+const checkbox = document.getElementById("agreeCheck");
+const button = document.getElementById("startBtn");
+
+checkbox.addEventListener("change", function () {
+  if (this.checked) {
+    button.disabled = false;
+    button.classList.add("enabled");
+  } else {
+    button.disabled = true;
+    button.classList.remove("enabled");
+  }
+});
+</script>
 
 {% endblock %}
