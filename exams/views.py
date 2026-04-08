@@ -672,14 +672,93 @@ def exam_result(request, attempt_id):
     answers = attempt.answers.select_related(
         "bank_question",
         "selected_bank_choice",
+    ).prefetch_related(
+        "bank_question__choices",
+        "bank_question__sequence_items",
     ).all()
+
+    rows = []
+
+    for a in answers:
+        q = a.bank_question
+        if not q:
+            continue
+
+        row = {
+            "question_text": q.text,
+            "qtype": q.qtype,
+            "selected": None,
+            "correct": None,
+            "is_correct": False,
+            "seq_score": 0,
+            "comparison": [],
+        }
+
+        # MCQ / TF
+        if q.qtype in ["MCQ", "TF"]:
+            row["selected"] = a.selected_bank_choice
+            row["correct"] = q.choices.filter(is_correct=True).first()
+            row["is_correct"] = bool(a.selected_bank_choice and a.selected_bank_choice.is_correct)
+
+        # STRUCT
+        elif q.qtype == "STRUCT":
+            row["selected"] = {
+                "part_a": a.structured_part_a,
+                "part_b": a.structured_part_b,
+                "part_c": a.structured_part_c,
+            }
+            row["correct"] = {
+                "part_a": q.correct_part_a,
+                "part_b": q.correct_part_b,
+                "part_c": q.correct_part_c,
+            }
+
+            row["is_correct"] = (
+                (a.structured_part_a or "").strip().lower() == (q.correct_part_a or "").strip().lower()
+                and (a.structured_part_b or "").strip().lower() == (q.correct_part_b or "").strip().lower()
+                and (a.structured_part_c or "").strip().lower() == (q.correct_part_c or "").strip().lower()
+            )
+
+        # SEQ
+        elif q.qtype == "SEQ":
+            correct_items = list(
+                q.sequence_items.order_by("correct_order").values_list("text", flat=True)
+            )
+
+            selected_items = []
+            if a.sequencing_answer:
+                item_map = {str(item.id): item.text for item in q.sequence_items.all()}
+                selected_items = [
+                    item_map[item_id]
+                    for item_id in a.sequencing_answer
+                    if item_id in item_map
+                ]
+
+            row["selected"] = selected_items
+            row["correct"] = correct_items
+            row["is_correct"] = selected_items == correct_items
+
+            comparison = []
+            for i, selected_item in enumerate(selected_items):
+                correct_item = correct_items[i] if i < len(correct_items) else ""
+                comparison.append({
+                    "position": i + 1,
+                    "student_item": selected_item,
+                    "correct_item": correct_item,
+                    "is_correct_position": selected_item == correct_item,
+                })
+
+            row["comparison"] = comparison
+            row["seq_score"] = sum(1 for c in comparison if c["is_correct_position"])
+
+        rows.append(row)
 
     return render(
         request,
         "exams/result.html",
         {
             "attempt": attempt,
-            "answers": answers,
+            "rows": rows,
             "percentage": round(percentage, 2),
             "result": result,
         },

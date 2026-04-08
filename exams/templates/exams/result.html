@@ -1,39 +1,199 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Result: {{ attempt.exam.title }}</h2>
+<style>
+  .result-summary {
+    border: 1px solid #ddd;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    background: #f9fafb;
+  }
 
-<p>Score: <strong>{{ attempt.score }}</strong> / {{ attempt.max_score }}</p>
-<p>Percentage: <strong>{{ percentage }}%</strong></p>
-<p>Result: <strong>{{ result }}</strong></p>
-<p>Submitted: {{ attempt.submitted_at }}</p>
+  .result-card {
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px 0;
+    border: 1px solid #ddd;
+    background: #fff;
+  }
+
+  .question-number {
+    display: inline-block;
+    min-width: 34px;
+    padding: 4px 10px;
+    margin-right: 8px;
+    border-radius: 8px;
+    background: #0d6efd;
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .answer-box {
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-weight: 600;
+  }
+
+  .correct {
+    background: #e6f9ed;
+    color: #0f8a3c;
+    border: 1px solid #b7ebc6;
+  }
+
+  .incorrect {
+    background: #fdecea;
+    color: #c0392b;
+    border: 1px solid #f5c6cb;
+  }
+
+  .unanswered {
+    background: #f1f3f5;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+  }
+
+  .back-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    background: #0d6efd;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+
+  .seq-list {
+    margin: 8px 0 0 22px;
+  }
+
+  .position-correct {
+    color: green;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+
+  .position-wrong {
+    color: red;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+</style>
+
+<div class="result-summary">
+  <h2>Result: {{ attempt.exam.title }}</h2>
+  <p>Score: <strong>{{ attempt.score }}</strong> / {{ attempt.max_score }}</p>
+  <p>Percentage: <strong>{{ percentage }}%</strong></p>
+  <p>Result: <strong>{{ result }}</strong></p>
+  <p>Submitted: {{ attempt.submitted_at }}</p>
+</div>
 
 <hr>
 
-{% for a in answers %}
-  <div style="border:1px solid #ddd; padding:12px; margin:10px 0;">
+{% for r in rows %}
+  <div class="result-card">
 
-    <!-- ✅ Bank Question -->
-    <p><strong>{{ a.bank_question.text }}</strong></p>
-
-    <!-- ✅ Student Answer -->
     <p>
-      Your answer:
-      {{ a.selected_bank_choice.text|default:"(no answer)" }}
+      <span class="question-number">{{ forloop.counter }}</span>
+      <strong>{{ r.question_text }}</strong>
     </p>
 
-    <!-- ✅ Correct / Incorrect -->
-    {% if a.selected_bank_choice %}
-      {% if a.selected_bank_choice.is_correct %}
-        <p style="color:green;">Correct</p>
+    {% if r.qtype == "MCQ" or r.qtype == "TF" %}
+
+      {% if r.selected %}
+        <div class="answer-box {% if r.is_correct %}correct{% else %}incorrect{% endif %}">
+          <strong>Your answer:</strong> {{ r.selected.text }}<br>
+
+          {% if r.is_correct %}
+            ✔ Correct
+          {% else %}
+            ❌ Incorrect<br>
+            <strong>Correct answer:</strong> {{ r.correct.text|default:"-" }}
+          {% endif %}
+        </div>
       {% else %}
-        <p style="color:red;">Incorrect</p>
+        <div class="answer-box unanswered">
+          ⚪ <strong>Your answer:</strong> No answer
+        </div>
       {% endif %}
+
+    {% elif r.qtype == "STRUCT" %}
+
+      {% if r.selected.part_a or r.selected.part_b or r.selected.part_c %}
+        <div class="answer-box {% if r.is_correct %}correct{% else %}incorrect{% endif %}">
+          <strong>Your answer:</strong><br>
+          Part A: {{ r.selected.part_a|default:"No answer" }}<br>
+          Part B: {{ r.selected.part_b|default:"No answer" }}<br>
+          Part C: {{ r.selected.part_c|default:"No answer" }}
+
+          {% if r.is_correct %}
+            <br><br>✔ Correct
+          {% else %}
+            <br><br>❌ Incorrect<br>
+            <strong>Correct answer:</strong><br>
+            Part A: {{ r.correct.part_a|default:"-" }}<br>
+            Part B: {{ r.correct.part_b|default:"-" }}<br>
+            Part C: {{ r.correct.part_c|default:"-" }}
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="answer-box unanswered">
+          ⚪ <strong>Your answer:</strong><br>
+          Part A: No answer<br>
+          Part B: No answer<br>
+          Part C: No answer
+        </div>
+      {% endif %}
+
+    {% elif r.qtype == "SEQ" %}
+
+      {% if r.selected %}
+        <div class="answer-box {% if r.is_correct %}correct{% else %}incorrect{% endif %}">
+          <strong>Your answer:</strong>
+
+          <ol class="seq-list">
+            {% for c in r.comparison %}
+              <li>
+                {{ c.student_item }}
+                {% if c.is_correct_position %}
+                  <span class="position-correct">✔ Correct position</span>
+                {% else %}
+                  <span class="position-wrong">❌ Wrong position</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ol>
+
+          {% if r.is_correct %}
+            ✔ Correct
+          {% else %}
+            <br>
+            <strong>Correct order:</strong>
+            <ol class="seq-list">
+              {% for item in r.correct %}
+                <li>{{ item }}</li>
+              {% endfor %}
+            </ol>
+
+            <p><strong>Correct positions:</strong> {{ r.seq_score }}</p>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="answer-box unanswered">
+          ⚪ <strong>Your answer:</strong> No answer
+        </div>
+      {% endif %}
+
     {% endif %}
 
   </div>
+{% empty %}
+  <p>No answers found.</p>
 {% endfor %}
 
-<a href="{% url 'exam_list' %}">Back to exams</a>
+<div style="margin-top:20px;">
+  <a href="{% url 'exam_list' %}" class="back-btn">Back to Exams</a>
+</div>
 
 {% endblock %}
