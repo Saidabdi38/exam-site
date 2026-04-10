@@ -6,14 +6,14 @@
   <p><strong>Selected Role:</strong> {{ profile.role.name }}</p>
   <p>
     <a class="btn btn-secondary" href="{% url 'role_list' %}">Change Role</a>
-    <a class="btn btn-primary" href="{% url 'transaction_list' %}">View Transactions</a>
+    <!-- <a class="btn btn-primary" href="{% url 'transaction_list' %}">View Transactions</a> -->
   </p>
   <h2>Recent Transactions</h2>
   {% for t in transactions %}
     <div class="card" style="margin-bottom:12px;">
       <h3>{{ t.title }}</h3>
       <p>{{ t.company_name }} | {{ t.transaction_date }} | {{ t.amount }}</p>
-      <a class="btn btn-primary" href="{% url 'transaction_detail' t.id %}">Open</a>
+      <a class="btn btn-primary" href="{% url 'transaction_detail' t.id %}">Next</a>
     </div>
   {% empty %}
     <p>No transactions for this role yet.</p>

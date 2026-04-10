@@ -195,4 +195,75 @@ def update_progress(request, pk, step_no):
 
     progress.save()
 
-    return redirect("transaction_workflow", pk=transaction.id)
+    return redirect("workflow_steps", pk=transaction.id)
+
+@login_required
+def workflow_steps(request, pk):
+    transaction = get_object_or_404(
+        OfficeTransaction.objects.prefetch_related("workflow_steps"),
+        id=pk,
+    )
+
+    progress, _ = StudentTransactionProgress.objects.get_or_create(
+        student=request.user,
+        transaction=transaction,
+    )
+
+    return render(
+        request,
+        "office_sim/workflow_steps.html",
+        {
+            "transaction": transaction,
+            "steps": transaction.workflow_steps.all(),
+            "progress": progress,
+        },
+    )
+
+@login_required
+def workflow_diagram(request, pk):
+    transaction = get_object_or_404(
+        OfficeTransaction.objects.prefetch_related(
+            "nodes",
+            "connections__from_node",
+            "connections__to_node",
+        ),
+        id=pk,
+    )
+
+    nodes = list(transaction.nodes.all())
+    connections = list(transaction.connections.all())
+
+    mermaid_lines = ["flowchart TD"]
+
+    for node in nodes:
+        node_id = f"N{node.id}"
+        title = (node.title or "").replace('"', '\\"')
+
+        if node.node_type == "decision":
+            mermaid_lines.append(f'{node_id}{{"{title}"}}')
+        elif node.node_type in ["start", "end"]:
+            mermaid_lines.append(f'{node_id}(["{title}"])')
+        else:
+            mermaid_lines.append(f'{node_id}["{title}"]')
+
+    for conn in connections:
+        from_id = f"N{conn.from_node_id}"
+        to_id = f"N{conn.to_node_id}"
+        label = (conn.label or "").replace('"', '\\"')
+
+        if label:
+            mermaid_lines.append(f'{from_id} -->|"{label}"| {to_id}')
+        else:
+            mermaid_lines.append(f"{from_id} --> {to_id}")
+
+    mermaid_code = "\n".join(mermaid_lines)
+
+    return render(
+        request,
+        "office_sim/workflow_diagram.html",
+        {
+            "transaction": transaction,
+            "mermaid_code": mermaid_code,
+        },
+    )
+        
