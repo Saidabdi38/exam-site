@@ -124,7 +124,7 @@ class WorkflowNode(models.Model):
         ordering = ["position", "id"]
         unique_together = ("transaction", "code")
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.transaction.title} - {self.code}"
     
 
@@ -150,6 +150,6 @@ class WorkflowConnection(models.Model):
     class Meta:
         ordering = ["position", "id"]
 
-    def _str_(self):
+    def __str__(self):
         label = f" ({self.label})" if self.label else ""
         return f"{self.from_node.code} -> {self.to_node.code}{label}"
