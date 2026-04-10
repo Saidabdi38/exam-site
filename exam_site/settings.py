@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "exams.apps.ExamsConfig",
     "ckeditor",
     "ckeditor_uploader",
+    "office_sim",
 ]
 
 MIDDLEWARE = [

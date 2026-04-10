@@ -140,12 +140,14 @@
       <a class="navlink" href="{% url 'home' %}">Home</a>
       <a class="navlink" href="{% url 'about' %}">About</a>
       <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+      <a href="{% url 'office_dashboard' %}">Virtual Office</a>
 
     {% else %}
 
       <a class="navlink" href="{% url 'home' %}">Home</a>
       <a class="navlink" href="{% url 'about' %}">About</a>
       <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+      <a href="{% url 'office_dashboard' %}">Virtual Office</a>
 
     {% endif %}
   </div>

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Transaction Detail{% endblock %}
+{% block content %}
+<h1>{{ transaction.title }}</h1>
+<p><strong>Date:</strong> {{ transaction.transaction_date }}</p>
+<p><strong>Company:</strong> {{ transaction.company_name|default:"-" }}</p>
+<p><strong>Amount:</strong> {{ transaction.amount|default:"-" }}</p>
+<p><strong>Department:</strong> {{ transaction.department|default:"-" }}</p>
+<p><strong>Status:</strong> {{ transaction.status }}</p>
+<h2>Description</h2>
+<p>{{ transaction.description|default:"No description." }}</p>
+<h2>Documents</h2>
+{% for doc in transaction.documents.all %}
+  <div class="card" style="margin-bottom:10px;">
+    <strong>{{ doc.name }}</strong> ({{ doc.document_type }})
+    {% if doc.content %}
+      <p>{{ doc.content }}</p>
+    {% endif %}
+  </div>
+{% empty %}
+  <p>No documents attached.</p>
+{% endfor %}
+<p>
+  <a class="btn btn-primary" href="{% url 'transaction_workflow' transaction.id %}">Open Workflow</a>
+</p>
+{% endblock %}
