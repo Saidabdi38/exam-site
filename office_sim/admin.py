@@ -34,7 +34,7 @@ class WorkflowConnectionInline(admin.TabularInline):
 
 @admin.register(OfficeRole)
 class OfficeRoleAdmin(admin.ModelAdmin):
-    list_display = ("name",)
+    list_display = ("name", "office_display_name")
 
 
 @admin.register(StudentOfficeProfile)
@@ -57,8 +57,8 @@ class StudentTransactionProgressAdmin(admin.ModelAdmin):
 
 @admin.register(WorkflowNode)
 class WorkflowNodeAdmin(admin.ModelAdmin):
-    list_display = ("transaction", "code", "title", "node_type", "position")
-    list_filter = ("node_type", "transaction")
+    list_display = ("transaction", "code", "title", "lane", "row", "node_type")
+    list_filter = ("node_type", "lane", "transaction")
     search_fields = ("code", "title")
 
 

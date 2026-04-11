@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Swimlane{% endblock %}
+
+{% block content %}
+
+<style>
+  .swimlane-container {
+    position: relative;
+    overflow: auto;
+    padding: 40px;
+  }
+
+  .swimlane-grid {
+    display: grid;
+    grid-template-columns: 150px repeat({{ roles|length }}, 260px);
+    gap: 30px;
+    position: relative;
+    z-index: 2;
+    width: max-content;
+  }
+
+  .header {
+    background: #e2e8f0;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .step-label {
+    text-align: center;
+    font-weight: bold;
+    padding-top: 35px;
+  }
+
+  .box {
+    padding: 14px;
+    text-align: center;
+    border: 2px solid #1f2937;
+    min-height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #e0f2fe;
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .svg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+</style>
+
+<h2>{{ transaction.title }} - Swimlane</h2>
+
+<div class="swimlane-container" id="container">
+  <svg id="svg" class="svg-layer"></svg>
+
+  <div class="swimlane-grid" id="grid">
+    <div></div>
+
+    {% for role in roles %}
+      <div class="header">{{ role.name }}</div>
+    {% endfor %}
+
+    {% for step in steps %}
+      <div class="step-label">Step {{ step.step_no }}</div>
+
+      {% for role in roles %}
+        {% if step.role_id == role.id %}
+          <div class="box" id="node-{{ step.id }}">
+            {{ step.title }}
+          </div>
+        {% else %}
+          <div></div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+  function drawOrthogonalLine(svg, x1, y1, x2, y2) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+    const midY = y1 + 40;
+
+    const d = `
+      M ${x1} ${y1}
+      L ${x1} ${midY}
+      L ${x2} ${midY}
+      L ${x2} ${y2}
+    `;
+
+    path.setAttribute("d", d);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#111");
+    path.setAttribute("stroke-width", "2.5");
+    path.setAttribute("marker-end", "url(#arrowhead)");
+
+    svg.appendChild(path);
+  }
+
+  function drawArrows() {
+    const svg = document.getElementById("svg");
+    const container = document.getElementById("container");
+    const boxes = [...document.querySelectorAll(".box")];
+
+    svg.innerHTML = "";
+
+    const width = container.scrollWidth;
+    const height = container.scrollHeight;
+
+    svg.setAttribute("width", width);
+    svg.setAttribute("height", height);
+
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    defs.innerHTML = `
+      <marker id="arrowhead"
+              markerWidth="12"
+              markerHeight="12"
+              refX="9"
+              refY="3"
+              orient="auto"
+              markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#111"></path>
+      </marker>
+    `;
+    svg.appendChild(defs);
+
+    const rectContainer = container.getBoundingClientRect();
+
+    boxes.forEach((box, i) => {
+      if (i === boxes.length - 1) return;
+
+      const next = boxes[i + 1];
+
+      const r1 = box.getBoundingClientRect();
+      const r2 = next.getBoundingClientRect();
+
+      const x1 = r1.left - rectContainer.left + r1.width / 2 + container.scrollLeft;
+      const y1 = r1.bottom - rectContainer.top + container.scrollTop;
+
+      const x2 = r2.left - rectContainer.left + r2.width / 2 + container.scrollLeft;
+      const y2 = r2.top - rectContainer.top + container.scrollTop;
+
+      drawOrthogonalLine(svg, x1, y1, x2, y2);
+    });
+  }
+
+  window.addEventListener("load", () => setTimeout(drawArrows, 200));
+  window.addEventListener("resize", drawArrows);
+  document.getElementById("container").addEventListener("scroll", drawArrows);
+</script>
+
+{% endblock %}

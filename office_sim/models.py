@@ -43,11 +43,19 @@ class OfficeTransaction(models.Model):
     department = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=50, default="Pending")
 
-    def __str__(self):
+    def _str_(self):
         return self.title
 
 
 class WorkflowStep(models.Model):
+    LANE_CHOICES = [
+        ("admin", "Admin"),
+        ("accountant_clerk", "Accountant Clerk"),
+        ("manager", "Manager"),
+        ("cashier", "Cashier"),
+        ("supplier", "Supplier"),
+    ]
+
     transaction = models.ForeignKey(
         OfficeTransaction,
         on_delete=models.CASCADE,
@@ -58,12 +66,13 @@ class WorkflowStep(models.Model):
     description = models.TextField(blank=True)
     responsible_person = models.CharField(max_length=100, blank=True)
     expected_output = models.CharField(max_length=200, blank=True)
+    lane = models.CharField(max_length=50, choices=LANE_CHOICES, default="admin")
 
     class Meta:
         ordering = ["step_no"]
         unique_together = ("transaction", "step_no")
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.transaction.title} - Step {self.step_no}"
 
 
@@ -78,7 +87,7 @@ class TransactionDocument(models.Model):
     content = models.TextField(blank=True)
     file = models.FileField(upload_to="office_docs/", blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.name
 
 
@@ -99,8 +108,35 @@ class StudentTransactionProgress(models.Model):
     class Meta:
         unique_together = ("student", "transaction")
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.student.username} - {self.transaction.title}"
+
+
+class WorkflowStep(models.Model):
+    NODE_TYPES = [
+        ("start", "Start"),
+        ("process", "Process"),
+        ("decision", "Decision"),
+        ("end", "End"),
+    ]
+
+    transaction = models.ForeignKey(
+        OfficeTransaction,
+        on_delete=models.CASCADE,
+        related_name="workflow_steps",
+    )
+    step_no = models.PositiveIntegerField()
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+
+    # ✅ ADD THIS
+    role = models.ForeignKey(OfficeRole, on_delete=models.SET_NULL, null=True)
+
+    # ✅ ADD THIS
+    node_type = models.CharField(max_length=20, choices=NODE_TYPES, default="process")
+
+    class Meta:
+        ordering = ["step_no"]
 
 class WorkflowNode(models.Model):
     NODE_TYPES = [
@@ -110,24 +146,40 @@ class WorkflowNode(models.Model):
         ("end", "End"),
     ]
 
+    LANE_CHOICES = [
+        ("admin", "Admin"),
+        ("clerk", "Accounting Clerk"),
+        ("manager", "Manager"),
+        ("cashier", "Cashier"),
+        ("supplier", "Supplier"),
+    ]
+
     transaction = models.ForeignKey(
         "OfficeTransaction",
         on_delete=models.CASCADE,
         related_name="nodes",
     )
+
     code = models.CharField(max_length=20)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    node_type = models.CharField(max_length=20, choices=NODE_TYPES, default="process")
-    position = models.PositiveIntegerField(default=1)
+
+    node_type = models.CharField(
+        max_length=20,
+        choices=NODE_TYPES,
+        default="process"
+    )
+
+    # 🔥 KU DAR KUWAN
+    lane = models.CharField(max_length=50, choices=LANE_CHOICES, default="clerk")
+    row = models.PositiveIntegerField(default=1)
 
     class Meta:
-        ordering = ["position", "id"]
+        ordering = ["row", "id"]
         unique_together = ("transaction", "code")
 
     def __str__(self):
-        return f"{self.transaction.title} - {self.code}"
-    
+        return f"{self.code} - {self.title}"
 
 class WorkflowConnection(models.Model):
     transaction = models.ForeignKey(
