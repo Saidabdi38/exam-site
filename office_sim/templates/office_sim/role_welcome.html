@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Ku Soo Dhawow{% endblock %}
+
+{% block content %}
+
+<style>
+  .welcome-page {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .welcome-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 18px;
+    padding: 28px;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .welcome-card h1 {
+    margin-bottom: 16px;
+  }
+
+  .welcome-card p {
+    font-size: 20px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .welcome-image {
+    width: 100%;
+    max-width: 700px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+
+  .action-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-link {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .btn-primary {
+    background: #0d6efd;
+    color: #fff;
+  }
+
+  .btn-secondary {
+    background: #6c757d;
+    color: #fff;
+  }
+</style>
+
+<div class="welcome-page">
+  <div class="welcome-card">
+    <h1>Ku soo dhowow</h1>
+
+    <p>
+      Mudane/Marwo, Xirfadyaal waxay kugu soo dhoweynaysaa xafiiska
+      <strong>{{ role.office_display_name|default:role.name }}</strong>.
+      Halkaan waxaad ku arki doontaa sida loo maamulo dhaqdhaqaaqyada xisaabeed,
+      talaabooyinka la qaado, documents-ka la xiriira, iyo go'aamada.
+    </p>
+
+    <img
+      src="{% static 'images/accounting_clerk_welcome.png' %}"
+      alt="Welcome Accountant Clerk"
+      class="welcome-image"
+    >
+
+    {% if role.description %}
+      <p>{{ role.description }}</p>
+    {% endif %}
+
+    <div class="action-row">
+      <a href="{% url 'transaction_list' %}" class="btn-link btn-primary">
+        Begin
+      </a>
+
+      <a href="{% url 'role_list' %}" class="btn-link btn-secondary">
+        Change Role
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

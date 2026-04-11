@@ -4,12 +4,14 @@ from . import views
 urlpatterns = [
     path("roles/", views.role_list, name="role_list"),
     path("select-role/<int:role_id>/", views.select_role, name="select_role"),
+    path("roles/", views.role_list, name="role_list"),
+    path("select-role/<int:role_id>/", views.select_role, name="select_role"),
+    path("welcome/", views.office_role_welcome, name="office_role_welcome"),
 
     path("", views.office_dashboard, name="office_dashboard"),
     path("transactions/", views.transaction_list, name="transaction_list"),
     path("transaction/<int:pk>/", views.transaction_detail, name="transaction_detail"),
-    # path("workflow/<int:pk>/", views.transaction_workflow, name="transaction_workflow"),
-    path("progress/<int:pk>/<int:step_no>/", views.update_progress, name="update_progress"),
     path("workflow/<int:pk>/steps/", views.workflow_steps, name="workflow_steps"),
     path("workflow/<int:pk>/diagram/", views.workflow_diagram, name="workflow_diagram"),
+    path("progress/<int:pk>/<int:step_no>/", views.update_progress, name="update_progress"),
 ]

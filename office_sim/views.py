@@ -21,9 +21,24 @@ def select_role(request, role_id):
     profile, _ = StudentOfficeProfile.objects.get_or_create(user=request.user)
     profile.role = role
     profile.save()
-    return redirect("office_dashboard")
+    return redirect("office_role_welcome")
 
+@login_required
+def office_role_welcome(request):
+    profile = getattr(request.user, "office_profile", None)
 
+    if not profile or not profile.role:
+        return redirect("role_list")
+
+    return render(
+        request,
+        "office_sim/role_welcome.html",
+        {
+            "profile": profile,
+            "role": profile.role,
+        },
+    )
+    
 @login_required
 def office_dashboard(request):
     profile = getattr(request.user, "office_profile", None)
