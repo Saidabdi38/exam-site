@@ -12,7 +12,7 @@
     <p><strong>Company:</strong> {{ t.company_name|default:"-" }}</p>
     <p><strong>Amount:</strong> {{ t.amount|default:"-" }}</p>
     <p><strong>Status:</strong> {{ t.status }}</p>
-    <!-- <a class="btn btn-primary" href="{% url 'transaction_detail' t.id %}">View Workflow</a> -->
+    <a class="btn btn-primary" href="{% url 'transaction_detail' t.id %}">Next</a>
   </div>
 {% empty %}
   <p>No transactions available.</p>
