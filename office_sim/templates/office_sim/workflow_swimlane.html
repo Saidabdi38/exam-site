@@ -202,8 +202,6 @@
                   id="node-{{ node.id }}"
                   data-node-type="{{ node.node_type }}"
                   data-node-code="{{ node.code }}"
-                  data-node-row="{{ node.row }}"
-                  data-node-lane="{{ node.lane }}"
                 >
                   <div class="decision-text">{{ node.title }}</div>
                 </div>
@@ -213,8 +211,6 @@
                   id="node-{{ node.id }}"
                   data-node-type="{{ node.node_type }}"
                   data-node-code="{{ node.code }}"
-                  data-node-row="{{ node.row }}"
-                  data-node-lane="{{ node.lane }}"
                 >
                   {{ node.title }}
                 </div>
@@ -289,83 +285,13 @@
 
     var x1, y1, x2, y2, d, labelX, labelY;
 
-    // SPECIAL 1: D decision
-    if (fromCode === "D" && (label === "haa" || label === "yes")) {
-      var startDYes = getPoint(fromEl, "right");
-      var endDYes = getPoint(toEl, "top");
+    // D -> E (Haa)
+    if (fromCode === "D" && toCode === "E" && (label === "haa" || label === "yes")) {
+      var p1 = getPoint(fromEl, "right");
+      var p2 = getPoint(toEl, "top");
 
-      x1 = startDYes.x; y1 = startDYes.y;
-      x2 = endDYes.x; y2 = endDYes.y;
-
-      var midDX = x1 + 40;
-
-      d = "M " + x1 + " " + y1 +
-          " L " + midDX + " " + y1 +
-          " L " + midDX + " " + y2 +
-          " L " + x2 + " " + y2;
-
-      labelX = midDX;
-      labelY = y1 - 8;
-    }
-    else if (fromCode === "D" && (label === "maya" || label === "no")) {
-      var startDNo = getPoint(fromEl, "bottom");
-      var endDNo = getPoint(toEl, "top");
-
-      x1 = startDNo.x; y1 = startDNo.y;
-      x2 = endDNo.x; y2 = endDNo.y;
-
-      var midDY = y1 + 60;
-
-      d = "M " + x1 + " " + y1 +
-          " L " + x1 + " " + midDY +
-          " L " + x2 + " " + midDY +
-          " L " + x2 + " " + y2;
-
-      labelX = x1 + 28;
-      labelY = y1 + 24;
-    }
-
-    // SPECIAL 2: E decision -> F (Haa)
-    else if (fromCode === "E" && toCode === "F" && (label === "haa" || label === "yes")) {
-      var startEYes = getPoint(fromEl, "bottom");
-      var endEYes = getPoint(toEl, "top");
-
-      x1 = startEYes.x; y1 = startEYes.y;
-      x2 = endEYes.x; y2 = endEYes.y;
-
-      var midEY = y1 + 55;
-
-      d = "M " + x1 + " " + y1 +
-          " L " + x1 + " " + midEY +
-          " L " + x2 + " " + midEY +
-          " L " + x2 + " " + y2;
-
-      labelX = x1 + 24;
-      labelY = y1 + 22;
-    }
-
-    // SPECIAL 3: E decision -> J (Maya)
-    else if (fromCode === "E" && toCode === "J" && (label === "maya" || label === "no")) {
-      var startENo = getPoint(fromEl, "bottom");
-      var endENo = getPoint(toEl, "top");
-
-      x1 = startENo.x; y1 = startENo.y;
-      x2 = endENo.x; y2 = endENo.y;
-
-      d = "M " + x1 + " " + y1 +
-          " L " + x2 + " " + y2;
-
-      labelX = x1 + 30;
-      labelY = y1 + 22;
-    }
-
-    // Other decision yes
-    else if (fromType === "decision" && (label === "haa" || label === "yes")) {
-      var startYes = getPoint(fromEl, "right");
-      var endYes = getPoint(toEl, "top");
-
-      x1 = startYes.x; y1 = startYes.y;
-      x2 = endYes.x; y2 = endYes.y;
+      x1 = p1.x; y1 = p1.y;
+      x2 = p2.x; y2 = p2.y;
 
       var midX = x1 + 40;
 
@@ -378,15 +304,15 @@
       labelY = y1 - 8;
     }
 
-    // Other decision no
-    else if (fromType === "decision" && (label === "maya" || label === "no")) {
-      var startNo = getPoint(fromEl, "bottom");
-      var endNo = getPoint(toEl, "top");
+    // D -> K (Maya)
+    else if (fromCode === "D" && toCode === "K" && (label === "maya" || label === "no")) {
+      var p3 = getPoint(fromEl, "bottom");
+      var p4 = getPoint(toEl, "top");
 
-      x1 = startNo.x; y1 = startNo.y;
-      x2 = endNo.x; y2 = endNo.y;
+      x1 = p3.x; y1 = p3.y;
+      x2 = p4.x; y2 = p4.y;
 
-      var midY = y1 + 60;
+      var midY = (y1 + y2) / 2;
 
       d = "M " + x1 + " " + y1 +
           " L " + x1 + " " + midY +
@@ -397,28 +323,104 @@
       labelY = y1 + 24;
     }
 
-    // Straight
-    else {
-      var startNormal = getPoint(fromEl, "bottom");
-      var endNormal = getPoint(toEl, "top");
+    // E -> F (Haa)
+    else if (fromCode === "E" && toCode === "F" && (label === "haa" || label === "yes")) {
+      var p5 = getPoint(fromEl, "bottom");
+      var p6 = getPoint(toEl, "top");
 
-      x1 = startNormal.x; y1 = startNormal.y;
-      x2 = endNormal.x; y2 = endNormal.y;
+      x1 = p5.x; y1 = p5.y;
+      x2 = p6.x; y2 = p6.y;
+
+      var midY2 = (y1 + y2) / 2;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + x1 + " " + midY2 +
+          " L " + x2 + " " + midY2 +
+          " L " + x2 + " " + y2;
+
+      labelX = x1 + 20;
+      labelY = y1 + 20;
+    }
+
+    // E -> K (Maya)
+    else if (fromCode === "E" && toCode === "K" && (label === "maya" || label === "no")) {
+      var p7 = getPoint(fromEl, "bottom");
+      var p8 = getPoint(toEl, "top");
+
+      x1 = p7.x; y1 = p7.y;
+      x2 = p8.x; y2 = p8.y;
+
+      var midY3 = (y1 + y2) / 2;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + x1 + " " + midY3 +
+          " L " + x2 + " " + midY3 +
+          " L " + x2 + " " + y2;
+
+      labelX = x1 + 15;
+      labelY = y1 + 15;
+    }
+
+    // other decision yes
+    else if (fromType === "decision" && (label === "haa" || label === "yes")) {
+      var p9 = getPoint(fromEl, "right");
+      var p10 = getPoint(toEl, "top");
+
+      x1 = p9.x; y1 = p9.y;
+      x2 = p10.x; y2 = p10.y;
+
+      var midX2 = x1 + 40;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + midX2 + " " + y1 +
+          " L " + midX2 + " " + y2 +
+          " L " + x2 + " " + y2;
+
+      labelX = midX2;
+      labelY = y1 - 8;
+    }
+
+    // other decision no
+    else if (fromType === "decision" && (label === "maya" || label === "no")) {
+      var p11 = getPoint(fromEl, "bottom");
+      var p12 = getPoint(toEl, "top");
+
+      x1 = p11.x; y1 = p11.y;
+      x2 = p12.x; y2 = p12.y;
+
+      var midY4 = (y1 + y2) / 2;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + x1 + " " + midY4 +
+          " L " + x2 + " " + midY4 +
+          " L " + x2 + " " + y2;
+
+      labelX = x1 + 28;
+      labelY = y1 + 24;
+    }
+
+    // normal
+    else {
+      var p13 = getPoint(fromEl, "bottom");
+      var p14 = getPoint(toEl, "top");
+
+      x1 = p13.x; y1 = p13.y;
+      x2 = p14.x; y2 = p14.y;
 
       if (Math.abs(x1 - x2) < 20) {
         d = "M " + x1 + " " + y1 + " L " + x2 + " " + y2;
         labelX = x1;
         labelY = (y1 + y2) / 2 - 8;
       } else {
-        var normalMidY = y1 + 35;
+        var midY5 = y1 + 35;
 
         d = "M " + x1 + " " + y1 +
-            " L " + x1 + " " + normalMidY +
-            " L " + x2 + " " + normalMidY +
+            " L " + x1 + " " + midY5 +
+            " L " + x2 + " " + midY5 +
             " L " + x2 + " " + y2;
 
         labelX = (x1 + x2) / 2;
-        labelY = normalMidY - 8;
+        labelY = midY5 - 8;
       }
     }
 
