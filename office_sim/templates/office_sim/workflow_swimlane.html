@@ -7,16 +7,15 @@
   .swimlane-container {
     position: relative;
     overflow: auto;
-    padding: 20px;
+    padding: 30px;
     background: #fff;
     border-radius: 16px;
   }
 
   .swimlane-grid {
     display: grid;
-    grid-template-columns: 80px repeat({{ roles|length }}, 220px);
-    column-gap: 20px;
-    row-gap: 0;
+    grid-template-columns: 80px repeat({{ roles|length }}, 130px);
+    gap: 20px;
     position: relative;
     width: max-content;
     align-items: start;
@@ -26,94 +25,83 @@
     text-align: center;
     font-weight: bold;
     padding: 12px 8px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #d1d5db;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    min-height: 76px;
-    margin-bottom: 10px;
   }
 
-  .header-icon {
-    font-size: 22px;
-    line-height: 1;
+  .header-admin {
+    background: #e5e7eb;
   }
 
-  .header-label {
-    font-size: 15px;
-    line-height: 1.2;
+  .header-clerk {
+    background: #bfdbfe;
   }
 
-  .header-admin { background: #e5e7eb; }
-  .header-clerk { background: #bfdbfe; }
-  .header-accountant { background: #86efac; }
-  .header-manager { background: #fde68a; }
-  .header-cashier { background: #c4b5fd; }
-  .header-supplier { background: #fdba74; }
+  .header-accountant {
+    background: #86efac;
+  }
+
+  .header-manager {
+    background: #fde68a;
+  }
+
+  .header-cashier {
+    background: #c4b5fd;
+  }
+
+  .header-supplier {
+    background: #fdba74;
+  }
 
   .row-label {
     font-weight: bold;
     font-size: 14px;
     text-align: center;
-    min-height: 120px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
     padding-top: 40px;
   }
 
   .cell {
     min-height: 120px;
     padding: 10px;
+    border-radius: 10px;
     position: relative;
-    background: transparent;
-    border-left: 6px solid transparent;
   }
 
   .lane-admin {
-    border-left-color: #9ca3af;
-    background: rgba(229, 231, 235, 0.12);
-  }
+  background: #e5e7eb;
+}
 
-  .lane-clerk {
-    border-left-color: #3b82f6;
-    background: rgba(191, 219, 254, 0.12);
-  }
+.lane-clerk {
+  background: #bfdbfe;
+}
 
-  .lane-accountant {
-    border-left-color: #10b981;
-    background: rgba(134, 239, 172, 0.12);
-  }
+.lane-accountant {
+  background: #86efac;
+}
 
-  .lane-manager {
-    border-left-color: #f59e0b;
-    background: rgba(253, 230, 138, 0.12);
-  }
+.lane-manager {
+  background: #fde68a;
+}
 
-  .lane-cashier {
-    border-left-color: #8b5cf6;
-    background: rgba(196, 181, 253, 0.12);
-  }
+.lane-cashier {
+  background: #c4b5fd;
+}
 
-  .lane-supplier {
-    border-left-color: #f97316;
-    background: rgba(253, 186, 116, 0.12);
-  }
+.lane-supplier {
+  background: #fdba74;
+}
 
   .box {
     padding: 12px 14px;
     border: 2px solid #333;
     border-radius: 10px;
     text-align: center;
-    background: rgba(255, 255, 255, 0.96);
+    background: #fff;
     position: relative;
     z-index: 2;
     width: fit-content;
     max-width: 140px;
     margin: 0 auto;
-    font-size: 14px;
   }
 
   .start {
@@ -123,7 +111,7 @@
   }
 
   .process {
-    background: rgba(255, 255, 255, 0.96);
+    background: #ffffff;
   }
 
   .decision {
@@ -153,19 +141,7 @@
     <div></div>
 
     {% for role_key, role_label in roles %}
-      <div class="header header-{{ role_key }}">
-        <div class="header-icon">
-          {% if role_key == "admin" %}⚙️
-          {% elif role_key == "clerk" %}🧾
-          {% elif role_key == "accountant" %}📊
-          {% elif role_key == "manager" %}👔
-          {% elif role_key == "cashier" %}💰
-          {% elif role_key == "supplier" %}🚚
-          {% else %}👤
-          {% endif %}
-        </div>
-        <div class="header-label">{{ role_label }}</div>
-      </div>
+      <div class="header header-{{ role_key }}">{{ role_label }}</div>
     {% endfor %}
 
     {% for row_no in rows %}
