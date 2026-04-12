@@ -338,13 +338,18 @@
       labelX = midX;
       labelY = y1 - 8;
     } else if (fromType === "decision" && (label === "maya" || label === "no")) {
-      var midY = y1 + 45;
-      d = "M " + x1 + " " + y1 +
-          " L " + x1 + " " + midY +
-          " L " + x2 + " " + midY +
-          " L " + x2 + " " + y2;
-      labelX = x1 + 28;
-      labelY = midY - 8;
+
+        // Go straight down first (clean vertical)
+        var midY = y1 + 60;
+
+        d = "M " + x1 + " " + y1 +
+            " L " + x1 + " " + midY +   // ↓ down
+            " L " + x2 + " " + midY +   // → then horizontal
+            " L " + x2 + " " + y2;      // ↓ to target
+
+        labelX = x1 + 30;
+        labelY = y1 + 25;   // label near start (not in middle chaos)
+
     } else if (Math.abs(x1 - x2) < 20) {
       d = "M " + x1 + " " + y1 + " L " + x2 + " " + y2;
       labelX = x1;
