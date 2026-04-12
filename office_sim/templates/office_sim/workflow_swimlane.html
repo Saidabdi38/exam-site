@@ -7,15 +7,16 @@
   .swimlane-container {
     position: relative;
     overflow: auto;
-    padding: 30px;
+    padding: 20px;
     background: #fff;
     border-radius: 16px;
   }
 
   .swimlane-grid {
     display: grid;
-    grid-template-columns: 80px repeat({{ roles|length }}, 130px);
-    gap: 20px;
+    grid-template-columns: 80px repeat({{ roles|length }}, 220px);
+    column-gap: 20px;
+    row-gap: 0;
     position: relative;
     width: max-content;
     align-items: start;
@@ -25,83 +26,94 @@
     text-align: center;
     font-weight: bold;
     padding: 12px 8px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid #d1d5db;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: 76px;
+    margin-bottom: 10px;
   }
 
-  .header-admin {
-    background: #e5e7eb;
+  .header-icon {
+    font-size: 22px;
+    line-height: 1;
   }
 
-  .header-clerk {
-    background: #bfdbfe;
+  .header-label {
+    font-size: 15px;
+    line-height: 1.2;
   }
 
-  .header-accountant {
-    background: #86efac;
-  }
-
-  .header-manager {
-    background: #fde68a;
-  }
-
-  .header-cashier {
-    background: #c4b5fd;
-  }
-
-  .header-supplier {
-    background: #fdba74;
-  }
+  .header-admin { background: #e5e7eb; }
+  .header-clerk { background: #bfdbfe; }
+  .header-accountant { background: #86efac; }
+  .header-manager { background: #fde68a; }
+  .header-cashier { background: #c4b5fd; }
+  .header-supplier { background: #fdba74; }
 
   .row-label {
     font-weight: bold;
     font-size: 14px;
     text-align: center;
-    padding-top: 40px;
+    min-height: 150px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 45px;
   }
 
   .cell {
-    min-height: 120px;
+    min-height: 150px;
     padding: 10px;
-    border-radius: 10px;
     position: relative;
+    background: transparent;
+    border-left: 6px solid transparent;
   }
 
   .lane-admin {
-  background: #e5e7eb;
-}
+    border-left-color: #9ca3af;
+    background: rgba(229, 231, 235, 0.12);
+  }
 
-.lane-clerk {
-  background: #bfdbfe;
-}
+  .lane-clerk {
+    border-left-color: #3b82f6;
+    background: rgba(191, 219, 254, 0.12);
+  }
 
-.lane-accountant {
-  background: #86efac;
-}
+  .lane-accountant {
+    border-left-color: #10b981;
+    background: rgba(134, 239, 172, 0.12);
+  }
 
-.lane-manager {
-  background: #fde68a;
-}
+  .lane-manager {
+    border-left-color: #f59e0b;
+    background: rgba(253, 230, 138, 0.12);
+  }
 
-.lane-cashier {
-  background: #c4b5fd;
-}
+  .lane-cashier {
+    border-left-color: #8b5cf6;
+    background: rgba(196, 181, 253, 0.12);
+  }
 
-.lane-supplier {
-  background: #fdba74;
-}
+  .lane-supplier {
+    border-left-color: #f97316;
+    background: rgba(253, 186, 116, 0.12);
+  }
 
   .box {
     padding: 12px 14px;
     border: 2px solid #333;
     border-radius: 10px;
     text-align: center;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.96);
     position: relative;
     z-index: 2;
     width: fit-content;
-    max-width: 140px;
+    max-width: 150px;
     margin: 0 auto;
+    font-size: 14px;
   }
 
   .start {
@@ -111,11 +123,32 @@
   }
 
   .process {
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.96);
   }
 
   .decision {
+    width: 110px;
+    height: 110px;
+    margin: 0 auto;
     background: #fef3c7;
+    border: 2px solid #333;
+    transform: rotate(45deg);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .decision .decision-text {
+    transform: rotate(-45deg);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    max-width: 78px;
   }
 
   .end {
@@ -141,7 +174,19 @@
     <div></div>
 
     {% for role_key, role_label in roles %}
-      <div class="header header-{{ role_key }}">{{ role_label }}</div>
+      <div class="header header-{{ role_key }}">
+        <div class="header-icon">
+          {% if role_key == "admin" %}⚙️
+          {% elif role_key == "clerk" %}🧾
+          {% elif role_key == "accountant" %}📊
+          {% elif role_key == "manager" %}👔
+          {% elif role_key == "cashier" %}💰
+          {% elif role_key == "supplier" %}🚚
+          {% else %}👤
+          {% endif %}
+        </div>
+        <div class="header-label">{{ role_label }}</div>
+      </div>
     {% endfor %}
 
     {% for row_no in rows %}
@@ -151,9 +196,23 @@
         <div class="cell lane-{{ role_key }}">
           {% for node in nodes %}
             {% if node.row == row_no and node.lane == role_key %}
-              <div class="box {{ node.node_type }}" id="node-{{ node.id }}">
-                {{ node.title }}
-              </div>
+              {% if node.node_type == "decision" %}
+                <div
+                  class="decision"
+                  id="node-{{ node.id }}"
+                  data-node-type="{{ node.node_type }}"
+                >
+                  <div class="decision-text">{{ node.title }}</div>
+                </div>
+              {% else %}
+                <div
+                  class="box {{ node.node_type }}"
+                  id="node-{{ node.id }}"
+                  data-node-type="{{ node.node_type }}"
+                >
+                  {{ node.title }}
+                </div>
+              {% endif %}
             {% endif %}
           {% endfor %}
         </div>
@@ -165,30 +224,139 @@
 {{ connections|json_script:"workflow-connections" }}
 
 <script>
-  function drawConnection(svg, fromEl, toEl) {
+  function getContainerRect() {
     var container = document.getElementById("container");
-    var containerRect = container.getBoundingClientRect();
+    return {
+      el: container,
+      rect: container.getBoundingClientRect()
+    };
+  }
 
-    var r1 = fromEl.getBoundingClientRect();
-    var r2 = toEl.getBoundingClientRect();
+  function getPointForElement(el, side) {
+    var c = getContainerRect();
+    var r = el.getBoundingClientRect();
 
-    var x1 = r1.left - containerRect.left + (r1.width / 2) + container.scrollLeft;
-    var y1 = r1.bottom - containerRect.top + container.scrollTop;
+    var left = r.left - c.rect.left + c.el.scrollLeft;
+    var top = r.top - c.rect.top + c.el.scrollTop;
+    var width = r.width;
+    var height = r.height;
 
-    var x2 = r2.left - containerRect.left + (r2.width / 2) + container.scrollLeft;
-    var y2 = r2.top - containerRect.top + container.scrollTop;
+    if (side === "top") {
+      return { x: left + width / 2, y: top };
+    }
+    if (side === "bottom") {
+      return { x: left + width / 2, y: top + height };
+    }
+    if (side === "left") {
+      return { x: left, y: top + height / 2 };
+    }
+    if (side === "right") {
+      return { x: left + width, y: top + height / 2 };
+    }
+
+    return { x: left + width / 2, y: top + height / 2 };
+  }
+
+  function getConnectionPoints(fromEl, toEl, conn) {
+    var label = (conn.label || "").trim().toLowerCase();
+    var fromType = fromEl.dataset.nodeType || "";
+
+    var startPoint;
+    var endPoint;
+
+    if (fromType === "decision") {
+      if (label === "haa" || label === "yes") {
+        startPoint = getPointForElement(fromEl, "right");
+        endPoint = getPointForElement(toEl, "top");
+      } else if (label === "maya" || label === "no") {
+        startPoint = getPointForElement(fromEl, "bottom");
+        endPoint = getPointForElement(toEl, "top");
+      } else {
+        startPoint = getPointForElement(fromEl, "bottom");
+        endPoint = getPointForElement(toEl, "top");
+      }
+    } else {
+      startPoint = getPointForElement(fromEl, "bottom");
+      endPoint = getPointForElement(toEl, "top");
+    }
+
+    return {
+      x1: startPoint.x,
+      y1: startPoint.y,
+      x2: endPoint.x,
+      y2: endPoint.y
+    };
+  }
+
+  function drawLabel(svg, x, y, label) {
+    if (!label) return;
+
+    var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", x);
+    text.setAttribute("y", y);
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("font-size", "13");
+    text.setAttribute("font-weight", "bold");
+    text.setAttribute("paint-order", "stroke");
+    text.setAttribute("stroke", "#fff");
+    text.setAttribute("stroke-width", "4");
+
+    var lower = label.trim().toLowerCase();
+    if (lower === "haa" || lower === "yes") {
+      text.setAttribute("fill", "green");
+    } else if (lower === "maya" || lower === "no") {
+      text.setAttribute("fill", "red");
+    } else {
+      text.setAttribute("fill", "#111");
+    }
+
+    text.textContent = label;
+    svg.appendChild(text);
+  }
+
+  function drawConnection(svg, fromEl, toEl, conn) {
+    var pts = getConnectionPoints(fromEl, toEl, conn);
+    var x1 = pts.x1;
+    var y1 = pts.y1;
+    var x2 = pts.x2;
+    var y2 = pts.y2;
+
+    var fromType = fromEl.dataset.nodeType || "";
+    var label = (conn.label || "").trim().toLowerCase();
 
     var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    var d;
+    var d = "";
+    var labelX = 0;
+    var labelY = 0;
 
-    if (Math.abs(x1 - x2) < 20) {
-      d = "M " + x1 + " " + y1 + " L " + x2 + " " + y2;
-    } else {
-      var midY = y1 + 35;
+    if (fromType === "decision" && (label === "haa" || label === "yes")) {
+      var midX = x1 + 40;
+      d = "M " + x1 + " " + y1 +
+          " L " + midX + " " + y1 +
+          " L " + midX + " " + y2 +
+          " L " + x2 + " " + y2;
+      labelX = midX;
+      labelY = y1 - 8;
+    } else if (fromType === "decision" && (label === "maya" || label === "no")) {
+      var midY = y1 + 45;
       d = "M " + x1 + " " + y1 +
           " L " + x1 + " " + midY +
           " L " + x2 + " " + midY +
           " L " + x2 + " " + y2;
+      labelX = x1 + 28;
+      labelY = midY - 8;
+    } else if (Math.abs(x1 - x2) < 20) {
+      d = "M " + x1 + " " + y1 + " L " + x2 + " " + y2;
+      labelX = x1;
+      labelY = (y1 + y2) / 2 - 8;
+    } else {
+      var normalMidY = y1 + 35;
+      d = "M " + x1 + " " + y1 +
+          " L " + x1 + " " + normalMidY +
+          " L " + x2 + " " + normalMidY +
+          " L " + x2 + " " + y2;
+      labelX = (x1 + x2) / 2;
+      labelY = normalMidY - 8;
     }
 
     path.setAttribute("d", d);
@@ -196,8 +364,11 @@
     path.setAttribute("stroke", "#111");
     path.setAttribute("stroke-width", "2");
     path.setAttribute("marker-end", "url(#arrow)");
-
     svg.appendChild(path);
+
+    if (conn.label) {
+      drawLabel(svg, labelX, labelY, conn.label);
+    }
   }
 
   function drawArrows() {
@@ -205,7 +376,6 @@
     var container = document.getElementById("container");
 
     svg.innerHTML = "";
-
     svg.style.left = "0px";
     svg.style.top = "0px";
     svg.setAttribute("width", container.scrollWidth);
@@ -217,7 +387,6 @@
       '<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">' +
       '<path d="M 0 0 L 10 5 L 0 10 z" fill="#111"></path>' +
       '</marker>';
-
     svg.appendChild(defs);
 
     var connections = JSON.parse(
@@ -230,7 +399,7 @@
 
       if (!fromEl || !toEl) return;
 
-      drawConnection(svg, fromEl, toEl);
+      drawConnection(svg, fromEl, toEl, conn);
     });
   }
 
