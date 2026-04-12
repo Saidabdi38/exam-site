@@ -7,154 +7,244 @@
   .swimlane-container {
     position: relative;
     overflow: auto;
-    padding: 40px;
+    padding: 30px;
+    background: #fff;
+    border-radius: 16px;
   }
 
   .swimlane-grid {
     display: grid;
-    grid-template-columns: 150px repeat({{ roles|length }}, 260px);
-    gap: 30px;
+    grid-template-columns: 80px repeat({{ roles|length }}, 130px);
+    gap: 20px;
     position: relative;
-    z-index: 2;
     width: max-content;
+    align-items: start;
   }
 
   .header {
-    background: #e2e8f0;
-    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    padding: 12px 8px;
     border-radius: 10px;
-    text-align: center;
-    font-weight: bold;
+    border: 1px solid #d1d5db;
   }
 
-  .step-label {
-    text-align: center;
-    font-weight: bold;
-    padding-top: 35px;
+  .header-admin {
+    background: #e5e7eb;
   }
 
-  .box {
-    padding: 14px;
+  .header-clerk {
+    background: #bfdbfe;
+  }
+
+  .header-accountant {
+    background: #86efac;
+  }
+
+  .header-manager {
+    background: #fde68a;
+  }
+
+  .header-cashier {
+    background: #c4b5fd;
+  }
+
+  .header-supplier {
+    background: #fdba74;
+  }
+
+  .row-label {
+    font-weight: bold;
+    font-size: 14px;
     text-align: center;
-    border: 2px solid #1f2937;
-    min-height: 80px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #e0f2fe;
+    padding-top: 40px;
+  }
+
+  .cell {
+    min-height: 120px;
+    padding: 10px;
     border-radius: 10px;
     position: relative;
   }
 
-  .svg-layer {
+  .lane-admin {
+  background: #e5e7eb;
+}
+
+.lane-clerk {
+  background: #bfdbfe;
+}
+
+.lane-accountant {
+  background: #86efac;
+}
+
+.lane-manager {
+  background: #fde68a;
+}
+
+.lane-cashier {
+  background: #c4b5fd;
+}
+
+.lane-supplier {
+  background: #fdba74;
+}
+
+  .box {
+    padding: 12px 14px;
+    border: 2px solid #333;
+    border-radius: 10px;
+    text-align: center;
+    background: #fff;
+    position: relative;
+    z-index: 2;
+    width: fit-content;
+    max-width: 140px;
+    margin: 0 auto;
+  }
+
+  .start {
+    background: #dcfce7;
+    border-radius: 999px;
+    min-width: 60px;
+  }
+
+  .process {
+    background: #ffffff;
+  }
+
+  .decision {
+    background: #fef3c7;
+  }
+
+  .end {
+    background: #fecaca;
+    border-radius: 999px;
+    min-width: 60px;
+  }
+
+  #svg {
     position: absolute;
     top: 0;
     left: 0;
     z-index: 1;
     pointer-events: none;
+    overflow: visible;
   }
 </style>
 
-<h2>{{ transaction.title }} - Swimlane</h2>
-
 <div class="swimlane-container" id="container">
-  <svg id="svg" class="svg-layer"></svg>
+  <svg id="svg"></svg>
 
   <div class="swimlane-grid" id="grid">
     <div></div>
 
-    {% for role in roles %}
-      <div class="header">{{ role.name }}</div>
+    {% for role_key, role_label in roles %}
+      <div class="header header-{{ role_key }}">{{ role_label }}</div>
     {% endfor %}
 
-    {% for step in steps %}
-      <div class="step-label">Step {{ step.step_no }}</div>
+    {% for row_no in rows %}
+      <div class="row-label">Step {{ row_no }}</div>
 
-      {% for role in roles %}
-        {% if step.role_id == role.id %}
-          <div class="box" id="node-{{ step.id }}">
-            {{ step.title }}
-          </div>
-        {% else %}
-          <div></div>
-        {% endif %}
+      {% for role_key, role_label in roles %}
+        <div class="cell lane-{{ role_key }}">
+          {% for node in nodes %}
+            {% if node.row == row_no and node.lane == role_key %}
+              <div class="box {{ node.node_type }}" id="node-{{ node.id }}">
+                {{ node.title }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
       {% endfor %}
     {% endfor %}
   </div>
 </div>
 
+{{ connections|json_script:"workflow-connections" }}
+
 <script>
-  function drawOrthogonalLine(svg, x1, y1, x2, y2) {
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  function drawConnection(svg, fromEl, toEl) {
+    var container = document.getElementById("container");
+    var containerRect = container.getBoundingClientRect();
 
-    const midY = y1 + 40;
+    var r1 = fromEl.getBoundingClientRect();
+    var r2 = toEl.getBoundingClientRect();
 
-    const d = `
-      M ${x1} ${y1}
-      L ${x1} ${midY}
-      L ${x2} ${midY}
-      L ${x2} ${y2}
-    `;
+    var x1 = r1.left - containerRect.left + (r1.width / 2) + container.scrollLeft;
+    var y1 = r1.bottom - containerRect.top + container.scrollTop;
+
+    var x2 = r2.left - containerRect.left + (r2.width / 2) + container.scrollLeft;
+    var y2 = r2.top - containerRect.top + container.scrollTop;
+
+    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    var d;
+
+    if (Math.abs(x1 - x2) < 20) {
+      d = "M " + x1 + " " + y1 + " L " + x2 + " " + y2;
+    } else {
+      var midY = y1 + 35;
+      d = "M " + x1 + " " + y1 +
+          " L " + x1 + " " + midY +
+          " L " + x2 + " " + midY +
+          " L " + x2 + " " + y2;
+    }
 
     path.setAttribute("d", d);
     path.setAttribute("fill", "none");
     path.setAttribute("stroke", "#111");
-    path.setAttribute("stroke-width", "2.5");
-    path.setAttribute("marker-end", "url(#arrowhead)");
+    path.setAttribute("stroke-width", "2");
+    path.setAttribute("marker-end", "url(#arrow)");
 
     svg.appendChild(path);
   }
 
   function drawArrows() {
-    const svg = document.getElementById("svg");
-    const container = document.getElementById("container");
-    const boxes = [...document.querySelectorAll(".box")];
+    var svg = document.getElementById("svg");
+    var container = document.getElementById("container");
 
     svg.innerHTML = "";
 
-    const width = container.scrollWidth;
-    const height = container.scrollHeight;
+    svg.style.left = "0px";
+    svg.style.top = "0px";
+    svg.setAttribute("width", container.scrollWidth);
+    svg.setAttribute("height", container.scrollHeight);
+    svg.setAttribute("viewBox", "0 0 " + container.scrollWidth + " " + container.scrollHeight);
 
-    svg.setAttribute("width", width);
-    svg.setAttribute("height", height);
+    var defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    defs.innerHTML =
+      '<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">' +
+      '<path d="M 0 0 L 10 5 L 0 10 z" fill="#111"></path>' +
+      '</marker>';
 
-    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-    defs.innerHTML = `
-      <marker id="arrowhead"
-              markerWidth="12"
-              markerHeight="12"
-              refX="9"
-              refY="3"
-              orient="auto"
-              markerUnits="strokeWidth">
-        <path d="M0,0 L0,6 L9,3 z" fill="#111"></path>
-      </marker>
-    `;
     svg.appendChild(defs);
 
-    const rectContainer = container.getBoundingClientRect();
+    var connections = JSON.parse(
+      document.getElementById("workflow-connections").textContent
+    );
 
-    boxes.forEach((box, i) => {
-      if (i === boxes.length - 1) return;
+    connections.forEach(function(conn) {
+      var fromEl = document.getElementById("node-" + conn.from_node);
+      var toEl = document.getElementById("node-" + conn.to_node);
 
-      const next = boxes[i + 1];
+      if (!fromEl || !toEl) return;
 
-      const r1 = box.getBoundingClientRect();
-      const r2 = next.getBoundingClientRect();
-
-      const x1 = r1.left - rectContainer.left + r1.width / 2 + container.scrollLeft;
-      const y1 = r1.bottom - rectContainer.top + container.scrollTop;
-
-      const x2 = r2.left - rectContainer.left + r2.width / 2 + container.scrollLeft;
-      const y2 = r2.top - rectContainer.top + container.scrollTop;
-
-      drawOrthogonalLine(svg, x1, y1, x2, y2);
+      drawConnection(svg, fromEl, toEl);
     });
   }
 
-  window.addEventListener("load", () => setTimeout(drawArrows, 200));
-  window.addEventListener("resize", drawArrows);
-  document.getElementById("container").addEventListener("scroll", drawArrows);
+  window.onload = function() {
+    setTimeout(drawArrows, 400);
+  };
+
+  window.onresize = function() {
+    drawArrows();
+  };
+
+  document.getElementById("container").onscroll = function() {
+    drawArrows();
+  };
 </script>
 
 {% endblock %}

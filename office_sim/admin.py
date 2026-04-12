@@ -35,11 +35,14 @@ class WorkflowConnectionInline(admin.TabularInline):
 @admin.register(OfficeRole)
 class OfficeRoleAdmin(admin.ModelAdmin):
     list_display = ("name", "office_display_name")
+    search_fields = ("name", "office_display_name")
 
 
 @admin.register(StudentOfficeProfile)
 class StudentOfficeProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "role")
+    list_filter = ("role",)
+    search_fields = ("user__username",)
 
 
 @admin.register(OfficeTransaction)
@@ -47,22 +50,32 @@ class OfficeTransactionAdmin(admin.ModelAdmin):
     list_display = ("title", "role", "transaction_date", "company_name", "amount", "status")
     list_filter = ("role", "status", "transaction_date")
     search_fields = ("title", "company_name", "description")
-    inlines = [WorkflowStepInline, WorkflowNodeInline, WorkflowConnectionInline, TransactionDocumentInline]
+    inlines = [
+        WorkflowStepInline,
+        WorkflowNodeInline,
+        WorkflowConnectionInline,
+        TransactionDocumentInline,
+    ]
 
 
 @admin.register(StudentTransactionProgress)
 class StudentTransactionProgressAdmin(admin.ModelAdmin):
     list_display = ("student", "transaction", "current_step", "is_completed")
+    list_filter = ("is_completed", "transaction")
+    search_fields = ("student_username", "transaction_title")
 
 
 @admin.register(WorkflowNode)
 class WorkflowNodeAdmin(admin.ModelAdmin):
     list_display = ("transaction", "code", "title", "lane", "row", "node_type")
-    list_filter = ("node_type", "lane", "transaction")
+    list_filter = ("transaction", "lane", "node_type")
     search_fields = ("code", "title")
+    ordering = ("transaction", "row", "code")
 
 
 @admin.register(WorkflowConnection)
 class WorkflowConnectionAdmin(admin.ModelAdmin):
     list_display = ("transaction", "from_node", "to_node", "label", "position")
     list_filter = ("transaction",)
+    search_fields = ("from_node_code", "to_node_code", "label")
+    ordering = ("transaction", "position", "id")

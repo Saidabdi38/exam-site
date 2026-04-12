@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-
+from django.contrib.auth.decorators import login_required
 
 class OfficeRole(models.Model):
     name = models.CharField(max_length=100)
@@ -51,6 +51,7 @@ class WorkflowStep(models.Model):
     LANE_CHOICES = [
         ("admin", "Admin"),
         ("accountant_clerk", "Accountant Clerk"),
+         ("accountant", "Accountant"),
         ("manager", "Manager"),
         ("cashier", "Cashier"),
         ("supplier", "Supplier"),
@@ -149,6 +150,7 @@ class WorkflowNode(models.Model):
     LANE_CHOICES = [
         ("admin", "Admin"),
         ("clerk", "Accounting Clerk"),
+        ("accountant", "Accountant"),
         ("manager", "Manager"),
         ("cashier", "Cashier"),
         ("supplier", "Supplier"),
@@ -206,3 +208,40 @@ class WorkflowConnection(models.Model):
     def __str__(self):
         label = f" ({self.label})" if self.label else ""
         return f"{self.from_node.code} -> {self.to_node.code}{label}"
+
+@login_required
+def workflow_swimlane(request, pk):
+    transaction = get_object_or_404(
+        OfficeTransaction.objects.prefetch_related(
+            "nodes",
+            "connections__from_node",
+            "connections__to_node",
+        ),
+        id=pk,
+    )
+
+    roles = [
+        ("admin", "Admin"),
+        ("clerk", "Accounting Clerk"),
+        ("accountant", "Accountant"),
+        ("manager", "Manager"),
+        ("cashier", "Cashier"),
+        ("supplier", "Supplier"),
+    ]
+
+    nodes = transaction.nodes.all().order_by("row", "id")
+    connections = transaction.connections.all().order_by("position", "id")
+
+    max_row = nodes.order_by("-row").first().row if nodes else 1
+
+    return render(
+        request,
+        "office_sim/workflow_swimlane.html",
+        {
+            "transaction": transaction,
+            "roles": roles,
+            "nodes": nodes,
+            "connections": connections,
+            "rows": range(1, max_row + 1),
+        },
+    )
