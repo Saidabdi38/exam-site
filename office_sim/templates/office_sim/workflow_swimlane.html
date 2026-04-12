@@ -154,7 +154,7 @@
   .end {
     background: #fecaca;
     border-radius: 999px;
-    min-width: 60px;
+    min-width: 90px;
   }
 
   #svg {
@@ -201,6 +201,9 @@
                   class="decision"
                   id="node-{{ node.id }}"
                   data-node-type="{{ node.node_type }}"
+                  data-node-code="{{ node.code }}"
+                  data-node-row="{{ node.row }}"
+                  data-node-lane="{{ node.lane }}"
                 >
                   <div class="decision-text">{{ node.title }}</div>
                 </div>
@@ -209,6 +212,9 @@
                   class="box {{ node.node_type }}"
                   id="node-{{ node.id }}"
                   data-node-type="{{ node.node_type }}"
+                  data-node-code="{{ node.code }}"
+                  data-node-row="{{ node.row }}"
+                  data-node-lane="{{ node.lane }}"
                 >
                   {{ node.title }}
                 </div>
@@ -224,7 +230,7 @@
 {{ connections|json_script:"workflow-connections" }}
 
 <script>
-  function getContainerRect() {
+  function getContainerData() {
     var container = document.getElementById("container");
     return {
       el: container,
@@ -232,8 +238,8 @@
     };
   }
 
-  function getPointForElement(el, side) {
-    var c = getContainerRect();
+  function getPoint(el, side) {
+    var c = getContainerData();
     var r = el.getBoundingClientRect();
 
     var left = r.left - c.rect.left + c.el.scrollLeft;
@@ -241,51 +247,12 @@
     var width = r.width;
     var height = r.height;
 
-    if (side === "top") {
-      return { x: left + width / 2, y: top };
-    }
-    if (side === "bottom") {
-      return { x: left + width / 2, y: top + height };
-    }
-    if (side === "left") {
-      return { x: left, y: top + height / 2 };
-    }
-    if (side === "right") {
-      return { x: left + width, y: top + height / 2 };
-    }
+    if (side === "top") return { x: left + width / 2, y: top };
+    if (side === "bottom") return { x: left + width / 2, y: top + height };
+    if (side === "left") return { x: left, y: top + height / 2 };
+    if (side === "right") return { x: left + width, y: top + height / 2 };
 
     return { x: left + width / 2, y: top + height / 2 };
-  }
-
-  function getConnectionPoints(fromEl, toEl, conn) {
-    var label = (conn.label || "").trim().toLowerCase();
-    var fromType = fromEl.dataset.nodeType || "";
-
-    var startPoint;
-    var endPoint;
-
-    if (fromType === "decision") {
-      if (label === "haa" || label === "yes") {
-        startPoint = getPointForElement(fromEl, "right");
-        endPoint = getPointForElement(toEl, "top");
-      } else if (label === "maya" || label === "no") {
-        startPoint = getPointForElement(fromEl, "bottom");
-        endPoint = getPointForElement(toEl, "top");
-      } else {
-        startPoint = getPointForElement(fromEl, "bottom");
-        endPoint = getPointForElement(toEl, "top");
-      }
-    } else {
-      startPoint = getPointForElement(fromEl, "bottom");
-      endPoint = getPointForElement(toEl, "top");
-    }
-
-    return {
-      x1: startPoint.x,
-      y1: startPoint.y,
-      x2: endPoint.x,
-      y2: endPoint.y
-    };
   }
 
   function drawLabel(svg, x, y, label) {
@@ -315,55 +282,147 @@
   }
 
   function drawConnection(svg, fromEl, toEl, conn) {
-    var pts = getConnectionPoints(fromEl, toEl, conn);
-    var x1 = pts.x1;
-    var y1 = pts.y1;
-    var x2 = pts.x2;
-    var y2 = pts.y2;
-
     var fromType = fromEl.dataset.nodeType || "";
+    var fromCode = fromEl.dataset.nodeCode || "";
+    var toCode = toEl.dataset.nodeCode || "";
     var label = (conn.label || "").trim().toLowerCase();
 
-    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    var d = "";
-    var labelX = 0;
-    var labelY = 0;
+    var x1, y1, x2, y2, d, labelX, labelY;
 
-    if (fromType === "decision" && (label === "haa" || label === "yes")) {
+    // SPECIAL 1: D decision
+    if (fromCode === "D" && (label === "haa" || label === "yes")) {
+      var startDYes = getPoint(fromEl, "right");
+      var endDYes = getPoint(toEl, "top");
+
+      x1 = startDYes.x; y1 = startDYes.y;
+      x2 = endDYes.x; y2 = endDYes.y;
+
+      var midDX = x1 + 40;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + midDX + " " + y1 +
+          " L " + midDX + " " + y2 +
+          " L " + x2 + " " + y2;
+
+      labelX = midDX;
+      labelY = y1 - 8;
+    }
+    else if (fromCode === "D" && (label === "maya" || label === "no")) {
+      var startDNo = getPoint(fromEl, "bottom");
+      var endDNo = getPoint(toEl, "top");
+
+      x1 = startDNo.x; y1 = startDNo.y;
+      x2 = endDNo.x; y2 = endDNo.y;
+
+      var midDY = y1 + 60;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + x1 + " " + midDY +
+          " L " + x2 + " " + midDY +
+          " L " + x2 + " " + y2;
+
+      labelX = x1 + 28;
+      labelY = y1 + 24;
+    }
+
+    // SPECIAL 2: E decision -> F (Haa)
+    else if (fromCode === "E" && toCode === "F" && (label === "haa" || label === "yes")) {
+      var startEYes = getPoint(fromEl, "bottom");
+      var endEYes = getPoint(toEl, "top");
+
+      x1 = startEYes.x; y1 = startEYes.y;
+      x2 = endEYes.x; y2 = endEYes.y;
+
+      var midEY = y1 + 55;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + x1 + " " + midEY +
+          " L " + x2 + " " + midEY +
+          " L " + x2 + " " + y2;
+
+      labelX = x1 + 24;
+      labelY = y1 + 22;
+    }
+
+    // SPECIAL 3: E decision -> J (Maya)
+    else if (fromCode === "E" && toCode === "J" && (label === "maya" || label === "no")) {
+      var startENo = getPoint(fromEl, "bottom");
+      var endENo = getPoint(toEl, "top");
+
+      x1 = startENo.x; y1 = startENo.y;
+      x2 = endENo.x; y2 = endENo.y;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + x2 + " " + y2;
+
+      labelX = x1 + 30;
+      labelY = y1 + 22;
+    }
+
+    // Other decision yes
+    else if (fromType === "decision" && (label === "haa" || label === "yes")) {
+      var startYes = getPoint(fromEl, "right");
+      var endYes = getPoint(toEl, "top");
+
+      x1 = startYes.x; y1 = startYes.y;
+      x2 = endYes.x; y2 = endYes.y;
+
       var midX = x1 + 40;
+
       d = "M " + x1 + " " + y1 +
           " L " + midX + " " + y1 +
           " L " + midX + " " + y2 +
           " L " + x2 + " " + y2;
+
       labelX = midX;
       labelY = y1 - 8;
-    } else if (fromType === "decision" && (label === "maya" || label === "no")) {
-
-        // Go straight down first (clean vertical)
-        var midY = y1 + 60;
-
-        d = "M " + x1 + " " + y1 +
-            " L " + x1 + " " + midY +   // ↓ down
-            " L " + x2 + " " + midY +   // → then horizontal
-            " L " + x2 + " " + y2;      // ↓ to target
-
-        labelX = x1 + 30;
-        labelY = y1 + 25;   // label near start (not in middle chaos)
-
-    } else if (Math.abs(x1 - x2) < 20) {
-      d = "M " + x1 + " " + y1 + " L " + x2 + " " + y2;
-      labelX = x1;
-      labelY = (y1 + y2) / 2 - 8;
-    } else {
-      var normalMidY = y1 + 35;
-      d = "M " + x1 + " " + y1 +
-          " L " + x1 + " " + normalMidY +
-          " L " + x2 + " " + normalMidY +
-          " L " + x2 + " " + y2;
-      labelX = (x1 + x2) / 2;
-      labelY = normalMidY - 8;
     }
 
+    // Other decision no
+    else if (fromType === "decision" && (label === "maya" || label === "no")) {
+      var startNo = getPoint(fromEl, "bottom");
+      var endNo = getPoint(toEl, "top");
+
+      x1 = startNo.x; y1 = startNo.y;
+      x2 = endNo.x; y2 = endNo.y;
+
+      var midY = y1 + 60;
+
+      d = "M " + x1 + " " + y1 +
+          " L " + x1 + " " + midY +
+          " L " + x2 + " " + midY +
+          " L " + x2 + " " + y2;
+
+      labelX = x1 + 28;
+      labelY = y1 + 24;
+    }
+
+    // Straight
+    else {
+      var startNormal = getPoint(fromEl, "bottom");
+      var endNormal = getPoint(toEl, "top");
+
+      x1 = startNormal.x; y1 = startNormal.y;
+      x2 = endNormal.x; y2 = endNormal.y;
+
+      if (Math.abs(x1 - x2) < 20) {
+        d = "M " + x1 + " " + y1 + " L " + x2 + " " + y2;
+        labelX = x1;
+        labelY = (y1 + y2) / 2 - 8;
+      } else {
+        var normalMidY = y1 + 35;
+
+        d = "M " + x1 + " " + y1 +
+            " L " + x1 + " " + normalMidY +
+            " L " + x2 + " " + normalMidY +
+            " L " + x2 + " " + y2;
+
+        labelX = (x1 + x2) / 2;
+        labelY = normalMidY - 8;
+      }
+    }
+
+    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", d);
     path.setAttribute("fill", "none");
     path.setAttribute("stroke", "#111");
