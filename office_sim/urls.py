@@ -17,4 +17,6 @@ urlpatterns = [
     path("office/role/<int:role_id>/contract/", views.role_contract_view, name="office_role_contract"),
     path("office/role/<int:role_id>/job-description/", views.role_job_description_view, name="office_role_job_description"),
     path("office/role/<int:role_id>/welcome/", views.role_welcome_view, name="office_role_welcome"),
+    path("office/companies/", views.office_company_list, name="office_company_list"),
+    path("office/companies/<str:company_name>/transactions/", views.office_company_transactions, name="office_company_transactions"),
 ]

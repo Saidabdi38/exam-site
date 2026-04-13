@@ -257,3 +257,18 @@ def role_welcome_view(request, role_id):
     return render(request, "office_sim/role_welcome.html", {
         "role": role
     })
+
+def office_company_list(request):
+    companies = (
+        OfficeTransaction.objects
+        .values_list("company_name", flat=True)
+        .distinct()
+    )
+    return render(request, "office_sim/company_list.html", {"companies": companies})
+
+def office_company_transactions(request, company_name):
+    transactions = OfficeTransaction.objects.filter(company_name=company_name)
+    return render(request, "office_sim/transaction_list.html", {
+        "company_name": company_name,
+        "transactions": transactions,
+    })
