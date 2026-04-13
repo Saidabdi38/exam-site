@@ -215,3 +215,45 @@ def update_progress(request, pk, step_no):
     progress.save()
 
     return redirect("workflow_steps", pk=transaction.id)
+
+def role_contract_view(request, role_id):
+    role = get_object_or_404(OfficeRole, id=role_id)
+
+    if request.method == "POST":
+        if request.POST.get("accepted") == "yes":
+            request.session[f"contract_accepted_{role.id}"] = True
+            return redirect("office_role_job_description", role_id=role.id)
+
+    return render(request, "office_sim/role_contract.html", {
+        "role": role
+    })
+
+
+def role_job_description_view(request, role_id):
+    role = get_object_or_404(OfficeRole, id=role_id)
+
+    if not request.session.get(f"contract_accepted_{role.id}"):
+        return redirect("office_role_contract", role_id=role.id)
+
+    if request.method == "POST":
+        if request.POST.get("accepted") == "yes":
+            request.session[f"job_description_accepted_{role.id}"] = True
+            return redirect("office_role_welcome", role_id=role.id)
+
+    return render(request, "office_sim/role_job_description.html", {
+        "role": role
+    })
+
+
+def role_welcome_view(request, role_id):
+    role = get_object_or_404(OfficeRole, id=role_id)
+
+    if not request.session.get(f"contract_accepted_{role.id}"):
+        return redirect("office_role_contract", role_id=role.id)
+
+    if not request.session.get(f"job_description_accepted_{role.id}"):
+        return redirect("office_role_job_description", role_id=role.id)
+
+    return render(request, "office_sim/role_welcome.html", {
+        "role": role
+    })

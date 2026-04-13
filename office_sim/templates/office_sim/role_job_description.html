@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Sharaxaadda Shaqada{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-sm p-4 rounded-4">
+    <h1>Sharaxaadda Shaqada</h1>
+    <h3 class="mb-3">{{ role.name }}</h3>
+
+    <div style="font-size:18px; line-height:1.9;">
+      {% if role.job_description_so %}
+        {{ role.job_description_so|linebreaks }}
+      {% else %}
+        <p>Sharaxaadda wali lama gelin.</p>
+      {% endif %}
+    </div>
+
+    <form method="post" class="mt-4">
+      {% csrf_token %}
+      <input type="hidden" name="accepted" value="yes">
+      <button class="btn btn-primary btn-lg">
+        Waan Fahmay oo Waan Aqbalay
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

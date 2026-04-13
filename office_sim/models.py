@@ -6,10 +6,11 @@ class OfficeRole(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     office_display_name = models.CharField(max_length=150, blank=True)
+    contract_text_so = models.TextField(blank=True, null=True)
+    job_description_so = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
-
 
 class StudentOfficeProfile(models.Model):
     user = models.OneToOneField(

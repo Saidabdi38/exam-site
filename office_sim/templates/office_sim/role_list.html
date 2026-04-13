@@ -6,7 +6,7 @@
   <div class="card" style="margin-bottom:12px;">
     <h3>{{ role.name }}</h3>
     <p>{{ role.description }}</p>
-    <a class="btn btn-primary" href="{% url 'select_role' role.id %}">Choose Role</a>
+    <a class="btn btn-primary" href="{% url 'office_role_contract' role.id %}">Choose Role</a>
   </div>
 {% empty %}
   <p>No roles available.</p>
