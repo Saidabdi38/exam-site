@@ -1,105 +1,228 @@
-{% extends "base.html" %}
-{% block title %}Home{% endblock %}
-{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>{% block title %}Xirfadyaal{% endblock %}</title>
+
+  <link rel="stylesheet" href="{% static 'exams/css/style.css' %}">
+
+  <style>
+
+    /* ================= NAV ================= */
+    #siteNav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .navlink {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .navlink:hover {
+      color: #1e3a8a;
+    }
+
+    .brand-text {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+
+    /* ================= HERO ================= */
+    .hero-banner {
+      margin: 20px auto;
+      padding: 40px 25px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      color: white;
+    }
+
+    .hero-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .hero-subtitle {
+      margin-top: 8px;
+      font-size: 16px;
+      color: #fff;
+      opacity: 0.95;
+    }
+
+    /* ================= CONTAINER ================= */
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 10px;
+    }
+
+    .panel {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    /* ================= FOOTER ================= */
+    .site-footer {
+      margin-top: 40px;
+      background: #0f172a;
+      color: #fff;
+      padding: 30px 20px;
+    }
+
+    .footer-container {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-container a {
+      display: block;
+      color: #ddd;
+      text-decoration: none;
+      margin-top: 5px;
+    }
+
+    /* ================= MOBILE ================= */
+    @media (max-width: 768px) {
+      .nav-left, .nav-right {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .hero-title {
+        font-size: 22px;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav id="siteNav">
+
+  <!-- LEFT -->
+  <div class="nav-left">
+
+    <span class="brand-text">Xirfadyaal</span>
+
+    {% if user.is_authenticated %}
+
+      <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
+
+      {% if user.is_staff %}
+        <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
+        <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+      {% endif %}
+
+      <a class="navlink" href="{% url 'home' %}">Home</a>
+      <a class="navlink" href="{% url 'about' %}">About</a>
+      <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+      <a class="navlink" href="{% url 'office_dashboard' %}">Virtual Office</a>
+
+    {% else %}
+
+      <a class="navlink" href="{% url 'home' %}">Home</a>
+      <a class="navlink" href="{% url 'about' %}">About</a>
+      <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+      <a class="navlink" href="{% url 'office_dashboard' %}">Virtual Office</a>
+
+    {% endif %}
+  </div>
+
+  <!-- RIGHT -->
+  <div class="nav-right">
+
+    {% if user.is_authenticated %}
+      <span>Hi, {{ user.username }}</span>
+
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+      </form>
+
+    {% else %}
+      <a class="navlink" href="{% url 'login' %}">Login</a>
+      <a class="navlink" href="{% url 'signup' %}">Sign up</a>
+    {% endif %}
+
+  </div>
+
+</nav>
 
 <!-- ================= HERO ================= -->
-<section class="hero">
-  <h1>Tijaabinta Kartida Xirfadeed ee Ku Saleysan Shaqo</h1>
-
-  <p>
-    Xirfadyaal waxay ka caawisaa qofka inuu ogaado xirfadaha xisaabaadka iyo
-    maaliyadda ee suuqa shaqada looga baahan yahay, iyo heerka uu ka joogo.
-    Waxay bixisaa qiimeyn iyo imtixaano habaysan oo lagu cabbiro aqoonta,
-    kartida, iyo diyaar-garowga shaqo si cad, caddaalad ah, oo dijitaal ah.
-  </p>
-
-  {% if user.is_authenticated %}
-    <div style="margin-top:15px;">
-      <a class="btn btn-primary" href="{% url 'student_dashboard' %}">
-        Dashboard
-      </a>
+<div class="container">
+  <div class="hero-banner">
+    <div class="hero-title">
+      Ku soo dhowow Xirfadyaal
     </div>
-  {% endif %}
-</section>
+    <div class="hero-subtitle">
+      Virtual Office & Tababar Shaqo
+    </div>
+  </div>
+</div>
 
-<div class="divider"></div>
+<!-- ================= MAIN ================= -->
+<div class="container">
+  <div class="panel">
 
-<!-- ================= INTRO ================= -->
-<section class="about">
+    {% if messages %}
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    {% endif %}
 
-  <h2>Ku Saabsan Xirfadyaal</h2>
-  <p>
-    Xirfadyaal waa madal lagu qiimeeyo xirfadaha shaqsiyaadka iyadoo la adeegsanayo
-    imtixaano dijitaal ah oo habaysan. Ujeeddadeedu waa in qofku ogaado
-    xirfadaha xisaabaadka iyo maaliyadda ee looga baahan yahay suuqa shaqada,
-    iyo heerka aqoontiisa iyo kartidiisu ay ka taagan yihiin.
-  </p>
+    {% block content %}{% endblock %}
 
-</section>
+  </div>
+</div>
 
-<div class="divider"></div>
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="footer-container">
 
-<!-- ================= SKILLS ================= -->
-<section class="skills">
-
-  <h2>Imtixaanada Kartida</h2>
-
-  <p>
-    Qaado imtixaano xirfadeed si aad u ogaato xirfadaha suuqa shaqada looga baahan yahay,
-    una cabbirto aqoontaada, kartidaada, iyo heerkaaga shaqo.
-  </p>
-
-</section>
-
-<div class="divider"></div>
-
-<!-- ================= HOW IT WORKS ================= -->
-<section class="how">
-
-  <h2>Sida Ay U Shaqeyso</h2>
-
-  <div class="steps">
-
-    <div class="step">
-      <div class="step-num">1</div>
-      <h3>Dooro Imtixaan</h3>
-      <p>Dooro imtixaanka ku habboon xirfadda ama shaqada aad rabto.</p>
+    <div>
+      <h3>Xirfadyaal</h3>
+      <p>Madal qiimeyn karti xirfadeed.</p>
     </div>
 
-    <div class="step">
-      <div class="step-num">2</div>
-      <h3>Isdiiwaangeli</h3>
-      <p>Diiwaangeli si aad u hesho gelitaanka imtixaanka.</p>
+    <div>
+      <h4>Quick Links</h4>
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'about' %}">About</a>
+      <a href="{% url 'exam_prices' %}">Assessments</a>
     </div>
 
-    <div class="step">
-      <div class="step-num">3</div>
-      <h3>Ogaaw Heerkaaga</h3>
-      <p>Qaado imtixaanka si aad u ogaato heerka xirfadahaaga iyo sida aad ugu diyaar tahay suuqa shaqada.</p>
+    <div>
+      <h4>Contact</h4>
+      <p>📞 +252 906 943838</p>
+      <p>✉ support@xirfadyaal.com</p>
+      <p>© 2026 Xirfadyaal</p>
     </div>
 
   </div>
+</footer>
 
-</section>
-
-<div class="divider"></div>
-
-<!-- ================= CTA ================= -->
-<section class="cta">
-
-  <h2>Bilow Qiimeyntaada Xirfadeed</h2>
-
-  <p>
-    Qaado imtixaan si aad u ogaato xirfadaha xisaabaadka ee suuqa shaqada looga baahan yahay
-    iyo heerka aad ka joogto.
-  </p>
-
-  <div style="margin-top:15px; display:flex; justify-content:center;">
-    <a class="btn btn-primary" href="{% url 'exam_prices' %}">
-      View Exams
-    </a>
-  </div>
-
-</section>
-
-{% endblock %}
+</body>
+</html>
