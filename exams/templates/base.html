@@ -4,126 +4,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <title>{% block title %}Xirfadyaal{% endblock %}</title>
-
   <link rel="stylesheet" href="{% static 'exams/css/style.css' %}">
-
-  <style>
-
-    /* ================= NAV ================= */
-    #siteNav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      background: #fff;
-      border-bottom: 1px solid #eee;
-    }
-
-    .nav-left, .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .navlink {
-      text-decoration: none;
-      color: #333;
-      font-weight: 500;
-    }
-
-    .brand-text {
-      font-size: 20px;
-      font-weight: bold;
-      color: #1e3a8a;
-    }
-
-    /* ================= HERO BANNER ================= */
-    .hero-banner {
-      margin: 20px auto;
-      padding: 40px 25px;
-      border-radius: 12px;
-
-      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-      color: white;
-    }
-
-    .hero-title {
-      font-size: 28px;
-      font-weight: 800;
-      color: #fff !important;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    }
-
-    .hero-subtitle {
-      margin-top: 8px;
-      font-size: 16px;
-      color: #fff !important;
-      opacity: 0.95;
-    }
-
-    /* ================= CONTAINER ================= */
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      padding: 10px;
-    }
-
-    .panel {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-
-    /* ================= FOOTER ================= */
-    .site-footer {
-      margin-top: 40px;
-      background: #0f172a;
-      color: #fff;
-      padding: 30px 20px;
-    }
-
-    .footer-container {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-
-    .footer-container a {
-      display: block;
-      color: #ddd;
-      text-decoration: none;
-      margin-top: 5px;
-    }
-
-    /* ================= MOBILE ================= */
-    @media (max-width: 768px) {
-      .nav-left, .nav-right {
-        display: none;
-      }
-
-      #siteNav {
-        justify-content: center;
-      }
-
-      .hero-title {
-        font-size: 22px;
-      }
-    }
-
-  </style>
 </head>
-
 <body>
 
-<!-- ================= NAVBAR ================= -->
 <nav id="siteNav">
 
+  <div class="mobile-topbar">
+    <button id="menuToggle" class="menu-toggle" type="button">☰</button>
+  </div>
+
   <div class="nav-left">
-    <span class="brand-text">Xirfadyaal</span>
+    <a href="{% url 'home' %}" class="brand">
+      <img src="{% static 'exams/images/logo.jpeg' %}" class="brand-logo" alt="Logo">
+      <span class="brand-text">Xirfadyaal</span>
+    </a>
+
+    {% if user.is_authenticated %}
+      <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
+
+      {% if user.is_staff %}
+        <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
+        <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+      {% endif %}
+    {% endif %}
 
     <a class="navlink" href="{% url 'home' %}">Home</a>
     <a class="navlink" href="{% url 'about' %}">About</a>
@@ -133,42 +38,70 @@
 
   <div class="nav-right">
     {% if user.is_authenticated %}
-      <span>Hi, {{ user.username }}</span>
+      <span class="nav-user">Hi, {{ user.username }}</span>
 
       <form method="post" action="{% url 'logout' %}">
         {% csrf_token %}
-        <button type="submit">Logout</button>
+        <button class="btn btn-secondary" type="submit">Logout</button>
       </form>
     {% else %}
-      <a href="{% url 'login' %}">Login</a>
-      <a href="{% url 'signup' %}">Sign up</a>
+      <a class="navlink" href="{% url 'login' %}">Login</a>
+      <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
     {% endif %}
   </div>
 
 </nav>
 
-<!-- ================= HERO ================= -->
-<div class="container">
+<div id="mobileNav">
 
-  <div class="hero-banner">
-    <div class="hero-title">
-      Ku soo dhowow Xirfadyaal
-    </div>
-    <div class="hero-subtitle">
-      Virtual Office & Tababar Shaqo
-    </div>
+  <div class="mobile-logo">
+    <img src="{% static 'exams/images/logo.jpeg' %}" class="mobile-brand-logo" alt="Logo">
+    <div class="mobile-brand-text">Xirfadyaal</div>
   </div>
+
+  {% if user.is_authenticated %}
+    <span class="nav-user">Hi, {{ user.username }}</span>
+
+    <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
+
+    {% if user.is_staff %}
+      <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
+      <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+    {% endif %}
+  {% endif %}
+
+  <a class="navlink" href="{% url 'home' %}">Home</a>
+  <a class="navlink" href="{% url 'about' %}">About</a>
+  <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+  <a class="navlink" href="{% url 'office_dashboard' %}">Virtual Office</a>
+
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="btn btn-secondary mobile-logout" type="submit">Logout</button>
+    </form>
+  {% else %}
+    <a class="navlink" href="{% url 'login' %}">Login</a>
+    <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
+  {% endif %}
 
 </div>
 
-<!-- ================= MAIN ================= -->
 <div class="container">
-  <div class="panel">
+
+  <!-- ✅ SAFE BANNER -->
+  <div class="safe-banner">
+    <h2>Ku soo dhowow Xirfadyaal</h2>
+    <!-- <p>Virtual Office & Tababar Shaqo</p> -->
+  </div>
+
 
     {% if messages %}
-      {% for message in messages %}
-        <p>{{ message }}</p>
-      {% endfor %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
     {% endif %}
 
     {% block content %}{% endblock %}
@@ -176,7 +109,6 @@
   </div>
 </div>
 
-<!-- ================= FOOTER ================= -->
 <footer class="site-footer">
   <div class="footer-container">
 
@@ -190,6 +122,7 @@
       <a href="{% url 'home' %}">Home</a>
       <a href="{% url 'about' %}">About</a>
       <a href="{% url 'exam_prices' %}">Assessments</a>
+      <a href="{% url 'office_dashboard' %}">Virtual Office</a>
     </div>
 
     <div>
@@ -201,6 +134,27 @@
 
   </div>
 </footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const toggle = document.getElementById("menuToggle");
+  const mobile = document.getElementById("mobileNav");
+
+  if (toggle && mobile) {
+    toggle.onclick = function () {
+      mobile.classList.toggle("show");
+      toggle.textContent = mobile.classList.contains("show") ? "✕" : "☰";
+    };
+
+    mobile.querySelectorAll("a").forEach(function(link) {
+      link.addEventListener("click", function() {
+        mobile.classList.remove("show");
+        toggle.textContent = "☰";
+      });
+    });
+  }
+});
+</script>
 
 </body>
 </html>

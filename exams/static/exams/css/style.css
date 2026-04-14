@@ -790,3 +790,76 @@ a, button, .btn, .navlink, .menu-toggle, img{
     width: auto;
 }
 
+/* ===== MOBILE MENU LOGO (INSIDE MENU) ===== */
+
+.mobile-logo{
+  text-align: center;
+  padding: 16px 10px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 10px;
+}
+
+.mobile-brand-logo{
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-bottom: 6px;
+}
+
+.mobile-brand-text{
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ===== SAFE BANNER ===== */
+
+.safe-banner{
+  background: #0f172a;
+  color: #ffffff;
+  padding: 18px 20px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+.safe-banner h2{
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.safe-banner p{
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255,255,255,0.9);
+}
+
+@media (max-width: 768px){
+  .safe-banner{
+    padding: 14px;
+  }
+
+  .safe-banner h2{
+    font-size: 18px;
+  }
+
+  .safe-banner p{
+    font-size: 13px;
+  }
+}
+
+/* mobile */
+@media (max-width: 768px){
+  .safe-banner{
+    padding: 14px;
+  }
+
+  .safe-banner h2{
+    font-size: 18px;
+  }
+
+  .safe-banner p{
+    font-size: 13px;
+  }
+}
