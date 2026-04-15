@@ -938,3 +938,48 @@ safe-banner{
 }
 
 }
+
+/* Buttons isku mid la ah footer */
+.btn-primary,
+.btn-secondary {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 22px;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: 500;
+  transition: 0.3s ease;
+}
+
+/* Hover effect yar (optional laakiin fiican) */
+.btn-primary:hover,
+.btn-secondary:hover {
+  background: #1e293b; /* wax yar ka iftiin badan */
+  transform: translateY(-1px);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 15px;
+}
+
+/* optional: same height */
+.form-actions .btn {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* mobile responsive */
+@media (max-width: 480px) {
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
