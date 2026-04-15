@@ -12,8 +12,17 @@
 <nav id="siteNav">
 
   <div class="mobile-topbar">
-    <button id="menuToggle" class="menu-toggle" type="button">☰</button>
-  </div>
+
+  <!-- menu button -->
+  <button id="menuToggle" class="menu-toggle">☰</button>
+
+  <!-- ✅ ADD THIS (logo + text) -->
+  <a href="{% url 'home' %}" class="mobile-brand">
+    <img src="{% static 'exams/images/logo.jpeg' %}" class="mobile-brand-logo">
+    <span class="mobile-brand-text">Xirfadyaal</span>
+  </a>
+
+</div>
 
   <div class="nav-left">
     <a href="{% url 'home' %}" class="brand">
@@ -54,10 +63,10 @@
 
 <div id="mobileNav">
 
-  <div class="mobile-logo">
+  <!-- <div class="mobile-logo">
     <img src="{% static 'exams/images/logo.jpeg' %}" class="mobile-brand-logo" alt="Logo">
     <div class="mobile-brand-text">Xirfadyaal</div>
-  </div>
+  </div> -->
 
   {% if user.is_authenticated %}
     <span class="nav-user">Hi, {{ user.username }}</span>

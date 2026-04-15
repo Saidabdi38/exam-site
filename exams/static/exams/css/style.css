@@ -895,3 +895,46 @@ a, button, .btn, .navlink, .menu-toggle, img{
 safe-banner{
   background: red !important;
 }
+
+/* ===== MOBILE BRAND IN NAVBAR ===== */
+
+.mobile-topbar{
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* mobile only */
+@media (max-width: 768px){
+
+  .mobile-topbar{
+    display: flex;
+  }
+
+  .mobile-brand{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .mobile-brand-logo{
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+
+  .mobile-brand-text{
+    font-size: 28px;
+    font-weight: 700;
+    color: #0b4f7a;
+  }
+
+  .brand-logo,
+.mobile-brand-logo{
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+}
