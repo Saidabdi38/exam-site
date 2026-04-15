@@ -812,32 +812,67 @@ a, button, .btn, .navlink, .menu-toggle, img{
   font-weight: 700;
 }
 
-/* ===== SAFE BANNER ===== */
-
+/* ===== SAFE BANNER FINAL ===== */
 .safe-banner{
-  background: #0f172a;
+  background: #172033;   /* 👈 PERFECT visual match */
+  color: #e5e7eb;
+
+  padding: 16px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+
+  border: none;
+  box-shadow: none;
+}
+
+/* Title */
+.safe-banner h2{
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
   color: #ffffff;
-  padding: 18px 20px;
-  border-radius: 14px;
-  margin-bottom: 16px;
+}
+
+/* Subtitle */
+.safe-banner p{
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+}
+
+/* Mobile */
+@media (max-width: 768px){
+  .safe-banner{
+    padding: 14px;
+  }
+
+  .safe-banner h2{
+    font-size: 16px;
+  }
+
+  .safe-banner p{
+    font-size: 13px;
+  }
 }
 
 .safe-banner h2{
-  margin: 0 0 6px;
-  font-size: 20px;
-  font-weight: 800;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
   color: #ffffff;
 }
 
 .safe-banner p{
-  margin: 0;
-  font-size: 14px;
-  color: rgba(255,255,255,0.9);
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
 }
 
 @media (max-width: 768px){
   .safe-banner{
     padding: 14px;
+    margin-left: -18px;
+    margin-right: -18px;
   }
 
   .safe-banner h2{
@@ -848,18 +883,15 @@ a, button, .btn, .navlink, .menu-toggle, img{
     font-size: 13px;
   }
 }
+/* ===== FORCE SAFE BANNER COLOR ===== */
+.container .panel .safe-banner{
+  background: #0f172a !important;
+  color: #ffffff !important;
 
-/* mobile */
-@media (max-width: 768px){
-  .safe-banner{
-    padding: 14px;
-  }
+  box-shadow: none !important;
+  border: none !important;
+}
 
-  .safe-banner h2{
-    font-size: 18px;
-  }
-
-  .safe-banner p{
-    font-size: 13px;
-  }
+safe-banner{
+  background: red !important;
 }
