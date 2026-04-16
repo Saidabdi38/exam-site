@@ -19,7 +19,7 @@ from .models import (
     Exam,
     ExamResitPermission,
 )
-
+from .forms import SignupForm
 
 # -----------------------------
 # Helpers
@@ -148,15 +148,14 @@ def signup(request):
         return redirect("after_login")
 
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = SignupForm(request.POST)   # ✅ sax
         if form.is_valid():
             form.save()
             return redirect("login")
     else:
-        form = UserCreationForm()
+        form = SignupForm()   
 
     return render(request, "registration/signup.html", {"form": form})
-
 
 # -----------------------------
 # Teacher

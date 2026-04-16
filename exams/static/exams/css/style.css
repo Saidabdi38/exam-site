@@ -960,26 +960,58 @@ safe-banner{
   transform: translateY(-1px);
 }
 
-.form-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-top: 15px;
+
+.form-shell{
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-/* optional: same height */
-.form-actions .btn {
-  height: 42px;
+.form-shell form{
+  margin-bottom: 12px;
+}
+
+.form-bottom{
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.form-footer{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-footer span{
+  font-size: 14px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.form-footer .btn{
+  padding: 6px 14px;
+  border-radius: 20px;
+  height: 34px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
 }
 
-/* mobile responsive */
-@media (max-width: 480px) {
-  .form-actions {
+@media (max-width: 480px){
+  .form-bottom{
+    align-items: flex-start;
+  }
+
+  .form-footer{
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .form-footer span{
+    white-space: normal;
   }
 }
-
