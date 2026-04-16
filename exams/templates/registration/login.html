@@ -7,31 +7,25 @@
   <h2 class="form-title">Login</h2>
   <p class="form-subtitle">Enter your username and password</p>
 
-  <form method="post" autocomplete="off">
-    {% csrf_token %}
+  <form method="post" autocomplete="on">
+  {% csrf_token %}
 
-    <!-- Disable browser autofill -->
-    <input type="text" name="fakeuser" style="display:none">
-    <input type="password" name="fakepass" style="display:none">
+  <div class="form-group">
+    <label>Username</label>
+    <input type="text" name="username" class="form-control" autocomplete="username" required>
+  </div>
 
-    <div class="form-group">
-      <label>Username</label>
-      <input type="text" name="username" class="form-control" autocomplete="off" required>
-    </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" name="password" class="form-control" autocomplete="current-password" required>
+  </div>
 
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" name="password" class="form-control" autocomplete="new-password" required>
-    </div>
-
-    <!-- ✅ BOTH BUTTONS SAME LINE -->
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary">Login</button>
-      <a class="btn btn-secondary" href="{% url 'password_reset' %}">
-        Forgot password?
-      </a>
-    </div>
-
-  </form>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Login</button>
+    <a class="btn btn-secondary" href="{% url 'password_reset' %}">
+      Forgot password?
+    </a>
+  </div>
+</form>
 </div>
 {% endblock %}
