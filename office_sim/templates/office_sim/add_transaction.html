@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Add Transaction{% endblock %}
+
+{% block content %}
+<div class="form-shell" style="max-width: 1000px;">
+  <h2>Add Transaction</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="card">
+      <h3>Transaction Info</h3>
+
+      <div class="form-group">
+        <label>Title</label>
+        {{ form.title }}
+      </div>
+
+      <div class="form-group">
+        <label>Role</label>
+        {{ form.role }}
+      </div>
+
+      <div class="form-group">
+        <label>Transaction date</label>
+        {{ form.transaction_date }}
+      </div>
+
+      <div class="form-group">
+        <label>Company name</label>
+        {{ form.company_name }}
+      </div>
+
+      <div class="form-group">
+        <label>Amount</label>
+        {{ form.amount }}
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        {{ form.description }}
+      </div>
+
+      <div class="form-group">
+        <label>Department</label>
+        {{ form.department }}
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        {{ form.status }}
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Workflow Steps</h3>
+      {{ step_formset.management_form }}
+
+      {% for f in step_formset %}
+        <div class="inline-box">
+          {{ f.id }}
+          <div class="row">
+            <div><label>Step No</label>{{ f.step_no }}</div>
+            <div><label>Title</label>{{ f.title }}</div>
+          </div>
+          <div class="row">
+            <div><label>Description</label>{{ f.description }}</div>
+            <div><label>Responsible Person</label>{{ f.responsible_person }}</div>
+          </div>
+          <div class="row">
+            <div><label>Expected Output</label>{{ f.expected_output }}</div>
+            <div><label>Role</label>{{ f.role }}</div>
+          </div>
+          <div class="row">
+            <div><label>Node Type</label>{{ f.node_type }}</div>
+            <div>
+              {% if f.instance.pk %}
+                <label>Delete</label>{{ f.DELETE }}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h3>Workflow Nodes</h3>
+      {{ node_formset.management_form }}
+
+      {% for f in node_formset %}
+        <div class="inline-box">
+          {{ f.id }}
+          <div class="row">
+            <div><label>Code</label>{{ f.code }}</div>
+            <div><label>Title</label>{{ f.title }}</div>
+          </div>
+          <div class="row">
+            <div><label>Description</label>{{ f.description }}</div>
+            <div><label>Node Type</label>{{ f.node_type }}</div>
+          </div>
+          <div class="row">
+            <div><label>Lane</label>{{ f.lane }}</div>
+            <div><label>Row</label>{{ f.row }}</div>
+          </div>
+          {% if f.instance.pk %}
+            <label>Delete</label>{{ f.DELETE }}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h3>Workflow Connections</h3>
+      {{ connection_formset.management_form }}
+
+      {% for f in connection_formset %}
+        <div class="inline-box">
+          {{ f.id }}
+          <div class="row">
+            <div><label>From Node</label>{{ f.from_node }}</div>
+            <div><label>To Node</label>{{ f.to_node }}</div>
+          </div>
+          <div class="row">
+            <div><label>Label</label>{{ f.label }}</div>
+            <div><label>Position</label>{{ f.position }}</div>
+          </div>
+          {% if f.instance.pk %}
+            <label>Delete</label>{{ f.DELETE }}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h3>Transaction Documents</h3>
+      {{ doc_formset.management_form }}
+
+      {% for f in doc_formset %}
+        <div class="inline-box">
+          {{ f.id }}
+          <div class="row">
+            <div><label>Name</label>{{ f.name }}</div>
+            <div><label>Document Type</label>{{ f.document_type }}</div>
+          </div>
+          <div class="row">
+            <div><label>Content</label>{{ f.content }}</div>
+            <div><label>File</label>{{ f.file }}</div>
+          </div>
+          {% if f.instance.pk %}
+            <label>Delete</label>{{ f.DELETE }}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

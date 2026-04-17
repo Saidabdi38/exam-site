@@ -36,6 +36,8 @@
       {% if user.is_staff %}
         <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
         <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+        <a class="navlink" href="{% url 'add_transaction' %}">Add Transaction</a>
+        <a class="navlink" href="{% url 'upload_transactions' %}">Upload Transactions</a>
       {% endif %}
     {% endif %}
 
@@ -76,6 +78,8 @@
     {% if user.is_staff %}
       <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
       <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+      <a class="navlink" href="{% url 'add_transaction' %}">Add Transaction</a>
+      <a class="navlink" href="{% url 'upload_transactions' %}">Upload Transactions</a>
     {% endif %}
   {% endif %}
 

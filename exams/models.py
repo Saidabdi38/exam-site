@@ -16,7 +16,7 @@ class TeacherProfile(models.Model):
     display_name = models.CharField(max_length=120, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):
         return self.display_name or getattr(self.user, "username", str(self.user))
 
 
@@ -89,7 +89,7 @@ class BankChoice(models.Model):
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
-    def _str_(self):
+    def __str__(self):
         return self.text
 
 
@@ -118,7 +118,7 @@ class Exam(models.Model):
     use_question_bank = models.BooleanField(default=True)
     question_count = models.PositiveIntegerField(default=50)
 
-    def _str_(self):
+    def __str__(self):
         return self.title
 
 
@@ -152,7 +152,7 @@ class Question(models.Model):
     correct_part_b = models.CharField(max_length=150, blank=True, null=True)
     correct_part_c = models.CharField(max_length=150, blank=True, null=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.exam.title} - Q{self.id}"
 
 
@@ -169,7 +169,7 @@ class Choice(models.Model):
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
-    def _str_(self):
+    def __str__(self):
         return self.text
 
 
@@ -194,7 +194,7 @@ class SequencingItem(models.Model):
     class Meta:
         ordering = ["correct_order"]
 
-    def _str_(self):
+    def __str__(self):
         owner = self.question or self.bank_question
         return f"{owner} - {self.correct_order}. {self.text}"
 
@@ -228,7 +228,7 @@ class ExamResitPermission(models.Model):
     def allowed_attempts(self):
         return 1 + self.extra_attempts
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.user} - {self.exam} (allowed={self.allowed_attempts}, visible={self.can_view})"
 
 
@@ -359,7 +359,7 @@ class Attempt(models.Model):
             self.calculate_score()
         super().save(*args, **kwargs)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.user} - {self.exam} - Attempt {self.attempt_no}"
 
 
@@ -379,7 +379,7 @@ class AttemptQuestion(models.Model):
         unique_together = ("attempt", "bank_question")
         ordering = ["order"]
 
-    def _str_(self):
+    def __str__(self):
         return f"Attempt {self.attempt_id} - Q{self.order}"
 
 
@@ -442,7 +442,7 @@ class Answer(models.Model):
             ),
         ]
 
-    def _str_(self):
+    def __str__(self):
         if self.bank_question_id:
             return f"Attempt {self.attempt_id} - BankQuestion {self.bank_question_id}"
         if self.question_id:

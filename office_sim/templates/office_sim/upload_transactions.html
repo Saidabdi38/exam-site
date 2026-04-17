@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Upload Full Workflow{% endblock %}
+
+{% block content %}
+<div class="form-shell">
+  <h2>Upload Full Workflow</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label>Transactions CSV</label>
+      {{ form.transactions_file }}
+    </div>
+
+    <div class="form-group">
+      <label>Workflow Steps CSV</label>
+      {{ form.steps_file }}
+    </div>
+
+    <div class="form-group">
+      <label>Workflow Nodes CSV</label>
+      {{ form.nodes_file }}
+    </div>
+
+    <div class="form-group">
+      <label>Workflow Connections CSV</label>
+      {{ form.connections_file }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </form>
+</div>
+{% endblock %}
