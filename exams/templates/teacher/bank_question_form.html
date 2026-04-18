@@ -1,126 +1,192 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>{{ mode }} Question - {{ subject.name }}</h2>
+<style>
+.container-box {
+  max-width: 900px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+}
 
-<form method="post" id="bankQForm">
-  {% csrf_token %}
+fieldset {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 8px;
+}
 
-  <!-- QUESTION SECTION -->
-  <fieldset style="border:1px solid #ddd; padding:12px; border-radius:10px;">
-    <legend><strong>Question</strong></legend>
+legend {
+  font-weight: bold;
+}
 
-    <div style="margin:10px 0;">
-      <label><strong>Question Text</strong></label><br>
-      {{ form.text }}
-      {% if form.text.errors %}<div style="color:red">{{ form.text.errors }}</div>{% endif %}
-    </div>
+.option-card {
+  border: 1px solid #eee;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
 
-    <div style="margin:10px 0;">
-      <label><strong>Question Type</strong></label><br>
-      {{ form.qtype }}
-      {% if form.qtype.errors %}<div style="color:red">{{ form.qtype.errors }}</div>{% endif %}
-    </div>
+.option-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
 
-    <!-- STRUCTURED FIELDS -->
-    <div id="structuredBox"
-         style="display:none; border:1px solid #eee; padding:10px; border-radius:10px; margin-top:12px;">
-      <p><strong>Structured Answers</strong></p>
+.option-row input[type="text"] {
+  flex: 1;
+  padding: 8px;
+}
 
-      <div style="margin:8px 0;">
-        <label>Correct Part A</label><br>
-        {{ form.correct_part_a }}
+.option-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+button.save-btn {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+.save-btn {
+    background-color: #0f2a44 !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.save-btn:hover {
+    background-color: #163a5c !important;
+}
+</style>
+
+<div class="container-box">
+  <h2>{{ mode }} Question - {{ subject.name }}</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.media }}
+
+    <fieldset>
+      <legend>Question</legend>
+
+      <div class="form-group">
+        <label>Question Text</label>
+        {{ form.text }}
       </div>
 
-      <div style="margin:8px 0;">
-        <label>Correct Part B</label><br>
-        {{ form.correct_part_b }}
+      <div class="form-group">
+        <label>Question Type</label>
+        {{ form.qtype }}
       </div>
 
-      <div style="margin:8px 0;">
-        <label>Correct Part C</label><br>
-        {{ form.correct_part_c }}
+      <div class="form-group">
+        <label>Points</label>
+        {{ form.points }}
       </div>
-    </div>
-  </fieldset>
+    </fieldset>
 
-  <!-- CHOICES SECTION -->
-  <fieldset id="choicesBox"
-            style="border:1px solid #ddd; padding:12px; border-radius:10px; margin-top:14px;">
-    <legend><strong>Choices (tick ONE correct)</strong></legend>
+    <!-- STRUCT -->
+    <fieldset id="structuredBox" style="display:none;">
+      <legend>Structured Answer</legend>
 
-    {{ formset.management_form }}
-    {% for f in formset %}
-      <div style="border:1px solid #eee; padding:10px; margin:10px 0; border-radius:10px;">
-        {{ f.text.label_tag }} {{ f.text }} <br><br>
-        {{ f.is_correct }} {{ f.is_correct.label_tag }} <br>
-        {{ f.DELETE }} {{ f.DELETE.label_tag }}
-      </div>
-    {% endfor %}
-  </fieldset>
+      <label>Part A</label>
+      {{ form.correct_part_a }}
 
-  <!-- SEQUENCING SECTION -->
-  <fieldset id="sequencingBox"
-            style="display:none; border:1px solid #ddd; padding:12px; border-radius:10px; margin-top:14px;">
-    <legend><strong>Sequencing Items</strong></legend>
+      <label>Part B</label>
+      {{ form.correct_part_b }}
 
-    <p>Add the steps in the correct order.</p>
+      <label>Part C</label>
+      {{ form.correct_part_c }}
+    </fieldset>
 
-    {{ seq_formset.management_form }}
-    {% for f in seq_formset %}
-      <div style="border:1px solid #eee; padding:10px; margin:10px 0; border-radius:10px;">
-        {{ f.text.label_tag }} {{ f.text }} <br><br>
-        {{ f.correct_order.label_tag }} {{ f.correct_order }} <br>
-        {{ f.DELETE }} {{ f.DELETE.label_tag }}
-      </div>
-    {% endfor %}
-  </fieldset>
+    <!-- CHOICES -->
+    <fieldset id="choicesBox">
+      <legend>Choices</legend>
 
-  <button type="submit">Save</button>
-</form>
+      {{ formset.management_form }}
 
-<a href="{% url 'teacher_bank_question_list' subject.id %}">Back</a>
+      {% for f in formset %}
+        <div class="option-card">
+          <div class="option-row">
+            {{ f.text }}
+
+            <div class="option-check">
+              {{ f.is_correct }} Correct
+            </div>
+
+            <div class="option-check">
+              {{ f.DELETE }} Delete
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+    </fieldset>
+
+    <!-- SEQ -->
+    <fieldset id="seqBox" style="display:none;">
+      <legend>Sequence</legend>
+
+      {{ seq_formset.management_form }}
+
+      {% for f in seq_formset %}
+        <div class="option-card">
+          <div class="option-row">
+            {{ f.text }}
+            {{ f.correct_order }}
+
+            <div class="option-check">
+              {{ f.DELETE }} Delete
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </fieldset>
+
+    <button type="submit" class="save-btn">Save Question</button>
+  </form>
+</div>
 
 <script>
-(function(){
-  function setDisabledInside(el, disabled){
-    if(!el) return;
-    el.querySelectorAll("input, select, textarea, button").forEach(i => {
-      i.disabled = disabled;
+document.addEventListener("DOMContentLoaded", function () {
+  const qtype = document.getElementById("id_qtype");
+  const struct = document.getElementById("structuredBox");
+  const choices = document.getElementById("choicesBox");
+  const seq = document.getElementById("seqBox");
+
+  function toggle() {
+    const val = qtype.value;
+
+    struct.style.display = (val === "STRUCT") ? "block" : "none";
+    choices.style.display = (val === "MCQ" || val === "TF") ? "block" : "none";
+    seq.style.display = (val === "SEQ") ? "block" : "none";
+  }
+
+  toggle();
+  qtype.addEventListener("change", toggle);
+
+  // only one correct
+  document.querySelectorAll('input[name$="is_correct"]').forEach(cb => {
+    cb.addEventListener("change", function () {
+      if (this.checked) {
+        document.querySelectorAll('input[name$="is_correct"]').forEach(x => {
+          if (x !== this) x.checked = false;
+        });
+      }
     });
-  }
-
-  function toggleBoxes(){
-    const qtypeEl = document.getElementById("id_qtype");
-    if(!qtypeEl) return;
-
-    const structuredBox = document.getElementById("structuredBox");
-    const choicesBox = document.getElementById("choicesBox");
-    const sequencingBox = document.getElementById("sequencingBox");
-
-    const isStruct = qtypeEl.value === "STRUCT";
-    const isSeq = qtypeEl.value === "SEQ";
-
-    if(structuredBox) structuredBox.style.display = isStruct ? "block" : "none";
-    if(choicesBox) choicesBox.style.display = (!isStruct && !isSeq) ? "block" : "none";
-    if(sequencingBox) sequencingBox.style.display = isSeq ? "block" : "none";
-
-    setDisabledInside(choicesBox, isStruct || isSeq);
-    setDisabledInside(sequencingBox, !isSeq);
-
-    if(structuredBox){
-      structuredBox.querySelectorAll("input, textarea, select").forEach(i => {
-        i.disabled = !isStruct;
-      });
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    toggleBoxes();
-    const qtypeEl = document.getElementById("id_qtype");
-    if(qtypeEl) qtypeEl.addEventListener("change", toggleBoxes);
   });
-})();
+});
 </script>
 
 {% endblock %}

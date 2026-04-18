@@ -39,8 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
 
     "exams.apps.ExamsConfig",
-    "ckeditor",
-    "ckeditor_uploader",
+    "django_ckeditor_5",
 ]
 
 MIDDLEWARE = [
@@ -141,22 +140,35 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# If you serve uploaded media later:
-CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_CONFIGS = {
-    "default": {
-        "toolbar": [
-            ["Styles", "Format"],
-            ["Bold", "Italic", "Underline", "Strike"],
-            ["NumberedList", "BulletedList"],
-            ["Link", "Unlink"],
-            ["Image", "Table"],
-            ["Undo", "Redo"],
-            ["Source"],
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': [
+            'heading', '|',
+            'bold', 'italic', 'underline',
+            '|', 'bulletedList', 'numberedList',
+            '|', 'insertTable', 'imageUpload',
+            '|', 'undo', 'redo'
         ],
-        "extraPlugins": ",".join([
-            "uploadimage",
-        ]),
+
+        # 🔥 ADD THIS PART
+        'table': {
+            'contentToolbar': [
+                'tableColumn',
+                'tableRow',
+                'mergeTableCells',
+                'tableCellProperties',
+                'tableProperties'
+            ]
+        },
+
+        'image': {
+            'toolbar': [
+                'imageTextAlternative',
+                'imageStyle:alignLeft',
+                'imageStyle:alignCenter',
+                'imageStyle:alignRight'
+            ]
+        }
     }
 }
 MEDIA_URL = "/media/"

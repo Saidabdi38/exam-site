@@ -1,76 +1,161 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Question Bank: {{ subject.name }}</h2>
+<style>
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
 
-<a href="{% url 'teacher_bank_question_create' subject.id %}">
-    + Add Question
-</a>
+/* HEADER */
+.header-box {
+  background: #fff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
 
-<a href="{% url 'teacher_bank_question_upload' subject.id %}" style="margin-left:15px;">
-    Upload Excel/CSV
-</a>
- <a href="{% url 'export_bank_csv' subject.id %}" class="btn btn-success">
-    Download CSV
-</a>
+.header-box h2 {
+  margin: 0 0 10px 0;
+}
 
-<hr>
+/* BUTTONS */
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
 
-{% for q in questions %}
-<div style="border:1px solid #ddd; padding:10px; margin:10px 0; border-radius:10px;">
+.btn-main {
+  background: #0f2a44;
+  color: white;
+}
 
-    <strong>{{ forloop.counter0|add:1 }}.</strong>
-    (2 pts) - {{ q.text }}
+.btn-light {
+  background: #f1f5f9;
+  color: #0f2a44;
+}
 
-    {% if q.qtype == "MCQ" or q.qtype == "TF" %}
-      <div style="margin-top:10px; padding-left:20px;">
-        <strong>Choices:</strong>
-        <ol type="A" style="margin-top:8px;">
-          {% for choice in q.choices.all %}
-            <li>
-              {{ choice.text }}
-              {% if choice.is_correct %}
-                <strong>(Correct)</strong>
-              {% endif %}
-            </li>
-          {% empty %}
-            <li>No choices added yet.</li>
-          {% endfor %}
-        </ol>
+/* QUESTION CARD */
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+/* TABLE FIX */
+.question-content figure.table {
+  float: none !important;
+  margin: 10px 0;
+}
+
+.question-content table {
+  border-collapse: collapse;
+}
+
+.question-content th,
+.question-content td {
+  border: 1px solid #999;
+  padding: 6px 10px;
+}
+
+/* CHOICES */
+.choices {
+  margin-top: 10px;
+  clear: both;
+}
+
+/* ACTION LINKS */
+.actions a {
+  margin-right: 10px;
+  color: #0f2a44;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.actions a:hover {
+  text-decoration: underline;
+}
+</style>
+
+<div class="container">
+
+  <div class="header-box">
+    <h2>Question Bank: {{ subject.name }}</h2>
+
+    <a href="{% url 'teacher_bank_question_create' subject.id %}" class="btn btn-main">+ Add Question</a>
+    <a href="{% url 'teacher_bank_question_upload' subject.id %}" class="btn btn-light">Upload CSV</a>
+    <a href="{% url 'export_bank_csv' subject.id %}" class="btn btn-light">Download CSV</a>
+  </div>
+
+  {% for q in questions %}
+    <div class="card">
+
+      <p><strong>{{ forloop.counter }}. ({{ q.points }} pts)</strong>
+        {% if q.qtype == "MCQ" %} - Multiple Choice{% endif %}
+        {% if q.qtype == "TF" %} - True/False{% endif %}
+        {% if q.qtype == "STRUCT" %} - Structured{% endif %}
+        {% if q.qtype == "SEQ" %} - Sequencing{% endif %}
+      </p>
+
+      <div class="question-content">
+        {{ q.text|safe }}
       </div>
-    {% endif %}
 
-    {% if q.qtype == "STRUCT" %}
-      <div style="margin-top:10px; padding-left:20px;">
-        <strong>Correct Answers:</strong>
-        <ul style="margin-top:8px;">
-          <li>Part A: {{ q.correct_part_a|default:"-" }}</li>
-          <li>Part B: {{ q.correct_part_b|default:"-" }}</li>
-          <li>Part C: {{ q.correct_part_c|default:"-" }}</li>
-        </ul>
+      {% if q.qtype == "MCQ" or q.qtype == "TF" %}
+        <div class="choices">
+          <strong>Choices:</strong>
+          <ol type="A">
+            {% for c in q.choices.all %}
+              <li>{{ c.text }}</li>
+            {% empty %}
+              <li>No choices yet</li>
+            {% endfor %}
+          </ol>
+        </div>
+      {% endif %}
+
+      {% if q.qtype == "STRUCT" %}
+        <div class="choices">
+          <strong>Answer:</strong>
+          <ul>
+            <li>A: {{ q.correct_part_a|default:"-" }}</li>
+            <li>B: {{ q.correct_part_b|default:"-" }}</li>
+            <li>C: {{ q.correct_part_c|default:"-" }}</li>
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if q.qtype == "SEQ" %}
+        <div class="choices">
+          <strong>Sequence:</strong>
+          <ol>
+            {% for item in q.sequence_items.all|dictsort:"correct_order" %}
+              <li>{{ item.text }}</li>
+            {% empty %}
+              <li>No sequence items</li>
+            {% endfor %}
+          </ol>
+        </div>
+      {% endif %}
+
+      <div class="actions">
+        <a href="{% url 'teacher_bank_question_edit' subject.id q.id %}">Edit</a>
+        <a href="{% url 'teacher_bank_question_delete' subject.id q.id %}">Delete</a>
       </div>
-    {% endif %}
 
-    {% if q.qtype == "SEQ" %}
-      <div style="margin-top:10px; padding-left:20px;">
-        <strong>Sequence Items:</strong>
-        <ol style="margin-top:8px;">
-          {% for item in q.sequence_items.all %}
-            <li>{{ item.text }}</li>
-          {% empty %}
-            <li>No sequence items added yet.</li>
-          {% endfor %}
-        </ol>
-      </div>
-    {% endif %}
+    </div>
+  {% empty %}
+    <p>No questions yet.</p>
+  {% endfor %}
 
-    <br>
-    <a href="{% url 'teacher_bank_question_edit' subject.id q.id %}">Edit</a>
-    |
-    <a href="{% url 'teacher_bank_question_delete' subject.id q.id %}">Delete</a>
 </div>
-{% empty %}
-<p>No questions yet.</p>
-{% endfor %}
 
 {% endblock %}

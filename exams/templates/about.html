@@ -3,8 +3,44 @@
 
 {% block content %}
 
+<style>
+.about {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 15px;
+}
+
+.card {
+  background: #fff;
+  padding: 22px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 18px;
+}
+
+.card h1, .card h2 {
+  margin-bottom: 10px;
+  color: #0f2a44; /* header/footer color */
+}
+
+.card p {
+  line-height: 1.7;
+  color: #444;
+}
+
+.feature-list {
+  padding-left: 20px;
+}
+
+.feature-list li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+</style>
+
 <section class="about">
 
+  <!-- INTRO -->
   <div class="card">
     <h1>Ku Saabsan Xirfadyaal</h1>
 
@@ -16,76 +52,65 @@
 
     <p>
       Ujeeddada Xirfadyaal waa in qofka la siiyo fursad uu si cad ugu ogaado heerkiisa aqooneed,
-      awooddiisa shaqo, iyo meelaha uu u baahan yahay tababar iyo horumar dheeraad ah.
-      Sidaas darteed, madashu kuma koobna imtixaan oo keliya, balse waxay isku xirtaa
-      <strong>qiimeyn</strong> iyo <strong>tababar</strong>.
+      awooddiisa shaqo, iyo meelaha uu u baahan yahay horumar dheeraad ah.
+      Madashu waxay isku xirtaa <strong>qiimeyn</strong> iyo <strong>horumarinta xirfadaha</strong>.
     </p>
   </div>
 
-  <section class="card" style="margin-top: 18px;">
+  <!-- HIMILO -->
+  <div class="card">
     <h2>Himilada</h2>
     <p>
       Himilada Xirfadyaal waa in la helo bulsho leh xirfado shaqo oo la cabbiri karo,
-      lana xaqiijin karo, si shaqo-doonka ama ardaygu u helo waddo cad oo uu ku fahmo
-      kartidiisa una hormariyo mustaqbalkiisa shaqo.
+      lana xaqiijin karo, si qof walba u fahmo kartidiisa una hormariyo mustaqbalkiisa shaqo.
     </p>
-  </section>
+  </div>
 
-  <section class="card" style="margin-top: 18px;">
+  <!-- HADAf -->
+  <div class="card">
     <h2>Hadafka</h2>
     <p>
-      Hadafka Xirfadyaal waa in la bixiyo qiimeyn iyo tababar wax ku ool ah
-      oo ka turjumaya xaaladaha shaqo ee dhabta ah, si qofku u ogaado heerka diyaar-garowgiisa shaqo
+      Hadafka Xirfadyaal waa in la bixiyo qiimeyn wax ku ool ah oo ka tarjumaysa xaaladaha
+      shaqo ee dhabta ah, si qofku u ogaado heerka diyaar-garowgiisa shaqo
       iyo meelaha uu u baahan yahay inuu sii xoojiyo.
     </p>
-  </section>
+  </div>
 
-  <section class="card" style="margin-top: 18px;">
+  <!-- WHAT IT DOES -->
+  <div class="card">
     <h2>Waxa ay Qabato Xirfadyaal</h2>
     <ul class="feature-list">
       <li>Waxay cabbirtaa heerka aqoonta iyo kartida xirfadeed ee qofka</li>
-      <li>Waxay bixisaa qiimeyn ku saleysan shaqooyin dhab u eg</li>
+      <li>Waxay bixisaa qiimeyn ku saleysan xaalado shaqo oo dhab u eg</li>
       <li>Waxay ka caawisaa qofka inuu ogaado meelaha uu ku fiican yahay</li>
-      <li>Waxay muujisaa meelaha u baahan tababar iyo horumar</li>
-      <li>Waxay siisaa ardayga ama shaqo-doonka tababar u eg jawiga shaqada dhabta ah</li>
+      <li>Waxay muujisaa meelaha u baahan horumar</li>
+      <li>Waxay taageertaa kobcinta xirfadaha shaqo</li>
     </ul>
-  </section>
+  </div>
 
-  <section class="card" style="margin-top: 18px;">
+  <!-- YOOLAL -->
+  <div class="card">
     <h2>Yoolalka</h2>
     <ul class="feature-list">
       <li>In la bixiyo qiimeyn caddaalad ah oo la cabbiri karo</li>
       <li>In la ogaado heerka diyaar-garowga shaqo ee musharraxa</li>
-      <li>In la la socdo natiijooyinka iyo waxqabadka ka qaybgalayaasha</li>
-      <li>In la bixiyo hannaan qiimeyn oo hufan oo lagu kalsoonaan karo</li>
-      <li>In la taageero kobcinta xirfadaha shaqo ee bulshada</li>
+      <li>In la la socdo waxqabadka ka qaybgalayaasha</li>
+      <li>In la bixiyo hannaan qiimeyn oo hufan</li>
+      <li>In la taageero horumarinta xirfadaha bulshada</li>
     </ul>
-  </section>
+  </div>
 
-  <section class="card" style="margin-top: 18px;">
+  <!-- QIYAM -->
+  <div class="card">
     <h2>Qiyamka</h2>
     <ul class="feature-list">
       <li><strong>Daacadnimo</strong> – Qiimeyn caddaalad ah oo aan eex lahayn</li>
-      <li><strong>Tayo</strong> – Imtixaano iyo tababaro wax ku ool ah</li>
+      <li><strong>Tayo</strong> – Qiimeyn wax ku ool ah</li>
       <li><strong>Hufnaan</strong> – Natiijooyin cad oo la fahmi karo</li>
       <li><strong>Kalsooni</strong> – Nidaam la isku hallayn karo</li>
-      <li><strong>Horumar</strong> – Kor u qaadidda kartida xirfadeed iyo aqoonta shaqo</li>
+      <li><strong>Horumar</strong> – Kor u qaadidda xirfadaha shaqo</li>
     </ul>
-  </section>
-
-  <section class="card" style="margin-top: 18px;">
-    <h2>Xafiis Tababar Dijitaal ah</h2>
-    <p>
-      Qaybta Xafiiska Tababarka Dijitaalka ahi waa meel ay ka faa’iidaystaan ardayda iyo
-      dadka ka gudba qiimeynta, si ay ugu tababartaan sida shaqooyinka shirkadaha u socdaan,
-      gaar ahaan dhinaca xisaabaadka iyo maamulka maaliyadeed.
-    </p>
-
-    <p>
-      Qaybtani waxay ka caawisaa qofka inuu fahmo habraacyada shaqo ee maalinlaha ah,
-      si uu ugu sii dhowaado jawiga shaqo ee dhabta ah.
-    </p>
-  </section>
+  </div>
 
 </section>
 

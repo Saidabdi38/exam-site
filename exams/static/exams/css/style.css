@@ -1015,3 +1015,18 @@ safe-banner{
     white-space: normal;
   }
 }
+
+table {
+  border-collapse: collapse;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+table, th, td {
+  border: 1px solid #999;
+}
+
+th, td {
+  padding: 8px;
+}
+

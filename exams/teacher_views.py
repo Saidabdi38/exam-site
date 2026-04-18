@@ -8,7 +8,7 @@ from django import forms
 import csv
 import io
 from django.http import HttpResponse
-
+from .forms import BankQuestionForm
 from .models import (
     Subject,
     BankQuestion,
@@ -123,18 +123,6 @@ class ExamForm(ModelForm):
         if cleaned.get("use_question_bank") and not cleaned.get("subject"):
             raise forms.ValidationError("Please select a subject when using Question Bank.")
         return cleaned
-
-
-class QuestionForm(ModelForm):
-    class Meta:
-        model = Question
-        fields = ["text", "qtype", "points", "correct_part_a", "correct_part_b", "correct_part_c"]
-
-
-class BankQuestionForm(ModelForm):
-    class Meta:
-        model = BankQuestion
-        fields = ["text", "qtype", "correct_part_a", "correct_part_b", "correct_part_c"]
 
 
 # ---------- Formsets ----------
