@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Manage Exam Visibility{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Manage Exam Visibility</h2>
+  <p class="small">Exam: <strong>{{ exam.title }}</strong></p>
+  <div class="divider"></div>
+
+  {% if rows %}
+    {% for r in rows %}
+      <div class="card" style="margin:12px 0;">
+        <div class="row" style="justify-content: space-between; align-items: center; gap:10px;">
+          <div>
+            <strong>{{ r.student.username }}</strong>
+          </div>
+
+          <form method="post" action="{% url 'teacher_set_view_permission' exam.id r.student.id %}">
+            {% csrf_token %}
+            <label>
+              Can View:
+              <input type="checkbox" name="can_view" {% if r.can_view %}checked{% endif %} onchange="this.form.submit()">
+            </label>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No students found.</p>
+  {% endif %}
+</div>
+{% endblock %}

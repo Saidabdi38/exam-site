@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ post.seo_title|default:post.title }}{% endblock %}
+{% block content %}
+<section class="card blog-detail">
+  {% if user.is_staff %}<div class="blog-actions"><a class="btn btn-primary" href="{% url 'blog:post_edit' post.slug %}">Edit Post</a><a class="btn btn-secondary" href="{% url 'blog:post_list' %}">Back</a></div>{% endif %}
+  <div class="blog-badges">
+    <span class="badge">{{ post.category.name }}</span>
+    {% if post.is_paid %}<span class="badge premium">Premium ${{ post.price }}</span>{% else %}<span class="badge free">Free</span>{% endif %}
+    <span class="badge">Views: {{ post.view_count }}</span>
+  </div>
+  <h1>{{ post.title }}</h1>
+  {% if post.featured_image %}<img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="blog-detail-image">{% endif %}
+
+  {% if has_access %}
+    <div class="blog-content">{{ post.content|safe }}</div>
+  {% else %}
+    <div class="premium-preview">
+      <h3>Preview</h3>
+      <p>{{ post.premium_preview }}</p>
+    </div>
+    <div class="premium-box">
+      <h3>This is a premium article.</h3>
+      <p>Please purchase access to continue reading.</p>
+      <p>Price: ${{ post.price }}</p>
+      {% if not user.is_authenticated %}
+        <a class="btn btn-primary" href="{% url 'login' %}?next={% url 'blog:post_detail' post.slug %}">Login to Purchase</a>
+      {% elif purchase and purchase.status == 'pending' %}
+        <p>Your purchase request is pending approval.</p>
+      {% elif purchase and purchase.status == 'rejected' %}
+        <p>Your purchase request was rejected.</p>
+        <a class="btn btn-primary" href="{% url 'blog:buy_post' post.slug %}">Request Again</a>
+      {% else %}
+        <a class="btn btn-primary" href="{% url 'blog:buy_post' post.slug %}">Purchase Access</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+
+{% if related_posts %}
+<section class="card blog-section">
+  <h3>Related Articles</h3>
+  <div class="blog-grid">
+    {% for related in related_posts %}
+      <article class="blog-mini-card"><a href="{% url 'blog:post_detail' related.slug %}">{{ related.title }}</a><small>{{ related.category.name }}</small></article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

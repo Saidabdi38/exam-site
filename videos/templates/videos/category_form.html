@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<section>
+  <div class="content-card">
+    <h1>{{ page_title }}</h1>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-primary" type="submit">Save</button>
+      <a class="btn btn-secondary" href="{% url 'videos:categories' %}">Cancel</a>
+    </form>
+  </div>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const nameInput = document.getElementById("id_name");
+    const slugInput = document.getElementById("id_slug");
+
+    let slugEdited = slugInput && slugInput.value.trim() !== "";
+
+    function slugify(value) {
+        return value
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+    }
+
+    if (slugInput) {
+        slugInput.addEventListener("input", function () {
+            slugEdited = true;
+        });
+    }
+
+    if (nameInput && slugInput) {
+        nameInput.addEventListener("input", function () {
+            if (!slugEdited || slugInput.value.trim() === "") {
+                slugInput.value = slugify(nameInput.value);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

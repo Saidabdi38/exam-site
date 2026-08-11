@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Video Purchase Requests{% endblock %}
+
+{% block content %}
+
+<section>
+
+    <div class="page-header">
+        <h1>Video Purchase Requests</h1>
+
+        <a
+            class="btn btn-secondary"
+            href="{% url 'videos:manage' %}"
+        >
+            Back to Manage Videos
+        </a>
+    </div>
+
+    <div class="table-responsive">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Video</th>
+                    <th>Price</th>
+                    <th>Payment Reference</th>
+                    <th>Requested</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for purchase in purchases %}
+
+                    <tr>
+
+                        <td>
+                            {{ purchase.user.username }}
+                        </td>
+
+                        <td>
+                            {{ purchase.video.title }}
+                        </td>
+
+                        <td>
+                            ${{ purchase.amount }}
+                        </td>
+
+                        <td>
+                            {{ purchase.payment_reference|default:"-" }}
+                        </td>
+
+                        <td>
+                            {{ purchase.requested_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td>
+                            {{ purchase.get_status_display }}
+                        </td>
+
+                        <td>
+
+                            {% if purchase.status == "pending" %}
+
+                                <form
+                                    method="post"
+                                    action="{% url 'videos:approve_purchase' purchase.pk %}"
+                                    style="display:inline;"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        class="btn btn-primary"
+                                        type="submit"
+                                    >
+                                        Approve
+                                    </button>
+
+                                </form>
+
+
+                                <form
+                                    method="post"
+                                    action="{% url 'videos:reject_purchase' purchase.pk %}"
+                                    style="display:inline;"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        class="btn btn-secondary"
+                                        type="submit"
+                                    >
+                                        Reject
+                                    </button>
+
+                                </form>
+
+                            {% elif purchase.status == "approved" %}
+
+                                <strong>Approved</strong>
+
+                            {% elif purchase.status == "rejected" %}
+
+                                <strong>Rejected</strong>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="7">
+                            No purchase requests found.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

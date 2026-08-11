@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Video Categories{% endblock %}
+{% block content %}
+<section>
+  <div class="page-header">
+    <h1>Video Categories</h1>
+    <a class="btn btn-primary" href="{% url 'videos:category_create' %}">Create Category</a>
+  </div>
+
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Sequence</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for category in categories %}
+        <tr>
+          <td>{{ category.name }}</td>
+          <td>{{ category.is_active|yesno:"Active,Inactive" }}</td>
+          <td>{{ category.sequence }}</td>
+          <td><a href="{% url 'videos:category_edit' category.pk %}">Edit</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No categories created yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

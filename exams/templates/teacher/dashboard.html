@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Teacher Dashboard</h1>
+    <!-- <form method="post" action="{% url 'logout' %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-secondary">Logout</button>
+    </form> -->
+</div>
+
+<p>
+  <a class="btn btn-primary" href="{% url 'exam_create' %}">
+    + Create new exam
+  </a>
+</p>
+ <a class="btn btn-secondary" href="{% url 'teacher_subject_list' %}">
+    Subjects
+  </a>
+</p>
+
+<hr>
+
+{% for exam in exams %}
+  <div class="card">
+    <h3>{{ exam.title }}</h3>
+
+    <p>
+      Duration: {{ exam.duration_minutes }} minutes |
+      Price: <strong>${{ exam.price }}</strong> |
+      Published: <strong>{{ exam.is_published }}</strong>
+    </p>
+
+    <div style="margin-top:8px; display:flex; flex-wrap: wrap; gap:8px;">
+      <!-- Student Attempts -->
+      <a class="btn btn-sm btn-info"
+         href="{% url 'teacher_exam_attempts' exam.id %}">
+         Attempts
+      </a>
+
+      <!-- View Exam / Permissions -->
+      <a class="btn btn-sm btn-primary"
+        href="{% url 'teacher_manage_view_permissions' exam.id %}">
+        View
+      </a>
+
+      <!-- Manage Resits -->
+      <a class="btn btn-sm btn-secondary"
+         href="{% url 'teacher_manage_resits' exam.id %}">
+         Resits
+      </a>
+
+      <!-- Edit -->
+      <a class="btn btn-sm btn-warning"
+         href="{% url 'teacher_exam_edit' exam.id %}">
+         Edit
+      </a>
+
+      <!-- Delete -->
+      <a class="btn btn-sm btn-danger"
+         href="{% url 'teacher_exam_delete' exam.id %}">
+         Delete
+      </a>
+    </div>
+  </div>
+{% empty %}
+  <p>No exams yet.</p>
+{% endfor %}
+{% endblock %}

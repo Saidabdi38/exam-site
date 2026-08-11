@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ video.title }}{% endblock %}
+
+{% block content %}
+
+<article>
+
+    <h1>{{ video.title }}</h1>
+
+    <div class="video-player">
+        <video
+            controls
+            playsinline
+            preload="auto"
+            style="width:100%; height:auto;"
+        >
+            {% if video.video_file %}
+                <source
+                    src="{{ video.video_file.url }}"
+                    type="video/mp4"
+                >
+            {% endif %}
+
+            Your browser does not support HTML video.
+        </video>
+    </div>
+
+    <p>{{ video.views_count }} views</p>
+
+    <div class="video-navigation">
+
+        <div>
+            {% if previous_video %}
+                <a
+                    class="btn btn-secondary"
+                    href="{% url 'videos:watch' previous_video.slug %}"
+                >
+                    ← Previous
+                </a>
+            {% endif %}
+        </div>
+
+        <div>
+            {% if next_video %}
+                <a
+                    class="btn btn-primary"
+                    href="{% url 'videos:watch' next_video.slug %}"
+                >
+                    Next →
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+
+</article>
+
+{% endblock %}

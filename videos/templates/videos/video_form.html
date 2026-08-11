@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<section>
+  <div class="content-card">
+    <h1>{{ page_title }}</h1>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        {{ form.non_field_errors }}
+      {% endif %}
+
+      {% for field in form %}
+        <div class="form-group">
+          {% if field.field.widget.input_type == "checkbox" %}
+            <label>{{ field }} {{ field.label }}</label>
+          {% else %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+          {% endif %}
+
+          {% if field.help_text %}
+            <small>{{ field.help_text }}</small>
+          {% endif %}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+
+      <button class="btn btn-primary" type="submit">Save</button>
+      <a class="btn btn-secondary" href="{% url 'videos:manage' %}">Cancel</a>
+    </form>
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const title = document.getElementById("id_title");
+    const slug = document.getElementById("id_slug");
+    let slugEdited = !!(slug && slug.value);
+
+    function slugify(value) {
+        return value
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+    }
+
+    if (slug) {
+        slug.addEventListener("input", function () {
+            slugEdited = true;
+        });
+    }
+
+    if (title && slug) {
+        title.addEventListener("input", function () {
+            if (!slugEdited || !slug.value) {
+                slug.value = slugify(title.value);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

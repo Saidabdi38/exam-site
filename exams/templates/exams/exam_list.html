@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Exam List{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated and user.is_staff %}
+<div style="margin-bottom: 20px;">
+  <a href="{% url 'exam_create' %}" class="btn btn-primary">+ Create New Assessment</a>
+</div>
+{% endif %}
+
+</div>
+<h1>Exam List</h1>
+<p class="small">All published exams</p>
+
+{% for row in rows %}
+  <div class="card">
+
+    <h3>{{ row.exam.title }}</h3>
+
+    {% if row.exam.description %}
+      <p>{{ row.exam.description }}</p>
+    {% endif %}
+
+    <div class="meta">
+      <span>Duration: {{ row.exam.duration_minutes }} minutes</span>
+      {% if row.attempt %}
+        <span>Attempt #: {{ row.attempt.attempt_no }}</span>
+      {% endif %}
+    </div>
+
+    <div class="divider"></div>
+
+    <p>Status: <strong>{{ row.status }}</strong></p>
+
+    <a class="btn btn-primary"
+       href="{% url row.action.url_name row.action.arg %}">
+      {{ row.action.label }}
+    </a>
+
+  </div>
+{% empty %}
+  <p>No published exams yet.</p>
+{% endfor %}
+
+{% endblock %}

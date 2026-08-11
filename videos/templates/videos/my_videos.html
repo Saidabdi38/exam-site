@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}My Videos{% endblock %}
+{% block content %}
+<section>
+  <h1>My Videos</h1>
+
+  {% for purchase in approved_purchases %}
+    <article class="card">
+      <h3>{{ purchase.video.title }}</h3>
+      <p>{{ purchase.video.category.name }}</p>
+      <a class="btn btn-primary" href="{% url 'videos:watch' purchase.video.slug %}">Watch</a>
+    </article>
+  {% empty %}
+    <p>You have no approved paid videos yet.</p>
+  {% endfor %}
+
+  {% if pending_purchases %}
+    <h2>Pending Purchases</h2>
+    {% for purchase in pending_purchases %}
+      <p>{{ purchase.video.title }} — ${{ purchase.amount }} — Pending approval</p>
+    {% endfor %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Staff Access{% endblock %}
+{% block content %}
+<section class="card"><h2>Staff Access</h2><a class="btn btn-secondary" href="{% url 'blog:post_list' %}">Back to Blog</a></section>
+<section class="card blog-table-card"><div class="table-wrap"><table><thead><tr><th>Username</th><th>Full Name</th><th>Email</th><th>Staff Status</th><th>Action</th></tr></thead><tbody>{% for u in users %}<tr><td>{{ u.username }}</td><td>{{ u.get_full_name|default:"-" }}</td><td>{{ u.email|default:"-" }}</td><td>{% if u.is_staff %}Staff{% else %}Normal User{% endif %}</td><td>{% if u.is_staff %}<form method="post" action="{% url 'blog:remove_staff' u.id %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">Remove Staff</button></form>{% else %}<form method="post" action="{% url 'blog:grant_staff' u.id %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Grant Staff</button></form>{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Edit Subject</h2>
+
+<form method="post" class="card" style="padding:16px;">
+  {% csrf_token %}
+
+  <label>Name</label>
+  <input class="form-control" type="text" name="name" value="{{ subject.name }}" required>
+
+  <label style="margin-top:10px;">Level</label>
+  <input class="form-control" type="text" name="level" value="{{ subject.level }}">
+
+  <label style="margin-top:10px;">Overview</label>
+  <textarea class="form-control" name="overview" rows="3">{{ subject.overview }}</textarea>
+
+  <label style="margin-top:10px;">Learning Objectives (one per line)</label>
+  <textarea class="form-control" name="learning_objectives" rows="4">{{ subject.learning_objectives }}</textarea>
+
+  <label style="margin-top:10px;">Topics Covered (one per line)</label>
+  <textarea class="form-control" name="topics_covered" rows="4">{{ subject.topics_covered }}</textarea>
+
+  <label style="margin-top:10px;">Assessment Format</label>
+  <textarea class="form-control" name="assessment_format" rows="3">{{ subject.assessment_format }}</textarea>
+
+  <label style="margin-top:10px;">Exam Structure</label>
+  <textarea class="form-control" name="exam_structure" rows="3">{{ subject.exam_structure }}</textarea>
+
+  <label style="margin-top:10px;">Preparation Tips</label>
+  <textarea class="form-control" name="preparation_tips" rows="3">{{ subject.preparation_tips }}</textarea>
+
+  <label style="margin-top:10px;">Prerequisites (one per line)</label>
+  <textarea class="form-control" name="prerequisites" rows="3">{{ subject.prerequisites }}</textarea>
+
+  <label style="margin-top:10px;">Study Materials (one per line)</label>
+  <textarea class="form-control" name="study_materials" rows="3">{{ subject.study_materials }}</textarea>
+
+  <div style="margin-top:15px; display:flex; gap:10px;">
+    <button class="btn btn-primary" type="submit">Save Changes</button>
+    <a class="btn btn-secondary" href="{% url 'teacher_subject_list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

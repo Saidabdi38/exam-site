@@ -1,0 +1,11 @@
+<div class="blog-actions">
+  <a class="btn btn-secondary" href="{% url 'blog:my_articles' %}">My Articles</a>
+  {% if user.is_staff %}
+    <a class="btn btn-primary" href="{% url 'blog:post_create' %}">Create Post</a>
+    <a class="btn btn-secondary" href="{% url 'blog:category_list' %}">Manage Categories</a>
+    <a class="btn btn-secondary" href="{% url 'blog:purchase_requests' %}">Purchase Requests</a>
+  {% endif %}
+  {% if user.is_superuser %}
+    <a class="btn btn-secondary" href="{% url 'blog:staff_access' %}">Staff Access</a>
+  {% endif %}
+</div>

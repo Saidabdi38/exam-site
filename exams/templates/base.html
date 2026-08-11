@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Idaare{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'exams/css/style.css' %}">
+</head>
+<body>
+
+<nav id="siteNav">
+
+  <div class="mobile-topbar">
+
+  <!-- menu button -->
+  <button id="menuToggle" class="menu-toggle">☰</button>
+
+  <!-- ✅ ADD THIS (logo + text) -->
+  <a href="{% url 'home' %}" class="mobile-brand">
+    <img src="{% static 'exams/images/logo.jpeg' %}" class="mobile-brand-logo">
+    <span class="mobile-brand-text">Idaare</span>
+  </a>
+
+</div>
+
+  <div class="nav-left">
+    <a href="{% url 'home' %}" class="brand">
+      <img src="{% static 'exams/images/logo.jpeg' %}" class="brand-logo" alt="Logo">
+      <span class="brand-text">Idaare</span>
+    </a>
+
+    {% if user.is_authenticated %}
+      <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
+
+      {% if user.is_staff %}
+        <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
+        <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+      {% endif %}
+    {% endif %}
+
+    <a class="navlink" href="{% url 'home' %}">Home</a>
+    <a class="navlink" href="{% url 'about' %}">About</a>
+    <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+    <a class="navlink" href="{% url 'videos:list' %}">Videos</a>
+    <a class="navlink" href="{% url 'blog:post_list' %}">Blog</a>
+    
+  </div>
+
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+      <span class="nav-user">Hi, {{ user.username }}</span>
+
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="btn btn-secondary" type="submit">Logout</button>
+      </form>
+    {% else %}
+      <a class="navlink" href="{% url 'login' %}">Login</a>
+      <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
+    {% endif %}
+  </div>
+
+</nav>
+
+<div id="mobileNav">
+
+  <!-- <div class="mobile-logo">
+    <img src="{% static 'exams/images/logo.jpeg' %}" class="mobile-brand-logo" alt="Logo">
+    <div class="mobile-brand-text">Idaare</div>
+  </div> -->
+
+  {% if user.is_authenticated %}
+    <span class="nav-user">Hi, {{ user.username }}</span>
+
+    <a class="navlink" href="{% url 'student_dashboard' %}">Dashboard</a>
+
+    {% if user.is_staff %}
+      <a class="navlink" href="{% url 'teacher_dashboard' %}">Teacher</a>
+      <a class="navlink" href="{% url 'teacher_subject_list' %}">Subjects</a>
+    {% endif %}
+  {% endif %}
+
+  <a class="navlink" href="{% url 'home' %}">Home</a>
+  <a class="navlink" href="{% url 'about' %}">About</a>
+  <a class="navlink" href="{% url 'exam_prices' %}">Assessments</a>
+  <a class="navlink" href="{% url 'videos:list' %}">Videos</a>
+    <a class="navlink" href="{% url 'blog:post_list' %}">Blog</a>
+
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="btn btn-secondary mobile-logout" type="submit">Logout</button>
+    </form>
+  {% else %}
+    <a class="navlink" href="{% url 'login' %}">Login</a>
+    <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
+  {% endif %}
+
+</div>
+
+<div class="container">
+
+  <!-- ✅ SAFE BANNER -->
+  <div class="safe-banner">
+    <!-- <h2>Ku soo dhowow Idaare</h2> -->
+    <!-- <p>Virtual Office & Tababar Shaqo</p> -->
+  </div>
+
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-container">
+
+    <div>
+      <h3>Idaare</h3>
+      <p>Madal qiimeyn karti xirfadeed.</p>
+    </div>
+
+    <div>
+      <h4>Quick Links</h4>
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'about' %}">About</a>
+      <a href="{% url 'exam_prices' %}">Assessments</a>
+      <a href="{% url 'videos:list' %}">Videos</a>
+      <a href="{% url 'blog:post_list' %}">Blog</a>
+    </div>
+
+    <div>
+      <h4>Contact</h4>
+      <p>📞 +252 906 943838</p>
+      <p>✉ support@idaare.com</p>
+      <p>© 2026 Idaare</p>
+    </div>
+
+  </div>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const toggle = document.getElementById("menuToggle");
+  const mobile = document.getElementById("mobileNav");
+
+  if (toggle && mobile) {
+    toggle.onclick = function () {
+      mobile.classList.toggle("show");
+      toggle.textContent = mobile.classList.contains("show") ? "✕" : "☰";
+    };
+
+    mobile.querySelectorAll("a").forEach(function(link) {
+      link.addEventListener("click", function() {
+        mobile.classList.remove("show");
+        toggle.textContent = "☰";
+      });
+    });
+  }
+});
+</script>
+
+</body>
+</html>

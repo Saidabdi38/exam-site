@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+
+<h1>Student Dashboard</h1>
+
+<p class="small">
+  Welcome, <strong>{{ request.user.username }}</strong>
+</p>
+
+<h2>Available Exams</h2>
+
+{% for row in rows %}
+  <div class="card">
+
+    <h3>{{ row.exam.title }}</h3>
+
+    {% if row.exam.description %}
+      <p>{{ row.exam.description }}</p>
+    {% endif %}
+
+    <div class="meta">
+      <span>Duration: {{ row.exam.duration_minutes }} minutes</span>
+
+      {% if row.attempt %}
+        <span>Attempt #: {{ row.attempt.attempt_no }}</span>
+      {% endif %}
+    </div>
+
+    <div class="divider"></div>
+
+    <p>
+      Status:
+      <strong>{{ row.status }}</strong>
+      {% if row.remaining_attempts %}
+      ({{ row.remaining_attempts }} attempt{% if row.remaining_attempts > 1 %}s{% endif %} left)
+      {% endif %}
+    </p>
+
+    <div class="row">
+        {% if row.action.args %}
+          <a class="btn btn-primary"
+            href="{% url row.action.url_name row.action.args.0 row.action.args.1 %}">
+            {{ row.action.label }}
+          </a>
+        {% else %}
+          <a class="btn btn-primary"
+            href="{% url row.action.url_name row.action.arg %}">
+            {{ row.action.label }}
+          </a>
+        {% endif %}
+
+        <!-- {% if row.attempt and row.attempt.is_submitted %}
+          <a class="btn btn-secondary"
+            href="{% url 'exam_result' row.attempt.id %}">
+            View Result
+          </a>
+        {% endif %} -->
+    </div>
+
+  </div>
+{% empty %}
+  <p>No published exams yet.</p>
+{% endfor %}
+
+{% if recent_results %}
+  <div class="divider"></div>
+
+  <h2>Recent Results</h2>
+
+  {% for a in recent_results %}
+    <div class="card">
+      <strong>{{ a.exam.title }}</strong>
+      — {{ a.score }}/{{ a.max_score }}
+      <span class="small">({{ a.submitted_at }})</span>
+
+      <div class="right">
+        <a class="btn btn-secondary"
+           href="{% url 'exam_result' a.id %}">
+          View
+        </a>
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}
+
+{% endblock %}

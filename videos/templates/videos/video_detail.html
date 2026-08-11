@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title }}{% endblock %}
+{% block content %}
+<section>
+  <article class="content-card">
+    {% if user.is_staff %}
+      <p><a class="btn btn-secondary" href="{% url 'videos:edit' video.pk %}">Edit Video</a></p>
+    {% endif %}
+
+    {% if video.thumbnail %}
+      <img src="{{ video.thumbnail.url }}" alt="{{ video.title }}">
+    {% endif %}
+
+    <p>{{ video.category.name }} · {{ video.get_access_type_display }}</p>
+    <h1>{{ video.title }}</h1>
+    {{ video.description|linebreaks }}
+
+    <p>
+      {% if video.is_free %}
+        <strong>Free</strong>
+      {% else %}
+        <strong>Price: ${{ video.price }}</strong>
+      {% endif %}
+      {% if video.duration_minutes %} · {{ video.duration_minutes }} minutes{% endif %}
+      · {{ video.views_count }} views
+    </p>
+
+    {% if has_access %}
+      {% if user.is_authenticated %}
+        <a class="btn btn-primary" href="{% url 'videos:watch' video.slug %}">Watch Video</a>
+      {% else %}
+        <a class="btn btn-primary" href="{% url 'login' %}?next={{ request.path }}">Login to Watch</a>
+      {% endif %}
+    {% elif not user.is_authenticated %}
+      <a class="btn btn-primary" href="{% url 'login' %}?next={{ request.path }}">Login to Buy</a>
+    {% elif purchase and purchase.status == "pending" %}
+      <p><strong>Purchase pending approval.</strong></p>
+    {% else %}
+      <a class="btn btn-primary" href="{% url 'videos:request_purchase' video.slug %}">
+        Buy Video — ${{ video.price }}
+      </a>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}

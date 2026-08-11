@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Video{% endblock %}
+
+{% block content %}
+
+<section>
+    <div class="content-card">
+
+        <h1>Delete Video</h1>
+
+        <p>
+            Are you sure you want to delete:
+            <strong>{{ video.title }}</strong>?
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <button
+                class="btn btn-primary"
+                type="submit"
+            >
+                Delete
+            </button>
+
+            <a
+                class="btn btn-secondary"
+                href="{% url 'videos:manage' %}"
+            >
+                Cancel
+            </a>
+
+        </form>
+
+    </div>
+</section>
+
+{% endblock %}

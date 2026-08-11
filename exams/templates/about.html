@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Ku Saabsan Idaare{% endblock %}
+
+{% block content %}
+
+<style>
+.about {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 15px;
+}
+
+.card {
+  background: #fff;
+  padding: 22px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 18px;
+}
+
+.card h1, .card h2 {
+  margin-bottom: 10px;
+  color: #0f2a44; /* header/footer color */
+}
+
+.card p {
+  line-height: 1.7;
+  color: #444;
+}
+
+.feature-list {
+  padding-left: 20px;
+}
+
+.feature-list li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+</style>
+
+<section class="about">
+
+  <!-- INTRO -->
+  <div class="card">
+    <h1>Ku Saabsan Idaare</h1>
+
+    <p>
+      Idaare waa madal dijitaal ah oo loogu talagalay qiimeynta iyo horumarinta
+      kartida xirfadeed. Waxay diiradda saartaa cabbiridda xirfadaha dhabta ah ee looga baahan yahay
+      goobaha shaqada, gaar ahaan dhinacyada xisaabaadka, maaliyadda, iyo hawlaha xafiisyada.
+    </p>
+
+    <p>
+      Ujeeddada Idaare waa in qofka la siiyo fursad uu si cad ugu ogaado heerkiisa aqooneed,
+      awooddiisa shaqo, iyo meelaha uu u baahan yahay horumar dheeraad ah.
+      Madashu waxay isku xirtaa <strong>qiimeyn</strong> iyo <strong>horumarinta xirfadaha</strong>.
+    </p>
+  </div>
+
+  <!-- HIMILO -->
+  <div class="card">
+    <h2>Himilada</h2>
+    <p>
+      Himilada Idaare waa in la helo bulsho leh xirfado shaqo oo la cabbiri karo,
+      lana xaqiijin karo, si qof walba u fahmo kartidiisa una hormariyo mustaqbalkiisa shaqo.
+    </p>
+  </div>
+
+  <!-- HADAf -->
+  <div class="card">
+    <h2>Hadafka</h2>
+    <p>
+      Hadafka Idaare waa in la bixiyo qiimeyn wax ku ool ah oo ka tarjumaysa xaaladaha
+      shaqo ee dhabta ah, si qofku u ogaado heerka diyaar-garowgiisa shaqo
+      iyo meelaha uu u baahan yahay inuu sii xoojiyo.
+    </p>
+  </div>
+
+  <!-- WHAT IT DOES -->
+  <div class="card">
+    <h2>Waxa ay Qabato Idaare</h2>
+    <ul class="feature-list">
+      <li>Waxay cabbirtaa heerka aqoonta iyo kartida xirfadeed ee qofka</li>
+      <li>Waxay bixisaa qiimeyn ku saleysan xaalado shaqo oo dhab u eg</li>
+      <li>Waxay ka caawisaa qofka inuu ogaado meelaha uu ku fiican yahay</li>
+      <li>Waxay muujisaa meelaha u baahan horumar</li>
+      <li>Waxay taageertaa kobcinta xirfadaha shaqo</li>
+    </ul>
+  </div>
+
+  <!-- YOOLAL -->
+  <div class="card">
+    <h2>Yoolalka</h2>
+    <ul class="feature-list">
+      <li>In la bixiyo qiimeyn caddaalad ah oo la cabbiri karo</li>
+      <li>In la ogaado heerka diyaar-garowga shaqo ee musharraxa</li>
+      <li>In la la socdo waxqabadka ka qaybgalayaasha</li>
+      <li>In la bixiyo hannaan qiimeyn oo hufan</li>
+      <li>In la taageero horumarinta xirfadaha bulshada</li>
+    </ul>
+  </div>
+
+  <!-- QIYAM -->
+  <div class="card">
+    <h2>Qiyamka</h2>
+    <ul class="feature-list">
+      <li><strong>Daacadnimo</strong> – Qiimeyn caddaalad ah oo aan eex lahayn</li>
+      <li><strong>Tayo</strong> – Qiimeyn wax ku ool ah</li>
+      <li><strong>Hufnaan</strong> – Natiijooyin cad oo la fahmi karo</li>
+      <li><strong>Kalsooni</strong> – Nidaam la isku hallayn karo</li>
+      <li><strong>Horumar</strong> – Kor u qaadidda xirfadaha shaqo</li>
+    </ul>
+  </div>
+
+</section>
+
+{% endblock %}

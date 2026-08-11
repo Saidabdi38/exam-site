@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+  .instructions-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .instructions-card {
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    padding: 24px;
+    background: #fff;
+    margin-top: 20px;
+  }
+
+  .instructions-title {
+    margin-bottom: 12px;
+  }
+
+  .instructions-text {
+    margin-bottom: 18px;
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  .instructions-list {
+    margin: 0;
+    padding-left: 24px;
+    line-height: 1.9;
+  }
+
+  .alpha-list {
+    list-style-type: lower-alpha;
+  }
+
+  .roman-list {
+    list-style-type: lower-roman;
+  }
+
+  .example-box {
+    margin-top: 18px;
+    padding: 14px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #0d6efd;
+  }
+
+  .guide-image-wrap {
+    margin: 16px 0;
+    text-align: center;
+  }
+
+  .guide-image {
+    max-width: 100%;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+  }
+
+  .start-row {
+    margin-top: 24px;
+  }
+
+  .start-btn {
+    display: inline-block;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 999px;
+    background: #0d6efd;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    opacity: 0.6;
+  }
+
+  .start-btn.enabled {
+    opacity: 1;
+  }
+
+  .agree-box {
+    margin-top: 20px;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+
+  .agree-box label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .agree-box input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+</style>
+
+<div class="instructions-wrap">
+  <div class="instructions-card">
+    <h2 class="instructions-title">{{ exam.title }}</h2>
+
+    <p class="instructions-text">
+      <strong>Tilmaamaha Imtixaanka:</strong>
+    </p>
+
+    <ol class="instructions-list">
+
+      <li>
+        Su’aalaha imtixaanku waxay ka kooban yihiin afar nooc:
+        <strong>Dooro (MCQ)</strong>,
+        <strong>Run iyo Been (True/False)</strong>,
+        <strong>Su'aalo qoraal ah (Structured Questions)</strong>,
+        iyo
+        <strong>Jiid oo dhig (Sequencing)</strong>.
+      </li>
+
+      <li>
+        <strong>Dooro (MCQ):</strong>
+        Dooro hal jawaab oo sax ah kadib markaad si fiican u akhrido su’aasha.
+      </li>
+
+      <li>
+        <strong>Run iyo Been (True/False):</strong>
+        Dooro jawaabta saxda ah (Run ama Been).
+      </li>
+
+      <li>
+        <strong>Su'aalaha qoraalka ah (Structured Questions):</strong>
+
+        <ol class="alpha-list">
+          <li>Part A → Qor magaca akoonka debit ka ah.</li>
+          <li>Part B → Qor magaca akoonka credit ka ah</li>
+          <li>Part C → Qor tirada lacagta saxda ah.</li>
+        </ol>
+        <div class="example-box">
+          <strong>Tusaale:</strong><br><br>
+          <strong>Su’aal:</strong> Record depreciation of 2000<br><br>
+
+          <strong>Sida looga jawaabayo:</strong><br>
+          <strong>Part A:</strong> Debit Depreciation<br>
+          Tani waa account-ka debit-ka ah, sababtoo ah depreciation waa kharash (expense).<br><br>
+
+          <strong>Part B:</strong> Credit Accumulated Depreciation<br>
+          Tani waa account-ka credit-ka ah, sababtoo ah accumulated depreciation waa dhinaca credit-ka ee depreciation-ka la uruuriyo.<br><br>
+
+          <strong>Part C:</strong> Amount 2000<br>
+          Halkan waxaad ku qoraysaa tirada saxda ah ee lacagta, taas oo ah 2000.
+        </div>
+        </li>
+
+      <li>
+        <strong>Jiid oo dhig (Sequencing):</strong>
+        Jiid tallaabooyinka si ay u noqdaan nidaamka saxda ah.
+      </li>
+
+      <li>
+        <strong>Wareegyada (Question Navigator):</strong>
+
+        <ol class="alpha-list">
+
+          <li>Wareegyada (1,2,3...) = dhammaan su’aalaha</li>
+
+          <li>
+            Midabada:
+            <ol class="roman-list">
+              <li>Cagaar → laga jawaabay</li>
+              <li>Cawl → lagama jawaabin</li>
+              <li>Buluug → su’aasha hadda</li>
+            </ol>
+          </li>
+
+          <li>Riix lambar si aad ugu booddo su’aal kasta</li>
+
+          <li>Haddii aad shaki qabto → ka bood oo dib ugu noqo</li>
+
+        </ol>
+      </li>
+
+       <!-- ✅ IMAGE HERE -->
+        <div class="guide-image-wrap">
+          <img src="{% static 'exams/images/sequence_guide.jpeg' %}" class="guide-image">
+        </div>
+      <!-- ✅ QODOB 7 (UPDATED WITH NAVIGATION + IMAGE) -->
+
+      <li>
+        Jawaabaha waa la kaydinayaa markaad u gudubto su’aasha xigta.
+
+        <li><strong>Navigation (Socodka Su’aalaha):</strong></li>
+
+        <ol class="alpha-list">
+
+          <li>
+            <strong>Previous:</strong>
+            Riix batoonka Previous si aad dib ugu noqoto su’aashii hore
+            una saxdo ama u eegto jawaabtaada.
+          </li>
+
+          <li>
+            <strong>Next:</strong>
+            Riix Next si aad ugu gudubto su’aasha xigta.
+            Jawaabtaadana si toos ah ayaa loo kaydinayaa.
+          </li>
+
+          <li>
+            <strong>Faa’iido:</strong>
+            Waxaad si fudud ugu kala socon kartaa dhammaan su’aalaha
+            adigoon lumin jawaabahaaga.
+          </li>
+
+        </ol>
+      </li>
+
+      <li>La soco waqtiga kuu haray.</li>
+
+      <li>Markaad dhamayso → riix <strong>Submit</strong>.</li>
+
+    </ol>
+
+    <form method="post" action="{% url 'start_exam' exam.id %}">
+      {% csrf_token %}
+
+      <div class="agree-box">
+        <label>
+          <input type="checkbox" id="agreeCheck">
+          <span>Waan akhriyey, waanan fahmay tilmaamaha imtixaanka.</span>
+        </label>
+      </div>
+
+      <div class="start-row">
+        <button type="submit" class="start-btn" id="startBtn" disabled>
+          Sii wad
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+const checkbox = document.getElementById("agreeCheck");
+const button = document.getElementById("startBtn");
+
+checkbox.addEventListener("change", function () {
+  if (this.checked) {
+    button.disabled = false;
+    button.classList.add("enabled");
+  } else {
+    button.disabled = true;
+    button.classList.remove("enabled");
+  }
+});
+</script>
+
+{% endblock %}

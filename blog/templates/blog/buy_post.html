@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Purchase Access{% endblock %}
+{% block content %}
+<section class="card blog-form-card">
+  <h2>Purchase Access</h2>
+  <p><strong>{{ post.title }}</strong></p>
+  <p>Price: ${{ post.price }}</p>
+  <div class="premium-box"><p>Pay using your preferred method, then enter the payment reference below. Admin will approve your access after confirmation.</p></div>
+  <form method="post" enctype="multipart/form-data" class="blog-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="blog-actions"><button class="btn btn-primary" type="submit">Submit Request</button><a class="btn btn-secondary" href="{% url 'blog:post_detail' post.slug %}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

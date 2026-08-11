@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Purchase Requests{% endblock %}
+{% block content %}
+<section class="card"><h2>Purchase Requests</h2><div class="blog-actions"><a class="btn btn-secondary" href="{% url 'blog:post_list' %}">Back to Blog</a></div></section>
+<section class="card blog-table-card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Post</th><th>Reference</th><th>Screenshot</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>{% for purchase in purchases %}<tr><td>{{ purchase.user.username }}</td><td>{{ purchase.post.title }}</td><td>{{ purchase.payment_reference }}</td><td>{% if purchase.payment_screenshot %}<a href="{{ purchase.payment_screenshot.url }}" target="_blank">View</a>{% else %}-{% endif %}</td><td>{{ purchase.get_status_display }}</td><td>{{ purchase.request_date|date:"M d, Y" }}</td><td><form method="post" action="{% url 'blog:purchase_approve' purchase.id %}" style="display:inline">{% csrf_token %}<button class="btn btn-primary" type="submit">Approve</button></form> <form method="post" action="{% url 'blog:purchase_reject' purchase.id %}" style="display:inline">{% csrf_token %}<button class="btn btn-secondary" type="submit">Reject</button></form></td></tr>{% empty %}<tr><td colspan="7">No purchase requests.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

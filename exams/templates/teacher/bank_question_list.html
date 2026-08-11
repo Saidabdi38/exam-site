@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* HEADER */
+.header-box {
+  background: #fff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.header-box h2 {
+  margin: 0 0 10px 0;
+}
+
+/* BUTTONS */
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-main {
+  background: #0f2a44;
+  color: white;
+}
+
+.btn-light {
+  background: #f1f5f9;
+  color: #0f2a44;
+}
+
+/* QUESTION CARD */
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+/* TABLE FIX */
+.question-content figure.table {
+  float: none !important;
+  margin: 10px 0;
+}
+
+.question-content table {
+  border-collapse: collapse;
+}
+
+.question-content th,
+.question-content td {
+  border: 1px solid #999;
+  padding: 6px 10px;
+}
+
+/* CHOICES */
+.choices {
+  margin-top: 10px;
+  clear: both;
+}
+
+/* ACTION LINKS */
+.actions a {
+  margin-right: 10px;
+  color: #0f2a44;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.actions a:hover {
+  text-decoration: underline;
+}
+</style>
+
+<div class="container">
+
+  <div class="header-box">
+    <h2>Question Bank: {{ subject.name }}</h2>
+
+    <a href="{% url 'teacher_bank_question_create' subject.id %}" class="btn btn-main">+ Add Question</a>
+    <a href="{% url 'teacher_bank_question_upload' subject.id %}" class="btn btn-light">Upload CSV</a>
+    <a href="{% url 'export_bank_csv' subject.id %}" class="btn btn-light">Download CSV</a>
+  </div>
+
+  {% for q in questions %}
+    <div class="card">
+
+      <p><strong>{{ forloop.counter }}. ({{ q.points }} pts)</strong>
+        {% if q.qtype == "MCQ" %} - Multiple Choice{% endif %}
+        {% if q.qtype == "TF" %} - True/False{% endif %}
+        {% if q.qtype == "STRUCT" %} - Structured{% endif %}
+        {% if q.qtype == "SEQ" %} - Sequencing{% endif %}
+      </p>
+
+      <div class="question-content">
+        {{ q.text|safe }}
+      </div>
+
+      {% if q.qtype == "MCQ" or q.qtype == "TF" %}
+        <div class="choices">
+          <strong>Choices:</strong>
+          <ol type="A">
+            {% for c in q.choices.all %}
+              <li>{{ c.text }}</li>
+            {% empty %}
+              <li>No choices yet</li>
+            {% endfor %}
+          </ol>
+        </div>
+      {% endif %}
+
+      {% if q.qtype == "STRUCT" %}
+        <div class="choices">
+          <strong>Answer:</strong>
+          <ul>
+            <li>A: {{ q.correct_part_a|default:"-" }}</li>
+            <li>B: {{ q.correct_part_b|default:"-" }}</li>
+            <li>C: {{ q.correct_part_c|default:"-" }}</li>
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if q.qtype == "SEQ" %}
+        <div class="choices">
+          <strong>Sequence:</strong>
+          <ol>
+            {% for item in q.sequence_items.all|dictsort:"correct_order" %}
+              <li>{{ item.text }}</li>
+            {% empty %}
+              <li>No sequence items</li>
+            {% endfor %}
+          </ol>
+        </div>
+      {% endif %}
+
+      <div class="actions">
+        <a href="{% url 'teacher_bank_question_edit' subject.id q.id %}">Edit</a>
+        <a href="{% url 'teacher_bank_question_delete' subject.id q.id %}">Delete</a>
+      </div>
+
+    </div>
+  {% empty %}
+    <p>No questions yet.</p>
+  {% endfor %}
+
+</div>
+
+{% endblock %}

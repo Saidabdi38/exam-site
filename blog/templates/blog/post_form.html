@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="card blog-form-card">
+  <h2>{{ title }}</h2>
+  <form method="post" enctype="multipart/form-data" class="blog-form" id="postForm">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+
+    <label for="id_category">Category:</label>{{ form.category }}{{ form.category.errors }}
+    <label for="id_title">Title:</label>{{ form.title }}{{ form.title.errors }}
+    <label for="id_slug">Slug:</label>{{ form.slug }}{{ form.slug.errors }}
+    <label for="id_summary">Summary:</label>{{ form.summary }}{{ form.summary.errors }}
+    <small>Optional. If empty, it will be generated from content.</small>
+
+    <label>Content:</label>
+    <div class="blog-editor-toolbar">
+      <button type="button" data-cmd="formatBlock" data-value="h2">Heading</button>
+      <button type="button" data-cmd="bold"><b>B</b></button>
+      <button type="button" data-cmd="italic"><i>I</i></button>
+      <button type="button" data-cmd="underline"><u>U</u></button>
+      <button type="button" data-cmd="insertUnorderedList">• List</button>
+      <button type="button" data-cmd="insertOrderedList">1. List</button>
+      <button type="button" id="linkBtn">Link</button>
+      <button type="button" id="clearBtn">Clear</button>
+    </div>
+    <div id="blogEditor" class="blog-editor-content" contenteditable="true" data-placeholder="Type your article here...">{{ form.content.value|default_if_none:""|safe }}</div>
+    {{ form.content }}
+    {{ form.content.errors }}
+    <div class="blog-counter"><span id="wordCount">0</span> words • <span id="charCount">0</span> characters</div>
+
+    <label for="id_featured_image">Featured Image:</label>{{ form.featured_image }}{{ form.featured_image.errors }}
+    <img id="imagePreview" class="blog-image-preview" alt="Image preview" style="display:none;">
+
+    <label for="id_price">Price:</label>{{ form.price }}{{ form.price.errors }}
+
+    <label class="checkline">{{ form.is_paid }} <span>Is Paid</span></label>{{ form.is_paid.errors }}
+    <label class="checkline">{{ form.is_published }} <span>Is Published</span></label>{{ form.is_published.errors }}
+    <label class="checkline">{{ form.featured_post }} <span>Featured Post</span></label>{{ form.featured_post.errors }}
+
+    <label for="id_seo_title">SEO Title:</label>{{ form.seo_title }}{{ form.seo_title.errors }}
+    <label for="id_seo_description">SEO Description:</label>{{ form.seo_description }}{{ form.seo_description.errors }}
+
+    <div class="blog-actions"><button class="btn btn-primary" type="submit">Save</button><a class="btn btn-secondary" href="{% url 'blog:post_list' %}">Cancel</a></div>
+  </form>
+</section>
+<script>
+function slugifyText(value){return value.toString().toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-');}
+const titleInput=document.getElementById('id_title'); const slugInput=document.getElementById('id_slug');
+let slugTouched=false; if(slugInput){slugInput.addEventListener('input',()=>slugTouched=true)}
+if(titleInput&&slugInput){titleInput.addEventListener('input',()=>{if(!slugTouched||!slugInput.value){slugInput.value=slugifyText(titleInput.value)}})}
+
+const form=document.getElementById('postForm');
+const editor=document.getElementById('blogEditor');
+const contentField=document.getElementById('id_content');
+const wordCount=document.getElementById('wordCount');
+const charCount=document.getElementById('charCount');
+function updateCounts(){const text=(editor.innerText||'').trim(); charCount.textContent=text.length; wordCount.textContent=text?text.split(/\s+/).length:0;}
+function syncContent(){contentField.value=editor.innerHTML.trim();}
+document.querySelectorAll('.blog-editor-toolbar button[data-cmd]').forEach(btn=>{
+  btn.addEventListener('click',()=>{editor.focus(); document.execCommand(btn.dataset.cmd,false,btn.dataset.value||null); syncContent(); updateCounts();});
+});
+document.getElementById('linkBtn').addEventListener('click',()=>{const url=prompt('Enter link URL'); if(url){editor.focus(); document.execCommand('createLink',false,url); syncContent();}});
+document.getElementById('clearBtn').addEventListener('click',()=>{if(confirm('Clear content formatting?')){editor.innerHTML=editor.innerText; syncContent(); updateCounts();}});
+editor.addEventListener('input',()=>{syncContent(); updateCounts();});
+form.addEventListener('submit',()=>{syncContent();});
+updateCounts(); syncContent();
+const imageInput=document.getElementById('id_featured_image'); const preview=document.getElementById('imagePreview');
+if(imageInput&&preview){imageInput.addEventListener('change',()=>{const file=imageInput.files[0]; if(file){preview.src=URL.createObjectURL(file); preview.style.display='block';}else{preview.style.display='none';}})}
+</script>
+{% endblock %}

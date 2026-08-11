@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Bogga Hore - Idaare
+
+<!-- 4. LATEST ARTICLES -->
+{% if latest_articles %}
+<section class="card blog-section" style="margin-top: 18px;">
+  <h2>Latest Articles</h2>
+  <div class="blog-grid">
+    {% for post in latest_articles %}
+      <article class="blog-post-card">
+        {% if post.featured_image %}
+          <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="blog-card-image">
+        {% endif %}
+        <div class="blog-badges">
+          <span class="badge">{{ post.category.name }}</span>
+          {% if post.is_paid %}<span class="badge premium">Premium</span>{% else %}<span class="badge free">Free</span>{% endif %}
+        </div>
+        <h3><a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a></h3>
+        <p>{{ post.summary|truncatechars:150 }}</p>
+        <a class="btn btn-secondary" href="{% url 'blog:post_detail' post.slug %}">Read More</a>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block content %}
+
+<!-- 1. KU SAABSAN Idaare -->
+<section class="card">
+  <h2>Ku Saabsan Idaare</h2>
+
+  <p>
+    Idaare waa madal dijitaal ah oo lagu qiimeeyo kartida, aqoonta, iyo xirfadaha shaqo ee qofka,
+    gaar ahaan dhinacyada xisaabaadka, maaliyadda, iyo shaqooyinka xafiisyada.
+  </p>
+
+  <p>
+    Madashu waxay ka caawisaa ardayga ama shaqo-doonka inuu fahmo heerkiisa aqooneed,
+    ogaado meelaha uu ku fiican yahay, isla markaana garto meelaha uu u baahan yahay horumar dheeraad ah.
+  </p>
+
+  <p>
+    Ujeeddada Idaare waa in qofku helo qiimeyn cad oo ka tarjumaysa kartidiisa dhabta ah,
+    si uu si wanaagsan ugu diyaar garoobo shaqada ama kor ugu qaado heerkiisa xirfadeed.
+  </p>
+</section>
+
+
+<!-- 2. QIIMAYNTA -->
+<section class="card" style="margin-top: 18px;">
+  <h2>Qiimaynta Kartida Xirfadeed</h2>
+
+  <p>
+    Idaare waxay kuu ogolaanaysaa inaad marto qiimeyn ku saleysan shaqooyin dhab u eg,
+    si aad u fahamto heerka aqoontaada xisaabaadka iyo maaliyadda.
+  </p>
+
+  <p>
+    Qiimeyntani waxay kaa caawinaysaa:
+    <br>• Inaad ogaato heerkaaga aqooneed
+    <br>• Inaad fahamto meelaha aad ku fiican tahay
+    <br>• Inaad garato meelaha aad u baahan tahay horumar
+    <br>• Inaad si fiican ugu diyaar garowdo suuqa shaqada
+  </p>
+
+  <div style="margin-top: 15px;">
+    <a href="{% url 'exam_prices' %}" class="btn btn-secondary">
+      Qiimaha Imtixaannada
+    </a>
+  </div>
+</section>
+
+
+<!-- 3. FAA'IIDADA Idaare  -->
+<section class="card" style="margin-top: 18px;">
+  <h2>Faa’iidada Idaare</h2>
+
+  <p>
+    Idaare waxay siisaa ardayga ama shaqo-doonka fursad uu ku cabbiro kartidiisa si habaysan
+    oo la fahmi karo. Natiijada qiimeyntu waxay ka caawisaa qofka inuu garto meelaha uu xoogga saari karo.
+  </p>
+
+  <p>
+    Adeegsiga madashan wuxuu qofka ka caawinayaa:
+    <br>• Inuu helo faham sax ah oo ku saabsan xirfaddiisa
+    <br>• Inuu ogaado meelaha uu ka liito si uu u horumariyo
+    <br>• Inuu kordhiyo kalsoonida naftiisa marka uu shaqo raadinayo
+    <br>• Inuu yeesho diyaar garow shaqo oo wanaagsan
+  </p>
+</section>
+
+
+
+<!-- 4. LATEST ARTICLES -->
+{% if latest_articles %}
+<section class="card blog-section" style="margin-top: 18px;">
+  <h2>Latest Articles</h2>
+  <div class="blog-grid">
+    {% for post in latest_articles %}
+      <article class="blog-post-card">
+        {% if post.featured_image %}
+          <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="blog-card-image">
+        {% endif %}
+        <div class="blog-badges">
+          <span class="badge">{{ post.category.name }}</span>
+          {% if post.is_paid %}<span class="badge premium">Premium</span>{% else %}<span class="badge free">Free</span>{% endif %}
+        </div>
+        <h3><a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a></h3>
+        <p>{{ post.summary|truncatechars:150 }}</p>
+        <a class="btn btn-secondary" href="{% url 'blog:post_detail' post.slug %}">Read More</a>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

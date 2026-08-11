@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}My Articles{% endblock %}
+{% block content %}
+<section class="card"><h2>My Articles</h2><a class="btn btn-secondary" href="{% url 'blog:post_list' %}">Back to Blog</a></section>
+<section class="card blog-table-card"><div class="table-wrap"><table><thead><tr><th>Title</th><th>Category</th><th>Purchase Date</th><th>Status</th><th>Action</th></tr></thead><tbody>{% for purchase in purchases %}<tr><td>{{ purchase.post.title }}</td><td>{{ purchase.post.category.name }}</td><td>{{ purchase.request_date|date:"M d, Y" }}</td><td>{{ purchase.get_status_display }}</td><td><a class="btn btn-secondary" href="{% url 'blog:post_detail' purchase.post.slug %}">Open Article</a></td></tr>{% empty %}<tr><td colspan="5">No approved articles yet.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

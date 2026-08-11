@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="card blog-form-card">
+  <h2>{{ title }}</h2>
+  <form method="post" class="blog-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+    <label for="id_name">Name:</label>{{ form.name }}{{ form.name.errors }}
+    <label for="id_slug">Slug:</label>{{ form.slug }}{{ form.slug.errors }}
+    <label for="id_description">Description:</label>{{ form.description }}{{ form.description.errors }}
+    <label class="checkline">{{ form.active }} <span>Active</span></label>{{ form.active.errors }}
+    <div class="blog-actions"><button class="btn btn-primary" type="submit">Save</button><a class="btn btn-secondary" href="{% url 'blog:category_list' %}">Cancel</a></div>
+  </form>
+</section>
+<script>
+function slugifyText(value){return value.toString().toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-');}
+const nameInput=document.getElementById('id_name'); const slugInput=document.getElementById('id_slug');
+let slugTouched=false; if(slugInput){slugInput.addEventListener('input',()=>slugTouched=true)}
+if(nameInput&&slugInput){nameInput.addEventListener('input',()=>{if(!slugTouched||!slugInput.value){slugInput.value=slugifyText(nameInput.value)}})}
+</script>
+{% endblock %}
