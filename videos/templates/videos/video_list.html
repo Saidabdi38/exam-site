@@ -38,7 +38,11 @@
     {% for video in videos %}
       <article class="card">
         {% if video.thumbnail %}
-          <img src="{{ video.thumbnail.url }}" alt="{{ video.title }}">
+            <img
+                src="{{ video.thumbnail.url }}"
+                alt="{{ video.title }}"
+                class="video-thumbnail"
+            >
         {% endif %}
 
         <h2><a href="{{ video.get_absolute_url }}">{{ video.title }}</a></h2>
