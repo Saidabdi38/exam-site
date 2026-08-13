@@ -35,7 +35,7 @@ def optimize_video_for_streaming(video):
 
     try:
         command = [
-            "ffmpeg",
+            "/usr/bin/ffmpeg",
             "-y",
 
             # Input
