@@ -404,3 +404,10 @@ EMAIL_HOST_PASSWORD = os.environ.get(
 )
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# ==========================================================
+# FILE UPLOAD PERMISSIONS
+# ==========================================================
+
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
