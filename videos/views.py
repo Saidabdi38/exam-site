@@ -60,7 +60,9 @@ def create_video(request):
             if video.is_published and not video.published_at:
                 video.published_at = timezone.now()
             video.save()
-            optimize_video_for_streaming(video)
+
+            if "video_file" in request.FILES:
+                optimize_video_for_streaming(video)
             messages.success(request, "Video created successfully.")
             return redirect("videos:manage")
     else:
@@ -82,7 +84,9 @@ def edit_video(request, pk):
             if video.is_published and not video.published_at:
                 video.published_at = timezone.now()
             video.save()
-            optimize_video_for_streaming(video)
+
+            if "video_file" in request.FILES:
+                optimize_video_for_streaming(video)
             messages.success(request, "Video updated successfully.")
             return redirect("videos:manage")
     else:
