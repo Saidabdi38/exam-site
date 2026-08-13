@@ -1215,40 +1215,129 @@ th, td {
   line-height:1.7;
 }
 
-.video-thumbnail {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    height: auto;
-    object-fit: cover;
-    display: block;
-    border-radius: 8px 8px 0 0;
-}
-
-.card-grid .card {
-    max-width: 340px;
-    width: 100%;
-}
+/* ==========================================================
+   VIDEO LIST / THUMBNAILS
+   ========================================================== */
 
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
+    grid-template-columns: repeat(auto-fit, 300px);
     gap: 16px;
+    justify-content: start;
     align-items: start;
 }
 
+.card-grid .card {
+    width: 300px;
+    max-width: 300px;
+}
+
+.video-thumbnail {
+    display: block;
+    width: 300px;
+    height: 169px;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0;
+}
+
+
+/* ==========================================================
+   VIDEO WATCH PLAYER
+   ========================================================== */
+
+.video-player {
+    width: 100%;
+    max-width: 800px;
+    margin: 16px auto;
+}
+
+.video-player video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 450px;
+    object-fit: contain;
+    background: #000;
+    border-radius: 12px;
+}
+
+
+/* ==========================================================
+   VIDEO NAVIGATION
+   ========================================================== */
+
+.video-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
 @media (max-width: 768px) {
+
+    /* Video list cards */
     .card-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 270px;
+        justify-content: center;
+        gap: 14px;
     }
 
     .card-grid .card {
-        max-width: 100%;
+        width: 270px;
+        max-width: 270px;
     }
 
     .video-thumbnail {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        height: auto;
+        width: 270px;
+        height: 152px;
         object-fit: cover;
+    }
+
+    /* Watch video player */
+    .video-player {
+        width: 100%;
+        max-width: 100%;
+        margin: 12px auto;
+    }
+
+    .video-player video {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: 240px;
+        object-fit: contain;
+        background: #000;
+    }
+
+    /* Previous / Next buttons */
+    .video-navigation {
+        gap: 10px;
+    }
+}
+
+.video-detail-thumbnail {
+    display: block;
+    width: 100%;
+    max-width: 640px;
+    height: 360px;
+    object-fit: cover;
+    margin: 0 auto 16px;
+    border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+    .video-detail-thumbnail {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
     }
 }

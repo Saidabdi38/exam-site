@@ -8,8 +8,12 @@
     {% endif %}
 
     {% if video.thumbnail %}
-      <img src="{{ video.thumbnail.url }}" alt="{{ video.title }}">
-    {% endif %}
+        <img
+          src="{{ video.thumbnail.url }}"
+          alt="{{ video.title }}"
+          class="video-detail-thumbnail"
+        >
+      {% endif %}
 
     <p>{{ video.category.name }} · {{ video.get_access_type_display }}</p>
     <h1>{{ video.title }}</h1>
