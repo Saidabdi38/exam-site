@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from .utils import optimize_video_for_streaming
 
 from .forms import VideoCategoryForm, VideoForm, VideoPurchaseRequestForm
 from .models import Video, VideoCategory, VideoPurchase, VideoView
@@ -59,6 +60,7 @@ def create_video(request):
             if video.is_published and not video.published_at:
                 video.published_at = timezone.now()
             video.save()
+            optimize_video_for_streaming(video)
             messages.success(request, "Video created successfully.")
             return redirect("videos:manage")
     else:
@@ -80,6 +82,7 @@ def edit_video(request, pk):
             if video.is_published and not video.published_at:
                 video.published_at = timezone.now()
             video.save()
+            optimize_video_for_streaming(video)
             messages.success(request, "Video updated successfully.")
             return redirect("videos:manage")
     else:
